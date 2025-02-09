@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button} from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity} from 'react-native';
 
 
 
@@ -23,7 +23,7 @@ const LoginScreen = () => {
             <TextInput style ={styles.inputControl}
               value = {form.email}
               onChangeText = {email => setForm({ ...form,email})}
-              placeholder='magdugogabriel@gmail.com'
+              placeholder='Enter your email address'
               />
           </View>
 
@@ -32,12 +32,15 @@ const LoginScreen = () => {
             <TextInput style ={styles.inputControl}
               value = {form.email}
               onChangeText = {password => setForm({ ...form,password})}
-              placeholder='*******'
+              placeholder='Enter your password'
               />
           </View>
 
           <View>
-            <Button color = '#F9FE62' title='Log In' width = '80%'/ >
+            {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
+            <TouchableOpacity style = {styles.btn} onPress={ () => console.log('Button pressed')}>
+              <Text style = {styles.btn_txt}>Login</Text>
+            </TouchableOpacity>
 
 
           </View>
@@ -104,6 +107,16 @@ const styles = StyleSheet.create({
 
   btn: {
     color: '#F9FE62',
+    backgroundColor: '#F9FE62',
+    marginHorizontal: 20,
+    borderColor: '#1E1E1E',
+    borderWidth: 1/2,
+    borderRadius: 5,
+    paddingVertical: 8
+  },
+
+  btn_txt: {
+    textAlign: 'center',
   },
   
 });
