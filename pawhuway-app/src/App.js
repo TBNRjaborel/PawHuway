@@ -1,28 +1,40 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity} from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
+import { supabase }from './lib/supabase';
 
 
 
 const LoginScreen = () => {
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-  });
+  // const [form, setForm] = useState({
+  //   email: '',
+  //   password: '',
+  // });
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  async function signInWithEmail(){
+    // const { email, password } = form;
+    
+    const { error } = await supabase.auth.signInWithPassword({email,password});
+    console.log('tae2');
+    if(error)
+      Alert.alert(error.message);
+  }
+  
   return(
     <SafeAreaView>
       <View>
         <View>
-          <Image source={require('./assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
+          <Image source={require('../assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
         </View>
 
         <View style = {styles.form}>
           <View style = {styles.input}>
             <Text style = {styles.inputLabel}>Email Address</Text>
             <TextInput style ={styles.inputControl}
-              value = {form.email}
-              onChangeText = {email => setForm({ ...form,email})}
+              value = {email}
+              onChangeText = {setEmail}
               placeholder='Enter your email address'
               />
           </View>
@@ -30,15 +42,16 @@ const LoginScreen = () => {
           <View style = {styles.input}>
             <Text style = {styles.inputLabel}>Password</Text>
             <TextInput style ={styles.inputControl}
-              value = {form.email}
-              onChangeText = {password => setForm({ ...form,password})}
+              value = {password}
+              onChangeText = {setPassword}
               placeholder='Enter your password'
+              secureTextEntry
               />
           </View>
 
           <View>
             {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
-            <TouchableOpacity style = {styles.btn} onPress={ () => console.log('Button pressed')}>
+            <TouchableOpacity style = {styles.btn} onPress={signInWithEmail}>
               <Text style = {styles.btn_txt}>Login</Text>
             </TouchableOpacity>
 
