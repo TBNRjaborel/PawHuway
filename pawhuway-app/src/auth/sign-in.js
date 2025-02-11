@@ -19,6 +19,8 @@ const SignIn = () => {
     const { error } = await supabase.auth.signInWithPassword({email,password});
     if(error)
       Alert.alert(error.message);
+    else
+      Alert.alert('Success!')
   }
   
   return(
@@ -53,7 +55,6 @@ const SignIn = () => {
             <TouchableOpacity style = {styles.btn} onPress={signInWithEmail}>
               <Text style = {styles.btn_txt}>Login</Text>
             </TouchableOpacity>
-
 
           </View>
         </View>
