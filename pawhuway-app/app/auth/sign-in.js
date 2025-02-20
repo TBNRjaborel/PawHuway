@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
-import { supabase }from '../lib/supabase';
+import { supabase }from '../../src/lib/supabase';
 
 
 
@@ -24,8 +24,8 @@ const SignIn = () => {
   }
   
   return(
-    <SafeAreaView>
-      <View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View>
           <Image source={require('../../assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
         </View>
@@ -66,12 +66,16 @@ const SignIn = () => {
 
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
+  },
   logo: {
     width: 350,
     height: 350,
     alignSelf: 'center',
     // borderRadius: 200, 
-    marginTop: 100,
+    marginTop: 80,
     marginBottom: -50,
   },
   inputControl: {
