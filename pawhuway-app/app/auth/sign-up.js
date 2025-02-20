@@ -1,11 +1,21 @@
 import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
-import { supabase }from '../lib/supabase';
+import { supabase }from '../../src/lib/supabase';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    async function signUpWithEmail(){
+        // const { email, password } = form;
+        
+        const { error } = await supabase.auth.signUp({email,password});
+        if(error)
+          Alert.alert(error.message);
+        else
+          Alert.alert('Account Created!')
+    }
     return(
         <SafeAreaView>
           <View>
@@ -35,16 +45,17 @@ const SignUp = () => {
               <View style = {styles.regbtns}>
                 <View>
                     {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
-                    <TouchableOpacity style = {styles.btn} >
-                    <Text style = {styles.btn_txt}>Sign Up</Text>
+                    <TouchableOpacity style = {styles.btn} onPress={signUpWithEmail}>
+                    <Text style = {styles.btn_sign_up}>Sign Up with Email</Text>
                     </TouchableOpacity>
         
                 </View>
 
                 <View>
                     {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
-                    <TouchableOpacity style = {styles.btn} >
-                    <Text style = {styles.btn_txt}>Continue with Google</Text>
+                    <TouchableOpacity style = {styles.btn}  >
+                    <Image source={require('../../assets/pictures/google-logo.png')} style = {styles.google_logo} alt="logo"/>
+                    <Text style = {styles.btn_continue_google}>Continue with Google</Text>
                     </TouchableOpacity>
                 </View>
               </View>
@@ -64,6 +75,14 @@ const styles = StyleSheet.create({
       // borderRadius: 200, 
       marginTop: 100,
       marginBottom: -50,
+    },
+    google_logo: {
+      width: 30,
+      height: 30,
+      alignSelf: 'left',
+      marginBottom: -15,
+      marginLeft: 30,
+
     },
     inputControl: {
       backgroundColor: '#FFFFFF',
@@ -105,8 +124,15 @@ const styles = StyleSheet.create({
       paddingVertical: 8
     },
   
-    btn_txt: {
+    btn_sign_up: {
+      
       textAlign: 'center',
+      // marginVe,
+    },
+    btn_continue_google: {
+      textAlign: 'center',
+      marginTop: -10,
+
     },
 
     regbtns: {
