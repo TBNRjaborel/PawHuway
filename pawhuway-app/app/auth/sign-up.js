@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
 import { supabase }from '../../src/lib/supabase';
+import { Stack } from 'expo-router';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -17,7 +18,8 @@ const SignUp = () => {
           Alert.alert('Account Created!')
     }
     return(
-        <SafeAreaView>
+        <SafeAreaView style = {styles.container}>
+          <Stack.Screen options={{ headerShown: false }} />
           <View>
             <View>
               <Image source={require('../../assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
@@ -68,6 +70,10 @@ const SignUp = () => {
 };
 
 const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
+    },
     logo: {
       width: 350,
       height: 350,
@@ -132,6 +138,7 @@ const styles = StyleSheet.create({
     btn_continue_google: {
       textAlign: 'center',
       marginTop: -10,
+      
 
     },
 
@@ -139,7 +146,7 @@ const styles = StyleSheet.create({
         gap: 10
     },
     
-  });
+});
 
 
 export default SignUp;

@@ -2,6 +2,7 @@
   "expo": {
     "name": "pawhuway-app",
     "slug": "pawhuway-app",
+    "scheme": "mypetapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

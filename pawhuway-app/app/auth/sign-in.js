@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
 import { supabase }from '../../src/lib/supabase';
+import { Stack } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 
 
@@ -10,7 +12,7 @@ const SignIn = () => {
   //   email: '',
   //   password: '',
   // });
-
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   async function signInWithEmail(){
@@ -25,6 +27,7 @@ const SignIn = () => {
   
   return(
     <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>
         <View>
           <Image source={require('../../assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
@@ -56,6 +59,11 @@ const SignIn = () => {
               <Text style = {styles.btn_txt}>Login</Text>
             </TouchableOpacity>
 
+          </View>
+          <View>
+            <TouchableOpacity onPress={() => router.push('/auth/sign-up')}>
+              <Text style = {styles.toSignUp}>Don't have an account?</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -120,6 +128,12 @@ const styles = StyleSheet.create({
 
   btn_txt: {
     textAlign: 'center',
+  },
+
+  toSignUp: {
+    textAlign: 'center',
+    marginTop: 10,
+    color: '#0000FF'
   },
   
 });
