@@ -14,8 +14,10 @@ const SignUp = () => {
         const { error } = await supabase.auth.signUp({email,password});
         if(error)
           Alert.alert(error.message);
-        else
-          Alert.alert('Account Created!')
+        else {
+          Alert.alert('Click the verification link we sent to your email to finish creating your account.')
+          router.push('/pet_owner/home')
+        }
     }
     return(
         <SafeAreaView style = {styles.container}>
