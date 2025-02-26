@@ -22,7 +22,7 @@ const SignIn = () => {
     if(error)
       Alert.alert(error.message);
     else
-      Alert.alert('Success!')
+      router.push('/pet_owner/home')
   }
   
   return(
