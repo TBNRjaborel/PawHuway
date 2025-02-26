@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
       height: 350,
       alignSelf: 'center',
       // borderRadius: 200, 
-      marginTop: 100,
+      marginTop: 80,
       marginBottom: -50,
     },
     google_logo: {
