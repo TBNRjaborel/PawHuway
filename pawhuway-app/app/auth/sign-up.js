@@ -3,11 +3,12 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
 import { supabase }from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
+import {useRouter} from 'expo-router';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
+    const router = useRouter();
     async function signUpWithEmail(){
         // const { email, password } = form;
         
@@ -62,6 +63,11 @@ const SignUp = () => {
                     <Text style = {styles.btn_continue_google}>Continue with Google</Text>
                     </TouchableOpacity>
                 </View>
+              </View>
+              <View>
+                <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
+                  <Text style = {styles.toSignIn}>I already have an account</Text>
+                </TouchableOpacity>
               </View>
             
             </View>
@@ -146,6 +152,11 @@ const styles = StyleSheet.create({
 
     regbtns: {
         gap: 10
+    },
+    toSignIn: {
+      textAlign: 'center',
+      marginTop: 10,
+      color: '#0000FF'
     },
     
 });

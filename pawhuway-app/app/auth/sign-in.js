@@ -16,18 +16,19 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   async function signInWithEmail(){
-    // const { email, password } = form;
+    // const { email, password } = form;`
     
     const { error } = await supabase.auth.signInWithPassword({email,password});
     if(error)
       Alert.alert(error.message);
     else
-      router.push('/pet_owner/home')
+      router.push('/components/landing-page')
   }
   
   return(
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar hidden={true} />
       <View style={styles.container}>
         <View>
           <Image source={require('../../assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
