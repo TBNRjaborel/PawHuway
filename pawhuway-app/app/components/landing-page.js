@@ -15,6 +15,13 @@ const LandingPage = () => {
         else
             router.push('/auth/sign-in')
     }
+
+    const edit = () => {
+        router.push('/auth/edit-profile')
+        
+    };
+
+    
     return(
         <SafeAreaView style = {styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
@@ -35,7 +42,7 @@ const LandingPage = () => {
                         </TouchableOpacity>
                     </View>
                     <View>
-                        <TouchableOpacity style = {styles.btn} >
+                        <TouchableOpacity style = {styles.btn} onPress={edit} >
                             <Text style = {styles.btn_txt}>Account Details</Text>
                         </TouchableOpacity>
                     </View>
