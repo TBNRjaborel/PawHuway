@@ -22,7 +22,7 @@ const SignIn = () => {
     if(error)
       Alert.alert(error.message);
     else
-      router.push('/components/landing-page')
+      router.push('/pet_owner/dashboard')
   }
   
   return(
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
   },
 
   btn: {
-    color: '#F9FE62',
-    backgroundColor: '#F9FE62',
+    color: '#FFD166',
+    backgroundColor: '#FFD166',
     marginHorizontal: 20,
     borderColor: '#1E1E1E',
     borderWidth: 1/2,
