@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
       marginTop: 20,
       width: 120,
       height: 120,
-      backgroundColor: '#F9FE62',
+      backgroundColor: '#FFD166',
       justifyContent: 'center',
       alignItems: 'center',
       borderRadius: 10,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
     },
     addButton: {
-      backgroundColor: '#F9FE62',
+      backgroundColor: '#FFD166',
       padding: 15,
       borderRadius: 5,
       alignItems: 'center',
