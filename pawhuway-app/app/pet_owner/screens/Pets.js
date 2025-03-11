@@ -1,6 +1,6 @@
 import React, {useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../src/lib/supabase';
 import { Alert } from 'react-native';
@@ -43,15 +43,28 @@ const Pets = () => {
       if (error) {
         console.error('Error fetching pets:', error);
       } else {
-        const petsWithImages = await Promise.all(data.map(async (pet) => {
-          const { publicUrl } = supabase.storage.from('pet-images').getPublicUrl(pet.image);
-          return { ...pet, imageUrl: publicUrl };
-        }));
+        // const petsWithImages = await Promise.all(data.map(async (pet) => {
+        //   const { publicUrl } = supabase.storage.from('pet-images').getPublicUrl(pet.image);
+        //   return { ...pet, imageUrl: publicUrl };
+        // }));
+
+        const petsWithImages = data.map((pet) => {
+          if (pet.image_path) { // Ensure the image path exists
+            const { data: { publicUrl } } = supabase
+              .storage
+              .from('pet-images') // Bucket name
+              .getPublicUrl(pet.image_path); // Use the stored image path
+    
+            return { ...pet, imageUrl: publicUrl };
+          }
+          return { ...pet, imageUrl: null }; // Handle missing images
+        });
+
         setPets(petsWithImages);
       }
     };
     fetchPets();
-  }, [pets]);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -66,7 +79,7 @@ const Pets = () => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.petCard}>
-            <Image source={{ uri: item.imageUrl }} style={styles.petImage} />
+            <Image source={{ uri: item.imageUrl || '../../../assets/pictures/paw-logo.png'}} style={styles.petImage} />
             <View style={styles.petInfo}>
               <Text>Name: {item.name}</Text>
               <Text>Age: {item.age}</Text>
@@ -75,7 +88,7 @@ const Pets = () => {
               <Text>Height: {item.height}</Text>
               <Text>Weight: {item.weight}</Text>
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.viewButton}>
+                <TouchableOpacity style={styles.viewButton} onPress={() => router.push(`/pet_owner/edit-pet?petId=${item.id}`)}>
                   <Text>Edit</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.viewButton} onPress={() => deletePet(item.id)}>
