@@ -8,7 +8,10 @@ import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
 
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 const AddPet = () => {
   const router = useRouter();
@@ -42,24 +45,60 @@ const AddPet = () => {
     });
 
     if (!result.canceled) {
-      setPetData({ ...petData, image: result.assets[0].uri });
+      const file = result.assets[0]; 
+      let quality = 1;
+      let newImg = file;
+      let fileInfo = await FileSystem.getInfoAsync(newImg.uri);
+
+      console.log(`Original Size: ${(fileInfo.size / 1024 / 1024).toFixed(2)}MB`);
+
+      while (fileInfo.size > MAX_FILE_SIZE && quality > 0.3) {
+        newImg = await ImageManipulator.manipulateAsync(
+          newImg.uri,
+          [],
+          { compress: quality, format: ImageManipulator.SaveFormat.JPEG }
+        );
+
+        console.log("after resize");
+        fileInfo = await FileSystem.getInfoAsync(newImg.uri);
+        console.log(`Compressed Size: ${(fileInfo.size / 1024 / 1024).toFixed(2)}MB at quality ${quality}`);
+
+        quality -= 0.05; 
+      }
+
+      if (fileInfo.size > MAX_FILE_SIZE) {
+        alert("Could not compress image below 50MB. Try selecting a smaller image.");
+        return;
+      }
+
+      setPetData({ ...petData, image: newImg.uri }); 
+    } else {
+      Alert.alert("Upload Failed", error.message);
     }
   };
 
   const [medicalFile, setMedicalFile] = useState(null);
 
   const pickFile = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*', // Accept all file types
-        copyToCacheDirectory: true,
-      });
+    const result = await DocumentPicker.getDocumentAsync({
+      type: 'application/pdf', 
+      copyToCacheDirectory: true,
+    });
   
-      if (result.canceled) return; // Do nothing if the user cancels
-  
-      setMedicalFile(result.assets[0]); // Store the selected file
-    } catch (error) {
-      console.error('File picking error:', error);
+    if (!result.canceled) {
+      const file = result.assets[0];
+      
+      if (file.mimeType !== "application/pdf") {
+        Alert.alert("Invalid Format", "Please select a PDF file.");
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        Alert.alert("File Too Large", "Please upload a PDF smaller than 50MB.");
+        return;
+      }
+
+      setMedicalFile(file); 
+      setPetData({ ...petData, medicalHistory: file.uri }); 
     }
   };
   
@@ -80,16 +119,70 @@ const AddPet = () => {
           type: petData.type,
           height: petData.height ? parseFloat(petData.height) : null,
           weight: petData.weight ? parseFloat(petData.weight) : null,
-          //medicalHistory: petData.medicalHistory,
-          //image: petData.image,
         },
-      ]);
+      ]).select();
     
       if (error) {
         Alert.alert('Error', error.message);
-      } else {
-        Alert.alert('Success', 'Pet added successfully!');
-      }
+        return;
+    }
+
+    const petId = data[0].id; 
+
+    let imageUrl = null;
+    let fileUrl = null;
+
+    const imgFileName = `${petId}-${petData.name}-${Date.now()}-${petData.image.split('/').pop()}`;
+    
+    console.log("after filename");
+
+    const { error: imgError } = await supabase.storage
+      .from("pet-images")
+      .upload(imgFileName, petData.image, { contentType: "image/jpeg"});
+
+    console.log("after upload");
+
+    if (!imgError) {
+        imageUrl = supabase.storage.from("pet-images").getPublicUrl(imgFileName).publicUrl;
+        setPetData({ ...petData, image: imageUrl });
+    } else {
+        Alert.alert("Image Upload Failed", imgError.message);
+    }
+
+    console.log("after after upload");
+    
+    const medFileName = `${petId}-${petData.name}-${Date.now()}-${medicalFile.name}`;
+    
+    const { error: fileError } = await supabase.storage
+        .from("pet-medical-history")
+        .upload(medFileName, {
+            uri: medicalFile.uri,
+            type: medicalFile.mimeType,
+            name: medFileName,
+        });
+
+    if (!fileError) {
+        fileUrl = supabase.storage.from("pet-medical-history").getPublicUrl(medFileName).publicUrl;
+        setPetData({ ...petData, medicalHistory: fileUrl });
+    } else {
+        Alert.alert("File Upload Failed", fileError.message);
+    }
+
+    console.log("after file upload");
+    
+    if (imageUrl || fileUrl) {
+        const { error: updateError } = await supabase.from('pets').update({
+            image: imageUrl,
+            medicalHistory: fileUrl,
+        }).eq('id', petId);
+
+        if (updateError) {
+            Alert.alert("Update Failed", updateError.message);
+        }
+    }
+
+    Alert.alert('Success', 'Pet added successfully!');
+    router.push("pet_owner/home");
   }
   
   return(
@@ -120,9 +213,9 @@ const AddPet = () => {
             <TouchableOpacity onPress={() => setShowPicker(true)}>
                 <TextInput
                     style={[styles.input, { marginBottom: 10}]}
-                    value={dob ? dob.toDateString() : ''}  // Show selected date or empty
-                    placeholder="Enter Date of Birth"  // Placeholder text
-                    editable={false} // Prevent manual input
+                    value={dob ? dob.toDateString() : ''} 
+                    placeholder="Enter Date of Birth"  
+                    editable={false} 
                 />
             </TouchableOpacity>
 
@@ -150,7 +243,7 @@ const AddPet = () => {
         </View>
         </View>
 
-        {['Type', 'Height', 'Weight'].map((field) => (
+        {['Type', 'Height (cm)', 'Weight (kg)'].map((field) => (
           <View key={field} style={styles.inputContainer}>
             <Text style={styles.label}>{field}:</Text>
             <TextInput
