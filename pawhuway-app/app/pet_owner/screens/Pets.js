@@ -17,16 +17,46 @@ const deletePet = async (petId) => {
       },
       {
         text: "Delete",
+        style: "destructive",
         onPress: async () => {
-          const { error } = await supabase.from('pets').delete().eq('id', petId);
-          if (error) {
-            console.error("Error deleting pet:", error);
-          } else {
-            console.log("SDKLFJSDKJFH");
-            setPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
+          try {
+            // Helper function to delete files from storage
+            const deleteFiles = async (bucket) => {
+              const { data, error } = await supabase.storage.from(bucket).list();
+              if (error) {
+                console.error(`Error fetching files from ${bucket}:`, error);
+                return;
+              }
+  
+              // Get all files that start with petId
+              const filesToDelete = data
+                .filter((file) => file.name.startsWith(`${petId}`))
+                .map((file) => file.name);
+  
+              if (filesToDelete.length) {
+                const { error: deleteError } = await supabase.storage
+                  .from(bucket)
+                  .remove(filesToDelete);
+                if (deleteError)
+                  console.error(`Error deleting from ${bucket}:`, deleteError);
+              }
+            };
+  
+            // Delete images & medical history files from storage
+            await Promise.all([
+              deleteFiles("pet-images"),
+              deleteFiles("pet-medical-history"),
+            ]);
+  
+            // Delete pet record from "pets" table
+            const { error } = await supabase.from("pets").delete().eq("id", petId);
+            if (error) console.error("Error deleting pet:", error);
+            else setPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
+  
+          } catch (err) {
+            console.error("Unexpected error deleting pet:", err);
           }
-        },
-        style: "destructive"
+        }
       }
     ]
   );
@@ -35,6 +65,58 @@ const deletePet = async (petId) => {
 const Pets = () => {
   const router = useRouter();
   const [pets, setPets] = useState([]);
+
+  const deletePet = async (petId) => {
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this pet?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const deleteFiles = async (bucket) => {
+                const { data, error } = await supabase.storage.from(bucket).list();
+                if (error) {
+                  console.error(`Error fetching files from ${bucket}:`, error);
+                  return;
+                }
+    
+                const filesToDelete = data
+                  .filter((file) => file.name.startsWith(`${petId}`))
+                  .map((file) => file.name);
+    
+                if (filesToDelete.length) {
+                  const { error: deleteError } = await supabase.storage
+                    .from(bucket)
+                    .remove(filesToDelete);
+                  if (deleteError)
+                    console.error(`Error deleting from ${bucket}:`, deleteError);
+                }
+              };
+    
+              await Promise.all([
+                deleteFiles("pet-images"),
+                deleteFiles("pet-medical-history"),
+              ]);
+    
+              const { error } = await supabase.from("pets").delete().eq("id", petId);
+              if (error) console.error("Error deleting pet:", error);
+              else setPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
+    
+            } catch (err) {
+              console.error("Unexpected error deleting pet:", err);
+            }
+          }
+        }
+      ]
+    );
+  };
 
   useEffect(() => {
     const fetchPets = async () => {
