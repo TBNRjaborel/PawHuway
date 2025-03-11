@@ -1,67 +1,10 @@
 import React, {useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../src/lib/supabase';
 import { Alert } from 'react-native';
-import * as Updates from 'expo-updates';
 import QRCodeGenerator from '../generate-qr';
-
-const deletePet = async (petId) => {
-  Alert.alert(
-    "Confirm Deletion",
-    "Are you sure you want to delete this pet?",
-    [
-      {
-        text: "Cancel",
-        style: "cancel"
-      },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            // Helper function to delete files from storage
-            const deleteFiles = async (bucket) => {
-              const { data, error } = await supabase.storage.from(bucket).list();
-              if (error) {
-                console.error(`Error fetching files from ${bucket}:`, error);
-                return;
-              }
-  
-              // Get all files that start with petId
-              const filesToDelete = data
-                .filter((file) => file.name.startsWith(`${petId}`))
-                .map((file) => file.name);
-  
-              if (filesToDelete.length) {
-                const { error: deleteError } = await supabase.storage
-                  .from(bucket)
-                  .remove(filesToDelete);
-                if (deleteError)
-                  console.error(`Error deleting from ${bucket}:`, deleteError);
-              }
-            };
-  
-            // Delete images & medical history files from storage
-            await Promise.all([
-              deleteFiles("pet-images"),
-              deleteFiles("pet-medical-history"),
-            ]);
-  
-            // Delete pet record from "pets" table
-            const { error } = await supabase.from("pets").delete().eq("id", petId);
-            if (error) console.error("Error deleting pet:", error);
-            else setPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
-  
-          } catch (err) {
-            console.error("Unexpected error deleting pet:", err);
-          }
-        }
-      }
-    ]
-  );
-};
 
 const Pets = () => {
   const router = useRouter();
@@ -128,21 +71,17 @@ const Pets = () => {
       if (error) {
         console.error('Error fetching pets:', error);
       } else {
-        // const petsWithImages = await Promise.all(data.map(async (pet) => {
-        //   const { publicUrl } = supabase.storage.from('pet-images').getPublicUrl(pet.image);
-        //   return { ...pet, imageUrl: publicUrl };
-        // }));
 
         const petsWithImages = data.map((pet) => {
-          if (pet.image_path) { // Ensure the image path exists
+          if (pet.image_path) { 
             const { data: { publicUrl } } = supabase
               .storage
-              .from('pet-images') // Bucket name
-              .getPublicUrl(pet.image_path); // Use the stored image path
+              .from('pet-images') 
+              .getPublicUrl(pet.image_path);
     
             return { ...pet, imageUrl: publicUrl };
           }
-          return { ...pet, imageUrl: null }; // Handle missing images
+          return { ...pet, imageUrl: null }; 
         });
 
         setPets(petsWithImages);
@@ -218,7 +157,7 @@ const Pets = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,  
+    flex: 1, 
     backgroundColor: '#FFFAD6',
   },
 
