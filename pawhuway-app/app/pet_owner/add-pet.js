@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, Platform, TouchableOpacity, Alert} from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Platform, TouchableOpacity, Alert} from 'react-native';
 import { supabase }from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
@@ -180,17 +179,27 @@ const AddPet = () => {
       </TouchableOpacity>
       
       <View style={styles.form}>
-        {['Name', 'Age'].map((field) => (
-          <View key={field} style={styles.inputContainer}>
-            <Text style={styles.label}>{field}:</Text>
+
+        <View key="Name" style={styles.inputContainer}>
+            <Text style={styles.label}>Name:</Text>
             <TextInput
               style={styles.input}
-              placeholder={`Enter ${field}`}
-              value={petData[field.toLowerCase().replace(/ /g, '')]}
-              onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
+              placeholder="Enter Name"
+              value={petData.name}
+              onChangeText={(text) => setPetData({ ...petData, name: text })}
             />
-          </View>
-        ))}
+        </View>
+
+        <View key="Age" style={styles.inputContainer}>
+            <Text style={styles.label}>Age:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Age"
+              value={petData.age.toString()}
+              keyboardType="numeric"
+              onChangeText={(text) => setPetData({ ...petData, age: text})}
+            />
+        </View>
 
         <Text style={styles.label}>Date of Birth:</Text>
             <TouchableOpacity onPress={() => setShowPicker(true)}>
@@ -226,12 +235,23 @@ const AddPet = () => {
         </View>
         </View>
 
-        {['Type', 'Height', 'Weight'].map((field) => (
+        <View key="Type" style={styles.inputContainer}>
+            <Text style={styles.label}>Type:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Type"
+              value={petData.type}
+              onChangeText={(text) => setPetData({ ...petData, type: text })}
+            />
+        </View>
+
+        {['Height', 'Weight'].map((field) => (
           <View key={field} style={styles.inputContainer}>
             <Text style={styles.label}>{field}:</Text>
             <TextInput
               style={styles.input}
               placeholder={`Enter ${field}`}
+              keyboardType='numeric'
               value={petData[field.toLowerCase().replace(/ /g, '')]}
               onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
             />

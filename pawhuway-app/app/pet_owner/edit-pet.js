@@ -6,6 +6,9 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -13,7 +16,6 @@ const EditPet = () => {
   const router = useRouter();
   const { petId } = useLocalSearchParams(); // Get petId from route params
   console.log("id", petId);
-  const [loading, setLoading] = useState(true);
 
   const [petData, setPetData] = useState({
     name: '',
@@ -37,7 +39,9 @@ const EditPet = () => {
               .select('id, name, age, birthDate, sex, type, height, weight')
               .eq('id', petId)
               .single();
-      
+            
+            console.log("", data );
+            
             if (error) {
               Alert.alert('Error', 'Failed to fetch pet details.');
               return;
@@ -56,7 +60,9 @@ const EditPet = () => {
           }
       
           fetchPetDetails();
-        }, [petId]);
+        }, []);
+
+        console.log("age", petData.age);
 
 
 
@@ -136,6 +142,7 @@ const EditPet = () => {
   
 
   const updatePet = async () => {
+    console.log("id", petId)
     console.log("petData:", petData);
     if (petData.name == "" || petData.type == "" || petData.sex == "" || petData.height == "" || petData.weight == "") {
         Alert.alert('Error', 'Please fill in all required fields.');
@@ -154,13 +161,13 @@ const EditPet = () => {
         weight: petData.weight,
       })
       .eq('id', petId);
-    
+
+      console.log("after update");
+
       if (error) {
         Alert.alert('Error', 'Failed to update pet details.', error.message);
         return;
     }
-
-    const petId = data[0].id; 
 
     if (petData.image) {
       const imgFileName = `${petId}-${petData.name}-${Date.now()}-${petData.image.split('/').pop()}`;
@@ -212,17 +219,27 @@ const EditPet = () => {
       </TouchableOpacity>
       
       <View style={styles.form}>
-        {['Name', 'Age'].map((field) => (
-          <View key={field} style={styles.inputContainer}>
-            <Text style={styles.label}>{field}:</Text>
+
+        <View key="Name" style={styles.inputContainer}>
+            <Text style={styles.label}>Name:</Text>
             <TextInput
               style={styles.input}
-              placeholder={`Enter ${field}`}
-              value={petData[field.toLowerCase().replace(/ /g, '')]}
-              onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
+              placeholder="Enter Name"
+              value={petData.name}
+              onChangeText={(text) => setPetData({ ...petData, name: text })}
             />
-          </View>
-        ))}
+        </View>
+
+        <View key="Age" style={styles.inputContainer}>
+            <Text style={styles.label}>Age:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Age"
+              value={petData.age.toString()}
+              keyboardType="numeric"
+              onChangeText={(text) => setPetData({ ...petData, age: text})}
+            />
+        </View>
 
         <Text style={styles.label}>Date of Birth:</Text>
             <TouchableOpacity onPress={() => setShowPicker(true)}>
@@ -258,16 +275,27 @@ const EditPet = () => {
         </View>
         </View>
 
-        {['Type', 'Height', 'Weight'].map((field) => (
-          <View key={field} style={styles.inputContainer}>
+        <View key="Type" style={styles.inputContainer}>
+            <Text style={styles.label}>Type:</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="Enter Type"
+                value={petData.type}
+                onChangeText={(text) => setPetData({ ...petData, type: text })}
+            />
+        </View>
+
+        {['Height', 'Weight'].map((field) => (
+            <View key={field} style={styles.inputContainer}>
             <Text style={styles.label}>{field}:</Text>
             <TextInput
-              style={styles.input}
-              placeholder={`Enter ${field}`}
-              value={petData[field.toLowerCase().replace(/ /g, '')]}
-              onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
+                style={styles.input}
+                placeholder={`Enter ${field}`}
+                keyboardType='numeric'
+                value={petData[field.toLowerCase().replace(/ /g, '')]}
+                onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
             />
-          </View>
+            </View>
         ))}
 
         <View style={styles.fileUploadContainer}>

@@ -200,7 +200,7 @@ const Pets = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,  // Ensures SafeAreaView takes full screen
+    flex: 1,  
     backgroundColor: '#FFFAD6',
   },
 
@@ -210,6 +210,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
+    paddingTop: 35,
   },
 
   logo: {
@@ -220,7 +221,8 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginLeft: 10,
+    marginLeft: 0,
+    marginTop: 5,
   },
 
   petCard: {
@@ -246,6 +248,7 @@ const styles = StyleSheet.create({
   viewButton: {
     padding: 8,
     marginRight: 5,
+    marginTop: 5,
     backgroundColor: '#FFF',
     borderRadius: 5,
     alignItems: 'center',
