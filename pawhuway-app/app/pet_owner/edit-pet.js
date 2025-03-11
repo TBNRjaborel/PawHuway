@@ -196,13 +196,9 @@ const EditPet = () => {
       }
     }
 
-    Alert.alert('Success', 'Pet updateed successfully!');
+    Alert.alert('Success', 'Pet updated successfully!');
     router.push("pet_owner/dashboard");
   };
-
-    if (loading) {
-        return <Text>Loading...</Text>;
-      }
   
   return(
     <SafeAreaView style={styles.container}>
