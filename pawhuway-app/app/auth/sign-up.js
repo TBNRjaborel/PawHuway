@@ -12,12 +12,27 @@ const SignUp = () => {
     async function signUpWithEmail(){
         // const { email, password } = form;
         
-        const { error } = await supabase.auth.signUp({email,password});
+        const { data,error } = await supabase.auth.signUp({email,password});
         if(error)
           Alert.alert(error.message);
         else {
           Alert.alert('Click the verification link we sent to your email to finish creating your account.')
-          router.push('/pet_owner/home')
+          // router.push('/pet_owner/home')
+        }
+
+        const user = data?.user;
+
+  // Insert user details into the `profiles` table
+        if(user){
+          const { error: profileError } = await supabase.from('user_accounts').insert([{
+              id: user.id,
+              first_name: '',
+              last_name: '',
+              email,
+          }]);
+          if (profileError) {
+            console.error("Error inserting profile data:", profileError.message);
+          }
         }
     }
     return(
