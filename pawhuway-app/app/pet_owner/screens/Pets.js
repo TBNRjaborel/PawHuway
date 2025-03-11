@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../../src/lib/supabase';
 import { Alert } from 'react-native';
 import * as Updates from 'expo-updates';
+import QRCodeGenerator from '../generate-qr';
 
 const deletePet = async (petId) => {
   Alert.alert(
@@ -35,6 +36,8 @@ const deletePet = async (petId) => {
 const Pets = () => {
   const router = useRouter();
   const [pets, setPets] = useState([]);
+  const [qrVisible, setQrVisible] = useState(false);
+  const [qrValue, setQrValue] = useState('');
 
   useEffect(() => {
     const fetchPets = async () => {
@@ -66,6 +69,11 @@ const Pets = () => {
     fetchPets();
   }, []);
 
+  const handleGenerateQR = (pet) => {
+    setQrValue(JSON.stringify(pet)); // Encode pet data in QR code
+    setQrVisible(true);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -94,11 +102,21 @@ const Pets = () => {
                 <TouchableOpacity style={styles.viewButton} onPress={() => deletePet(item.id)}>
                   <Text>Delete</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.viewButton} onPress={() => handleGenerateQR(item)}>
+                  <Text>Generate QR Code</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
         )}
       />
+
+      <QRCodeGenerator 
+              value={qrValue} 
+              visible={qrVisible} 
+              onClose={() => setQrVisible(false)} 
+      />
+
       <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/add-pet')}>
         <Text style={styles.btnText}>+</Text>
       </TouchableOpacity>
