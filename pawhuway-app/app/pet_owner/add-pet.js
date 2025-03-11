@@ -105,7 +105,7 @@ const AddPet = () => {
 
   async function CreatePet(){
     console.log("petData:", petData);
-    if (petData.name == "" || petData.type == "") {
+    if (petData.name == "" || petData.type == "" || petData.sex == "" || petData.height == "" || petData.weight == "") {
         Alert.alert('Error', 'Please fill in all required fields.');
         return;
       }
@@ -117,8 +117,9 @@ const AddPet = () => {
           birthDate: dob ? dob.toISOString().split('T')[0] : null, // Formats the date
           sex: petData.sex,
           type: petData.type,
-          height: petData.height ? parseFloat(petData.height) : null,
-          weight: petData.weight ? parseFloat(petData.weight) : null,
+          height: petData.height,
+          weight: petData.weight,
+
         },
       ]).select();
     
@@ -129,60 +130,42 @@ const AddPet = () => {
 
     const petId = data[0].id; 
 
-    let imageUrl = null;
-    let fileUrl = null;
+    if (petData.image) {
+      const imgFileName = `${petId}-${petData.name}-${Date.now()}-${petData.image.split('/').pop()}`;
 
-    const imgFileName = `${petId}-${petData.name}-${Date.now()}-${petData.image.split('/').pop()}`;
-    
-    console.log("after filename");
-
-    const { error: imgError } = await supabase.storage
-      .from("pet-images")
-      .upload(imgFileName, petData.image, { contentType: "image/jpeg"});
-
-    console.log("after upload");
-
-    if (!imgError) {
-        imageUrl = supabase.storage.from("pet-images").getPublicUrl(imgFileName).publicUrl;
-        setPetData({ ...petData, image: imageUrl });
-    } else {
-        Alert.alert("Image Upload Failed", imgError.message);
+      const { error: imgError } = await supabase.storage
+        .from("pet-images")
+        .upload(imgFileName, petData.image, { contentType: "image/jpeg"});
+  
+      if (!imgError) {
+          imageUrl = supabase.storage.from("pet-images").getPublicUrl(imgFileName).publicUrl;
+          setPetData({ ...petData, image: imageUrl });
+      } else {
+          Alert.alert("Image Upload Failed", imgError.message);
+      }
     }
-
-    console.log("after after upload");
     
-    const medFileName = `${petId}-${petData.name}-${Date.now()}-${medicalFile.name}`;
+    if (petData.medicalHistory) {
+      const medFileName = `${petId}-${petData.name}-${Date.now()}-${medicalFile.name}`;
     
-    const { error: fileError } = await supabase.storage
-        .from("pet-medical-history")
-        .upload(medFileName, {
-            uri: medicalFile.uri,
-            type: medicalFile.mimeType,
-            name: medFileName,
-        });
+      const { error: fileError } = await supabase.storage
+          .from("pet-medical-history")
+          .upload(medFileName, {
+              uri: medicalFile.uri,
+              type: medicalFile.mimeType,
+              name: medFileName,
+          });
 
-    if (!fileError) {
-        fileUrl = supabase.storage.from("pet-medical-history").getPublicUrl(medFileName).publicUrl;
-        setPetData({ ...petData, medicalHistory: fileUrl });
-    } else {
-        Alert.alert("File Upload Failed", fileError.message);
-    }
-
-    console.log("after file upload");
-    
-    if (imageUrl || fileUrl) {
-        const { error: updateError } = await supabase.from('pets').update({
-            image: imageUrl,
-            medicalHistory: fileUrl,
-        }).eq('id', petId);
-
-        if (updateError) {
-            Alert.alert("Update Failed", updateError.message);
-        }
+      if (!fileError) {
+          fileUrl = supabase.storage.from("pet-medical-history").getPublicUrl(medFileName).publicUrl;
+          setPetData({ ...petData, medicalHistory: fileUrl });
+      } else {
+          Alert.alert("File Upload Failed", fileError.message);
+      }
     }
 
     Alert.alert('Success', 'Pet added successfully!');
-    router.push("pet_owner/home");
+    router.push("pet_owner/dashboard");
   }
   
   return(
@@ -243,7 +226,7 @@ const AddPet = () => {
         </View>
         </View>
 
-        {['Type', 'Height (cm)', 'Weight (kg)'].map((field) => (
+        {['Type', 'Height', 'Weight'].map((field) => (
           <View key={field} style={styles.inputContainer}>
             <Text style={styles.label}>{field}:</Text>
             <TextInput
@@ -272,7 +255,7 @@ const AddPet = () => {
           <Text style={styles.addButtonText}>Add Pet</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.cancelButton}>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => router.push('/pet_owner/dashboard')}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>

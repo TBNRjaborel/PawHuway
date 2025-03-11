@@ -29,7 +29,8 @@
     "react-native-url-polyfill": "^2.0.0",
     "expo-system-ui": "~4.0.8",
     "expo-image-manipulator": "~13.0.6",
-    "react-native-vector-icons": "^10.2.0"
+    "react-native-vector-icons": "^10.2.0",
+    "expo-updates": "~0.27.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
