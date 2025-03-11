@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
-import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Platform, TouchableOpacity, Alert} from 'react-native';
-import { supabase }from '../../src/lib/supabase';
-import { Stack } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert } from 'react-native';
+import { supabase } from '../../src/lib/supabase';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -12,8 +12,11 @@ import * as FileSystem from "expo-file-system";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
-const AddPet = () => {
+const EditPet = () => {
   const router = useRouter();
+  const { petId } = useLocalSearchParams(); // Get petId from route params
+  console.log("id", petId);
+
   const [petData, setPetData] = useState({
     name: '',
     age: '',
@@ -28,9 +31,45 @@ const AddPet = () => {
 
     const [dob, setDob] = useState(null);
     const [showPicker, setShowPicker] = useState(false);
+
+    useEffect(() => {
+        async function fetchPetDetails() {
+            const { data, error } = await supabase
+              .from('pets')
+              .select('id, name, age, birthDate, sex, type, height, weight')
+              .eq('id', petId)
+              .single();
+            
+            console.log("", data );
+            
+            if (error) {
+              Alert.alert('Error', 'Failed to fetch pet details.');
+              return;
+            }
+      
+            const { publicUrl } = supabase.storage.from('pet-images').getPublicUrl(`${petId}.jpg`);
+      
+            setPetData({
+              ...data,
+              birthDate: data.birthDate || '',
+              imageUrl: publicUrl || null,
+            });
+      
+            setDob(data.birthDate ? new Date(data.birthDate) : null);
+            setLoading(false);
+          }
+      
+          fetchPetDetails();
+        }, []);
+
+        console.log("age", petData.age);
+
+
+
     const onChange = (event, selectedDate) => {
         if (selectedDate) {
             setDob(selectedDate);
+            setPetData({ ...petData, birthDate: selectedDate.toISOString().split('T')[0] });
         }
         setShowPicker(false); 
     };
@@ -102,32 +141,33 @@ const AddPet = () => {
   };
   
 
-  async function CreatePet(){
+  const updatePet = async () => {
+    console.log("id", petId)
     console.log("petData:", petData);
     if (petData.name == "" || petData.type == "" || petData.sex == "" || petData.height == "" || petData.weight == "") {
         Alert.alert('Error', 'Please fill in all required fields.');
         return;
       }
     
-      const { data, error } = await supabase.from('pets').insert([
-        {
-          name: petData.name,
-          age: petData.age ? parseInt(petData.age) : null,
-          birthDate: dob ? dob.toISOString().split('T')[0] : null, // Formats the date
-          sex: petData.sex,
-          type: petData.type,
-          height: petData.height,
-          weight: petData.weight,
+      const { error } = await supabase
+      .from('pets')
+      .update({
+        name: petData.name,
+        age: petData.age ? parseInt(petData.age) : null,
+        birthDate: dob ? dob.toISOString().split('T')[0] : null,
+        sex: petData.sex,
+        type: petData.type,
+        height: petData.height,
+        weight: petData.weight,
+      })
+      .eq('id', petId);
 
-        },
-      ]).select();
-    
+      console.log("after update");
+
       if (error) {
-        Alert.alert('Error', error.message);
+        Alert.alert('Error', 'Failed to update pet details.', error.message);
         return;
     }
-
-    const petId = data[0].id; 
 
     if (petData.image) {
       const imgFileName = `${petId}-${petData.name}-${Date.now()}-${petData.image.split('/').pop()}`;
@@ -163,9 +203,9 @@ const AddPet = () => {
       }
     }
 
-    Alert.alert('Success', 'Pet added successfully!');
+    Alert.alert('Success', 'Pet updated successfully!');
     router.push("pet_owner/dashboard");
-  }
+  };
   
   return(
     <SafeAreaView style={styles.container}>
@@ -238,24 +278,24 @@ const AddPet = () => {
         <View key="Type" style={styles.inputContainer}>
             <Text style={styles.label}>Type:</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Enter Type"
-              value={petData.type}
-              onChangeText={(text) => setPetData({ ...petData, type: text })}
+                style={styles.input}
+                placeholder="Enter Type"
+                value={petData.type}
+                onChangeText={(text) => setPetData({ ...petData, type: text })}
             />
         </View>
 
         {['Height', 'Weight'].map((field) => (
-          <View key={field} style={styles.inputContainer}>
+            <View key={field} style={styles.inputContainer}>
             <Text style={styles.label}>{field}:</Text>
             <TextInput
-              style={styles.input}
-              placeholder={`Enter ${field}`}
-              keyboardType='numeric'
-              value={petData[field.toLowerCase().replace(/ /g, '')]}
-              onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
+                style={styles.input}
+                placeholder={`Enter ${field}`}
+                keyboardType='numeric'
+                value={petData[field.toLowerCase().replace(/ /g, '')]}
+                onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
             />
-          </View>
+            </View>
         ))}
 
         <View style={styles.fileUploadContainer}>
@@ -271,8 +311,8 @@ const AddPet = () => {
         )}
         </View>
 
-        <TouchableOpacity style={styles.addButton} onPress={CreatePet}>
-          <Text style={styles.addButtonText}>Add Pet</Text>
+        <TouchableOpacity style={styles.addButton} onPress={updatePet}>
+          <Text style={styles.addButtonText}>Update Pet</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.cancelButton} onPress={() => router.push('/pet_owner/dashboard')}>
@@ -404,4 +444,4 @@ const styles = StyleSheet.create({
       },
   });
 
-export default AddPet;
+export default EditPet;

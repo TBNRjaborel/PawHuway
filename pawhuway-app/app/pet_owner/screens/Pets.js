@@ -1,10 +1,99 @@
-import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import React, {useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList } from 'react-native';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
+import { supabase } from '../../../src/lib/supabase';
+import { Alert } from 'react-native';
+import QRCodeGenerator from '../generate-qr';
 
 const Pets = () => {
   const router = useRouter();
+  const [pets, setPets] = useState([]);
+  const [qrVisible, setQrVisible] = useState(false);
+  const [qrValue, setQrValue] = useState('');
+
+  const deletePet = async (petId) => {
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this pet?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const deleteFiles = async (bucket) => {
+                const { data, error } = await supabase.storage.from(bucket).list();
+                if (error) {
+                  console.error(`Error fetching files from ${bucket}:`, error);
+                  return;
+                }
+    
+                const filesToDelete = data
+                  .filter((file) => file.name.startsWith(`${petId}`))
+                  .map((file) => file.name);
+    
+                if (filesToDelete.length) {
+                  const { error: deleteError } = await supabase.storage
+                    .from(bucket)
+                    .remove(filesToDelete);
+                  if (deleteError)
+                    console.error(`Error deleting from ${bucket}:`, deleteError);
+                }
+              };
+    
+              await Promise.all([
+                deleteFiles("pet-images"),
+                deleteFiles("pet-medical-history"),
+              ]);
+    
+              const { error } = await supabase.from("pets").delete().eq("id", petId);
+              if (error) console.error("Error deleting pet:", error);
+              else setPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
+    
+            } catch (err) {
+              console.error("Unexpected error deleting pet:", err);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  useEffect(() => {
+    const fetchPets = async () => {
+      const { data, error } = await supabase.from('pets').select('id, name, age, sex, type, height, weight');
+      console.log("fetched: ", data);
+      if (error) {
+        console.error('Error fetching pets:', error);
+      } else {
+
+        const petsWithImages = data.map((pet) => {
+          if (pet.image_path) { 
+            const { data: { publicUrl } } = supabase
+              .storage
+              .from('pet-images') 
+              .getPublicUrl(pet.image_path);
+    
+            return { ...pet, imageUrl: publicUrl };
+          }
+          return { ...pet, imageUrl: null }; 
+        });
+
+        setPets(petsWithImages);
+      }
+    };
+    fetchPets();
+  }, []);
+
+  const handleGenerateQR = (pet) => {
+    setQrValue(JSON.stringify(pet)); // Encode pet data in QR code
+    setQrVisible(true);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -14,8 +103,45 @@ const Pets = () => {
         <Image source={require('../../../assets/pictures/paw-logo.png')} style={styles.logo} resizeMode='stretch' alt="logo" />
         <Text style={styles.title}>PawHuway</Text>
       </View>
-      <View style={styles.body}>
+      <FlatList
+        data={pets}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.petCard}>
+            <Image source={{ uri: item.imageUrl || '../../../assets/pictures/paw-logo.png'}} style={styles.petImage} />
+            <View style={styles.petInfo}>
+              <Text>Name: {item.name}</Text>
+              <Text>Age: {item.age}</Text>
+              <Text>Sex: {item.sex}</Text>
+              <Text>Type: {item.type}</Text>
+              <Text>Height: {item.height}</Text>
+              <Text>Weight: {item.weight}</Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.viewButton} onPress={() => router.push(`/pet_owner/edit-pet?petId=${item.id}`)}>
+                  <Text>Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.viewButton} onPress={() => deletePet(item.id)}>
+                  <Text>Delete</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.viewButton} onPress={() => handleGenerateQR(item)}>
+                  <Text>Generate QR Code</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+      />
 
+      <QRCodeGenerator 
+              value={qrValue} 
+              visible={qrVisible} 
+              onClose={() => setQrVisible(false)} 
+      />
+
+      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/add-pet')}>
+        <Text style={styles.btnText}>+</Text>
+      </TouchableOpacity>
+      {/* <View style={styles.body}>
         <View style={styles.petList}>
           <Text style={styles.petListText}>List of Pets</Text>
         </View>
@@ -24,15 +150,14 @@ const Pets = () => {
             <Text style={styles.btn_sign_up}>Add a pet</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </View> */}
     </SafeAreaView>
-
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,  // Ensures SafeAreaView takes full screen
+    flex: 1, 
     backgroundColor: '#FFFAD6',
   },
 
@@ -41,6 +166,8 @@ const styles = StyleSheet.create({
     height: 80,
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 10,
+    paddingTop: 35,
   },
 
   logo: {
@@ -49,6 +176,57 @@ const styles = StyleSheet.create({
   },
 
   title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginLeft: 0,
+    marginTop: 5,
+  },
+
+  petCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFD166',
+    margin: 10,
+    padding: 10,
+    borderRadius: 10,
+  },
+  petImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  petInfo: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  viewButton: {
+    padding: 8,
+    marginRight: 5,
+    marginTop: 5,
+    backgroundColor: '#FFF',
+    borderRadius: 5,
+    alignItems: 'center',
+    minWidth: 60, 
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#FFD166',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  btnText: {
     fontSize: 24,
     fontWeight: 'bold',
   },
