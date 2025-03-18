@@ -4,6 +4,7 @@ import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, Touchab
 import { supabase }from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 const LandingPage = () => {
@@ -23,42 +24,45 @@ const LandingPage = () => {
 
     
     return(
-        <SafeAreaView style = {styles.container}>
-            <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar hidden={true} />
-            <View style = {styles.container}>
-                <View>
-                    <Image source={require('../../assets/pictures/blank-profile-pic.png')} style = {styles.image}/>
+        <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
+
+            <SafeAreaView style = {styles.container}>
+                <Stack.Screen options={{ headerShown: false }} />
+                <StatusBar hidden={true} />
+                <View style = {styles.container}>
+                    <View>
+                        <Image source={require('../../assets/pictures/blank-profile-pic.png')} style = {styles.image}/>
+                    </View>
+                    <View>
+                        <Text style = {styles.name}>
+                            GABRIEL PAUL MAGDUGO
+                        </Text>
+                    </View>
+                    <View style = {styles.options}>
+                        <View>
+                            <TouchableOpacity style = {styles.btn} >
+                                <Text style = {styles.btn_txt}>Profiles</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View>
+                            <TouchableOpacity style = {styles.btn} onPress={edit} >
+                                <Text style = {styles.btn_txt}>Account Details</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View>
+                            <TouchableOpacity style = {styles.btn} >
+                                <Text style = {styles.btn_txt}>Help & Support</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View>
+                            <TouchableOpacity style = {styles.btn} onPress={signOut}>
+                                <Text style = {styles.btn_txt}>Log Out</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 </View>
-                <View>
-                    <Text style = {styles.name}>
-                        GABRIEL PAUL MAGDUGO
-                    </Text>
-                </View>
-                <View style = {styles.options}>
-                    <View>
-                        <TouchableOpacity style = {styles.btn} >
-                            <Text style = {styles.btn_txt}>Profiles</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View>
-                        <TouchableOpacity style = {styles.btn} onPress={edit} >
-                            <Text style = {styles.btn_txt}>Account Details</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View>
-                        <TouchableOpacity style = {styles.btn} >
-                            <Text style = {styles.btn_txt}>Help & Support</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View>
-                        <TouchableOpacity style = {styles.btn} onPress={signOut}>
-                            <Text style = {styles.btn_txt}>Log Out</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LinearGradient>
 
         
     );
@@ -67,9 +71,12 @@ const LandingPage = () => {
 };
 
 const styles = StyleSheet.create({
-    container: {
+    gradient:{
         flex: 1,
-        backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
+    },
+    container: {
+        // flex: 1,
+        // backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
     },
     image: {
         width: 175,

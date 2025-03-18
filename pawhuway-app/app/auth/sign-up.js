@@ -4,6 +4,7 @@ import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, Touchab
 import { supabase }from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import {useRouter} from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -36,6 +37,8 @@ const SignUp = () => {
         }
     }
     return(
+      <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
+
         <SafeAreaView style = {styles.container}>
           <Stack.Screen options={{ headerShown: false }} />
           <View>
@@ -88,14 +91,18 @@ const SignUp = () => {
             </View>
           </View>
         </SafeAreaView>
+      </LinearGradient>
     
-      );
+    );
 };
 
 const styles = StyleSheet.create({
-    container: {
+    gradient:{
       flex: 1,
-      backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
+    },
+    container: {
+      // flex: 1,
+      // backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
     },
     logo: {
       width: 350,
@@ -139,13 +146,12 @@ const styles = StyleSheet.create({
       marginHorizontal: 50,
       // paddingHorizontal: -90,
       paddingVertical: 20,
-      borderColor: '#808080',
-      borderWidth: 1/2,
+      // borderColor: '#808080',
+      // borderWidth: 1/2,
     },
   
     btn: {
-      color: '#F9FE62',
-      backgroundColor: '#F9FE62',
+      backgroundColor: '#B6F2D1',
       marginHorizontal: 20,
       borderColor: '#1E1E1E',
       borderWidth: 1/2,
@@ -171,7 +177,7 @@ const styles = StyleSheet.create({
     toSignIn: {
       textAlign: 'center',
       marginTop: 10,
-      color: '#0000FF'
+      color: '#85D1DB'
     },
     
 });

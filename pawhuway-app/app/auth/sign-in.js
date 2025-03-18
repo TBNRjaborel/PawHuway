@@ -4,6 +4,7 @@ import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, Touchab
 import { supabase }from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 
@@ -22,62 +23,66 @@ const SignIn = () => {
     if(error)
       Alert.alert(error.message);
     else
-      router.push('/pet_owner/dashboard')
+      router.push('/components/landing-page')
   }
   
   return(
-    <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar hidden={true} />
-      <View style={styles.container}>
-        <View>
-          <Image source={require('../../assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
-        </View>
-
-        <View style = {styles.form}>
-          <View style = {styles.input}>
-            <Text style = {styles.inputLabel}>Email Address</Text>
-            <TextInput style ={styles.inputControl}
-              value = {email}
-              onChangeText = {setEmail}
-              placeholder='Enter your email address'
-              />
-          </View>
-
-          <View style = {styles.input}>
-            <Text style = {styles.inputLabel}>Password</Text>
-            <TextInput style ={styles.inputControl}
-              value = {password}
-              onChangeText = {setPassword}
-              placeholder='Enter your password'
-              secureTextEntry
-              />
-          </View>
-
+    <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StatusBar hidden={true} />
+        <View style={styles.container}>
           <View>
-            {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
-            <TouchableOpacity style = {styles.btn} onPress={signInWithEmail}>
-              <Text style = {styles.btn_txt}>Login</Text>
-            </TouchableOpacity>
-
+            <Image source={require('../../assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
           </View>
-          <View>
-            <TouchableOpacity onPress={() => router.push('/auth/sign-up')}>
-              <Text style = {styles.toSignUp}>Don't have an account?</Text>
-            </TouchableOpacity>
+          <View style = {styles.form}>
+            <View style = {styles.input}>
+              <Text style = {styles.inputLabel}>Email Address</Text>
+              <TextInput style ={styles.inputControl}
+                value = {email}
+                onChangeText = {setEmail}
+                placeholder='Enter your email address'
+                />
+            </View>
+
+            <View style = {styles.input}>
+              <Text style = {styles.inputLabel}>Password</Text>
+              <TextInput style ={styles.inputControl}
+                value = {password}
+                onChangeText = {setPassword}
+                placeholder='Enter your password'
+                secureTextEntry
+                />
+            </View>
+
+            <View>
+              {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
+              <TouchableOpacity style = {styles.btn} onPress={signInWithEmail}>
+                <Text style = {styles.btn_txt}>Login</Text>
+              </TouchableOpacity>
+
+            </View>
+            <View>
+              <TouchableOpacity onPress={() => router.push('/auth/sign-up')}>
+                <Text style = {styles.toSignUp}>Don't have an account?</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
 
   );
 };
 
 
 const styles = StyleSheet.create({
-  container: {
+  gradient: {
     flex: 1,
-    backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
+  },
+  container: {
+    // flex: 1,
+    // backgroundColor: '#C9FDF2', // 🟢 Add background color to the entire screen
   },
   logo: {
     width: 350,
@@ -94,7 +99,7 @@ const styles = StyleSheet.create({
     borderWidth: 1/2,
     paddingLeft: 15,
     marginBottom: 20,
-    borderRadius: 10,
+    borderRadius: 20,
     // alignSelf: 'center',
     
 
@@ -111,19 +116,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
     marginHorizontal: 50,
-    // paddingHorizontal: -90,
+    paddingHorizontal: -90,
     paddingVertical: 20,
-    borderColor: '#808080',
-    borderWidth: 1/2,
+    // borderColor: '#808080',
+    // borderWidth: 1,
   },
 
   btn: {
-    color: '#FFD166',
-    backgroundColor: '#FFD166',
+    color: '#B6F2D1',
+    backgroundColor: '#B6F2D1',
     marginHorizontal: 20,
     borderColor: '#1E1E1E',
     borderWidth: 1/2,
-    borderRadius: 5,
+    borderRadius: 20,
     paddingVertical: 8
   },
 
@@ -134,7 +139,7 @@ const styles = StyleSheet.create({
   toSignUp: {
     textAlign: 'center',
     marginTop: 10,
-    color: '#0000FF'
+    color: '#85D1DB'
   },
   
 });
