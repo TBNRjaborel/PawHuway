@@ -5,10 +5,14 @@ import { supabase }from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+// import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
+import { Ionicons } from "@expo/vector-icons";
 
 
 const LandingPage = () => {
     const router = useRouter();
+    const [image, setImage] = useState(null);
     async function signOut() {
         const { error } = await supabase.auth.signOut()
         if(error)
@@ -16,6 +20,31 @@ const LandingPage = () => {
         else
             router.push('/auth/sign-in')
     }
+
+    async function profilePic() {
+        
+        // const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        // if (status !== "granted") {
+        //     Alert.alert("Permission Denied", "We need camera roll permission to proceed.");
+        // return;
+        // }
+
+        // const result = await ImagePicker.launchImageLibraryAsync({
+        //     mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only allow images
+        //     allowsEditing: true, // Enable cropping
+        //     aspect: [4, 3], // Crop ratio
+        //     quality: 1, // Full quality
+        // });
+        const result = await DocumentPicker.getDocumentAsync({
+            type: "image/*", // Allow image files only
+            copyToCacheDirectory: true,
+        });
+
+        if (!result.canceled) {
+        setImage(result.assets[0].uri); // Save image URI
+        }
+
+    };
 
     const edit = () => {
         router.push('/auth/edit-profile')
@@ -31,7 +60,10 @@ const LandingPage = () => {
                 <StatusBar hidden={true} />
                 <View style = {styles.container}>
                     <View>
-                        <Image source={require('../../assets/pictures/blank-profile-pic.png')} style = {styles.image}/>
+                        <Image source={image ? { uri: image } : require('../../assets/pictures/blank-profile-pic.png')}style={styles.image}/>
+                        <TouchableOpacity style = {styles.pickImg} onPress={profilePic}>
+                            <Ionicons name="camera" size={25}/>
+                        </TouchableOpacity>
                     </View>
                     <View>
                         <Text style = {styles.name}>
@@ -106,7 +138,15 @@ const styles = StyleSheet.create({
     options: {
         marginTop: 50,
         gap: 25,
-    }
+    },
+    pickImg:{
+        paddingLeft: 100,
+        alignSelf:'center',
+        position: 'absolute',
+        marginTop: 290,
+        
+
+    },
 
 });
 
