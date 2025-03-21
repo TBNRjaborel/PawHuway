@@ -1,5 +1,15 @@
 import { Redirect } from "expo-router";
+import { useFonts } from 'expo-font';
 
 export default function Index() {
-  return <Redirect href="/components/landing-page" />;
+  const [fontsLoaded] = useFonts({
+    'LEMON MILK Medium': require('../assets/fonts/lemon_milk.otf'),
+  });
+
+  if (!fontsLoaded) {
+    return null; // Prevent rendering until fonts are loaded
+  };
+
+
+  return <Redirect href="/auth/create-profile" />;
 }
