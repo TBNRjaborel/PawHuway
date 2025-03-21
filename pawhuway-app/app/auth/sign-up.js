@@ -18,23 +18,10 @@ const SignUp = () => {
           Alert.alert(error.message);
         else {
           Alert.alert('Click the verification link we sent to your email to finish creating your account.')
-          // router.push('/pet_owner/home')
+          router.push('/auth/create-profile')
         }
 
-        const user = data?.user;
-
-  // Insert user details into the `profiles` table
-        if(user){
-          const { error: profileError } = await supabase.from('user_accounts').insert([{
-              id: user.id,
-              first_name: '',
-              last_name: '',
-              email,
-          }]);
-          if (profileError) {
-            console.error("Error inserting profile data:", profileError.message);
-          }
-        }
+        
     }
     return(
       <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
