@@ -87,7 +87,10 @@ const LandingPage = () => {
 
     const edit = () => {
         router.push('/auth/edit-profile')
-        
+    };
+
+    const help = () => {
+        router.push('/components/help-page')
     };
 
     
@@ -119,7 +122,7 @@ const LandingPage = () => {
                         </View>
                         <View>
                             <TouchableOpacity style = {styles.btn} >
-                                <Text style = {styles.btn_txt}>Help & Support</Text>
+                                <Text style = {styles.btn_txt} onPress={help}>Help & Support</Text>
                             </TouchableOpacity>
                         </View>
                         <View>

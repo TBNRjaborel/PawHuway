@@ -4,6 +4,10 @@ import { useFonts } from 'expo-font';
 export default function Index() {
   const [fontsLoaded] = useFonts({
     'LEMON MILK Medium': require('../assets/fonts/lemon_milk.otf'),
+    'Poppins': require('../assets/fonts/Poppins-Black.ttf'),
+    'Poppins Light': require('../assets/fonts/Poppins-Light.ttf'),
+    'Red Display': require('../assets/fonts/red_display_bold.ttf'),
+    'Kanit Medium': require('../assets/fonts/Kanit-Medium.ttf'),
   });
 
   if (!fontsLoaded) {
@@ -11,5 +15,5 @@ export default function Index() {
   };
 
 
-  return <Redirect href="/auth/edit-profile" />;
+  return <Redirect href="/components/help-page" />;
 }
