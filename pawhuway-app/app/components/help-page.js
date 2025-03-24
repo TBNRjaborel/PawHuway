@@ -1,0 +1,112 @@
+import React, { useState } from 'react'
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
+import { supabase }from '../../src/lib/supabase';
+import { Stack,useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const ticketPage = () => {
+    const [tickets, setTicketId] = useState('')
+    const [subject,setSubject] = useState('');
+    const [body, setBody] = useState('');
+    const [userId, setUserId] = useState(null);
+    const router = useRouter();
+
+
+    return(
+        <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
+            <SafeAreaView>
+                <Stack.Screen options={{ headerShown: false }} />
+                <StatusBar hidden={true} />
+                <View>
+                    <Text style = {styles.yourTickets}>YOUR TICKETS</Text>
+                    <Text style = {styles.subtext}>Send us a message</Text>
+                </View>
+                <View style = {styles.addTicket}>
+                    <TouchableOpacity style = {styles.newbtn}>
+                        <Text style = {styles.newText}>+ New</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style = {styles.container}>
+                    <TouchableOpacity>
+                        <View style = {styles.tickets}>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity>
+                        <View style = {styles.tickets}>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity>
+                        <View style = {styles.tickets}>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity>
+                        <View style = {styles.tickets}>
+                        </View>
+                    </TouchableOpacity>
+                    
+                    
+
+
+                </View>
+            </SafeAreaView>
+        </LinearGradient>
+
+    )
+}
+
+
+const styles = StyleSheet.create({
+    gradient:{
+        flex: 1,
+    },
+    yourTickets:{
+        fontFamily: 'Kanit Medium',
+        fontSize: 40,
+        marginLeft: 20,
+        marginTop: 70,
+        // position: 'absolute',
+    },
+    subtext:{
+        fontFamily: 'Poppins Light',
+        marginLeft: 25,
+        fontSize: 18,
+    },
+    tickets:{
+        backgroundColor: '#85D1DB',
+        height: 120,
+        width: '90%',
+        alignSelf: 'center',
+        // marginTop: 40,
+        borderRadius: 20,
+        borderColor: '#FFFFFF',
+        borderWidth: 2,
+        marginBottom: 15,
+    },
+    container:{
+        marginTop: 40,
+    },
+    addTicket:{
+        position: 'absolute',
+        alignSelf: 'flex-end',
+        padding: 10,
+        marginVertical: 80,
+        right: 30,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 10,
+        
+
+    },
+    newText:{
+        fontFamily: 'Poppins Light',
+        textAlign: 'center',
+    }
+
+
+
+
+
+})
+
+export default ticketPage
+
