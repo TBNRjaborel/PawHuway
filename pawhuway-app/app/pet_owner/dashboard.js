@@ -6,7 +6,7 @@ import { Stack } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 
 // Screens
-import Pets from './screens/Pets';
+import Pets from './screens/Pets/Pets';
 import SearchClinic from './screens/Search_Clinic';
 import Calendar from './screens/Calendar';
 import Profile from './screens/Profile';

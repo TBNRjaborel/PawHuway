@@ -3,7 +3,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { Modal, View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 
 const QRCodeGenerator = ({ value, visible, onClose }) => {
-    const logoFromFile = require('../../assets/pictures/paw-logo.png');
+    const logoFromFile = require('../../../../assets/pictures/paw-logo.png');
 
     return (
         <Modal
