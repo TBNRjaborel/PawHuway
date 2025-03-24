@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
 import { supabase }from '../../src/lib/supabase';
@@ -22,29 +22,68 @@ const LandingPage = () => {
     }
 
     async function profilePic() {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: "image/*", // Allow image files only
+                copyToCacheDirectory: true,
+            });
         
-        // const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        // if (status !== "granted") {
-        //     Alert.alert("Permission Denied", "We need camera roll permission to proceed.");
-        // return;
-        // }
-
-        // const result = await ImagePicker.launchImageLibraryAsync({
-        //     mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only allow images
-        //     allowsEditing: true, // Enable cropping
-        //     aspect: [4, 3], // Crop ratio
-        //     quality: 1, // Full quality
-        // });
-        const result = await DocumentPicker.getDocumentAsync({
-            type: "image/*", // Allow image files only
-            copyToCacheDirectory: true,
-        });
-
-        if (!result.canceled) {
-        setImage(result.assets[0].uri); // Save image URI
+            if (result.canceled || !result.assets) return;
+        
+            const file = result.assets[0];
+            const fileName = `profile_${Date.now()}.jpg`; // Unique filename
+            const filePath = `profiles/${fileName}`; // Folder in Supabase Storage
+        
+            try {
+                const { data, error } = await supabase.storage
+                    .from("user-profile-images") // Ensure bucket name matches
+                    .upload(filePath, {
+                        uri: file.uri,
+                        type: file.mimeType,
+                        name: fileName,
+                    });
+        
+                if (error) throw error;
+        
+                // Get Public URL
+                const { data: urlData } = supabase.storage
+                    .from("user-profile-images")
+                    .getPublicUrl(filePath);
+        
+                setImage(urlData.publicUrl); // Update state with new image URL
+                await updateProfilePicture(urlData.publicUrl); // Store in database
+            } catch (error) {
+                console.error("Upload error:", error);
+                Alert.alert("Error", "Image upload failed.");
+            }
         }
 
-    };
+        const fetchUserProfile = async () => {
+            const { data: user, error } = await supabase.auth.getUser();
+            
+            if (error) {
+                console.error('Error fetching user:', error);
+                return;
+            }
+            const userEmail = user?.user?.email;
+            // console.log("User ID:", userId);
+            const { data, error: profileError } = await supabase
+                .from('user_accounts')
+                .select('*')
+                .eq('email_add',userEmail)
+                .maybeSingle();
+            
+            if (profileError) 
+                console.error('Error fetching user:', profileError);
+            else{
+                setImage(data.profile_picture || null);
+            }
+        };
+
+        useEffect(() => {
+            fetchUserProfile();
+        }, []);
+        
+    
 
     const edit = () => {
         router.push('/auth/edit-profile')
@@ -61,9 +100,6 @@ const LandingPage = () => {
                 <View style = {styles.container}>
                     <View>
                         <Image source={image ? { uri: image } : require('../../assets/pictures/blank-profile-pic.png')}style={styles.image}/>
-                        <TouchableOpacity style = {styles.pickImg} onPress={profilePic}>
-                            <Ionicons name="camera" size={25}/>
-                        </TouchableOpacity>
                     </View>
                     <View>
                         <Text style = {styles.name}>
