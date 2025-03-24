@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
 import { supabase }from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+// import { useEffect } from 'react';
 
 
 
@@ -16,6 +17,7 @@ const SignIn = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   async function signInWithEmail(){
     // const { email, password } = form;`
     

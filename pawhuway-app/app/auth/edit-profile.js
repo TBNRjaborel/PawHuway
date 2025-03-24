@@ -13,17 +13,11 @@ const editProfile = () => {
     const router = useRouter();
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [username,setUserName] = useState('');
     const [email, setEmail] = useState('');
+    const [address, setAddress] = useState('');
+    const [birthdate, setBirthDate] = useState('');
     // const [password, changePass] = useState('');
-
-    const [userData, setUserData] = useState({
-        first_name: '',
-        last_name: '',
-        email: '',
-        // changePass: '',
-        image: null,
-    });
-
 
     const goBack = () => {
         router.push('/components/landing-page')
@@ -36,12 +30,12 @@ const editProfile = () => {
           console.error('Error fetching user:', error);
           return;
         }
-        const userId = user?.user?.id;
-        console.log("User ID:", userId);
+        const userEmail = user?.user?.email;
+        // console.log("User ID:", userId);
         const { data, error: profileError } = await supabase
           .from('user_accounts')
           .select('*')
-          .eq('id',userId)
+          .eq('email_add',userEmail)
           .maybeSingle();
       
         if (profileError) 
@@ -49,7 +43,7 @@ const editProfile = () => {
         else{
             setFirstName(data.first_name);
             setLastName(data.last_name);
-            setEmail(data.email);
+            setEmail(data.email_add);
         }
     };
 
@@ -61,20 +55,19 @@ const editProfile = () => {
             return;
         }
     
-        const userId = user?.user?.id;
-        if (!userId) {
-            console.error("User ID is undefined!");
-            return;
-        }
+        const userEmail = user?.user?.email;
     
         const { error: updateError } = await supabase
             .from('user_accounts')
             .update({
                 first_name: firstName,
                 last_name: lastName,
-                email,
+                username: username,
+                email_add: email,
+                birth_date: birthdate,
+                address: address,
             })
-            .eq('id', userId)
+            .eq('email_add', userEmail)
     
         if (updateError) {
             console.error("Error updating profile:", updateError);
@@ -109,7 +102,7 @@ const editProfile = () => {
                     </View>
                     <View style={styles.inputGroup}>
                         <Text  style={styles.label}>EMAIL</Text>
-                        <TextInput style={styles.input} value = {email} onChangeText={setEmail}/>
+                        <TextInput style={styles.input} value = {email} editable = {false}/>
                     </View>
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>CHANGE PASSWORD</Text>

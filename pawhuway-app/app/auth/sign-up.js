@@ -5,6 +5,8 @@ import { supabase }from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import {useRouter} from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -13,16 +15,22 @@ const SignUp = () => {
     async function signUpWithEmail(){
         // const { email, password } = form;
         
-        const { data,error } = await supabase.auth.signUp({email,password});
-        if(error)
+        const { data,error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: 'exp://192.168.1.150:8081/auth/callback',  // Change this to your actual redirect URL
+            data: { is_new: true },
+        }});
+        if(error){
           Alert.alert(error.message);
-        else {
-          Alert.alert('Click the verification link we sent to your email to finish creating your account.')
-          router.push('/auth/create-profile')
+          return;
         }
-
-        
+        await AsyncStorage.setItem('userEmail', email);
+        Alert.alert('Click the verification link we sent to your email to verify your email.')
+        router.push('/auth/create-profile')
     }
+    
     return(
       <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
 
