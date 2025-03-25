@@ -147,7 +147,7 @@ const PetDetails = () => {
 
 
 
-            <TouchableOpacity style={styles.editButton} >
+            <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/pet_owner/screens/Pets/pet-tasks?petId=${petData.id}`)}>
                 <Text style={styles.buttonText}>Tasks</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/pet_owner/screens/Pets/edit-pet?petId=${petData.id}`)}>
@@ -179,6 +179,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "90%",
         paddingVertical: 10,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     detailsContainer: {
         width: "100%",
