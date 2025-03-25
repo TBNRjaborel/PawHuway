@@ -103,7 +103,7 @@ const LandingPage = () => {
 
     
     return(
-        <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
+        // <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
 
             <SafeAreaView style = {styles.container}>
                 <Stack.Screen options={{ headerShown: false }} />
@@ -143,7 +143,7 @@ const LandingPage = () => {
                     </View>
                 </View>
             </SafeAreaView>
-        </LinearGradient>
+        // </LinearGradient>
 
         
     );
@@ -153,11 +153,11 @@ const LandingPage = () => {
 
 const styles = StyleSheet.create({
     gradient:{
-        flex: 1,
+        // flex: 1,
     },
     container: {
-        // flex: 1,
-        // backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
+        flex: 1,
+        backgroundColor: '#B3EBF2', // 🟢 Add background color to the entire screen
     },
     image: {
         width: 175,
@@ -177,9 +177,10 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins Light',
         textAlign: 'center',
         fontSize: 16,
+        color: 'white',
     },
     btn: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#3C3C4C',
         marginHorizontal: 50,
         borderColor: '#1E1E1E',
         borderWidth: 1,
