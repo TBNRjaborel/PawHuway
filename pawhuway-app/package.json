@@ -30,7 +30,11 @@
     "expo-updates": "~0.27.1",
     "react": "18.3.1",
     "react-native": "0.76.7",
+<<<<<<< HEAD
+    "react-native-calendars": "^1.1310.0",
+=======
     "react-native-bouncy-checkbox": "^4.1.2",
+>>>>>>> ac3a8212c17c853e35c79af890f1de576395034a
     "react-native-date-picker": "^5.0.10",
     "react-native-elements": "^3.4.3",
     "react-native-image-picker": "^8.2.0",
