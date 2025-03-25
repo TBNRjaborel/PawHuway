@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 30, 
         paddingTop: 125,
         paddingHorizontal: 25,
-        marginTop: 100,
+        marginTop: 80,
 
     },
     btn:{
@@ -263,6 +263,7 @@ const styles = StyleSheet.create({
     },
     input:{
         // position: 'absolute',
+        fontFamily: 'Poppins Light',
         backgroundColor: '#B3EBF2',
         marginHorizontal: 20,
         borderColor: '#808080',
@@ -275,10 +276,12 @@ const styles = StyleSheet.create({
         // marginTop: 125
     },
     label:{
+        fontFamily: 'Kanit Medium',
         marginLeft: 25,
         marginBottom: 5,
     },
     saveChanges:{
+        
         backgroundColor: '#FFFFFF',
         marginHorizontal: 20,
         borderColor: '#1E1E1E',
@@ -288,6 +291,7 @@ const styles = StyleSheet.create({
 
     },
     savetext:{
+        fontFamily: 'Poppins Light',
         textAlign: 'center'
     }
 });

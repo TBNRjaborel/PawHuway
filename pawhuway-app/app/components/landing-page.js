@@ -97,6 +97,10 @@ const LandingPage = () => {
         router.push('/components/help-page')
     };
 
+    const profiles = () => {
+        router.push('/components/profiles-page')
+    }
+
     
     return(
         <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
@@ -117,7 +121,7 @@ const LandingPage = () => {
                     </View>
                     <View style = {styles.options}>
                         <View>
-                            <TouchableOpacity style = {styles.btn} >
+                            <TouchableOpacity style = {styles.btn} onPress={profiles} >
                                 <Text style = {styles.btn_txt}>Profiles</Text>
                             </TouchableOpacity>
                         </View>
@@ -163,12 +167,14 @@ const styles = StyleSheet.create({
         borderRadius: 100,
     },
     name: {
+        fontFamily: 'Poppins Light',
         textAlign: 'center',
         marginTop: 20,
         fontSize: 20,
-        fontWeight: '900'
+        // fontWeight: '900'
     },
     btn_txt: {
+        fontFamily: 'Poppins Light',
         textAlign: 'center',
         fontSize: 16,
     },
