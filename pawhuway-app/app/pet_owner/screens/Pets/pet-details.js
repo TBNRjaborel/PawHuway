@@ -147,7 +147,7 @@ const PetDetails = () => {
 
 
 
-            <TouchableOpacity style={styles.editButton} >
+            <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/pet_owner/screens/Pets/pet-tasks?petId=${petData.id}`)}>
                 <Text style={styles.buttonText}>Tasks</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/pet_owner/screens/Pets/edit-pet?petId=${petData.id}`)}>
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: "center",
         padding: 20,
-        backgroundColor: '#FFFAD6',
+        backgroundColor: '#B3EBF2',
     },
     header: {
         flexDirection: "row",
@@ -179,6 +179,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "90%",
         paddingVertical: 10,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
     },
     detailsContainer: {
         width: "100%",
@@ -203,7 +207,7 @@ const styles = StyleSheet.create({
     },
     editButton: {
         width: '90%',
-        backgroundColor: '#FFD166',
+        backgroundColor: '#3C3C4C',
         padding: 15,
         borderRadius: 5,
         alignItems: 'center',
@@ -229,6 +233,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     buttonText: {
+        color: 'white',
         fontWeight: "bold",
         fontSize: 16,
     },

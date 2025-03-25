@@ -106,7 +106,7 @@ const Pets = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFAD6',
+    backgroundColor: '#B3EBF2',
   },
 
   logo_container: {
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
 
   petCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFD166',
+    backgroundColor: '#3C3C4C',
     marginHorizontal: 28,
     marginVertical: 8,
     padding: 10,
@@ -145,25 +145,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   petInfo: {
+    color: 'white',
     flex: 1,
     marginLeft: 10,
     padding: 4
   },
   petName: {
+    color: 'white',
     fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    // color: "#333",
   },
   petDetails: {
+    color: 'white',
     fontSize: 12,
     // fontWeight: "bold",
-    color: "#666",
+    // color: "#666",
     padding: 2
   },
   petType: {
     fontSize: 12,
     fontWeight: "bold",
-    color: "#666",
+    color: 'white',
     padding: 2
   },
   buttonContainer: {

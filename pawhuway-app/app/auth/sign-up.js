@@ -77,11 +77,7 @@ const SignUp = () => {
                     </TouchableOpacity>
                 </View>
               </View>
-              <View>
-                <TouchableOpacity onPress={() => router.push('/auth/sign-in')}>
-                  <Text style = {styles.toSignIn}>I already have an account</Text>
-                </TouchableOpacity>
-              </View>
+              
             
             </View>
           </View>
@@ -116,6 +112,7 @@ const styles = StyleSheet.create({
 
     },
     inputControl: {
+      fontFamily: 'Poppins Light',
       backgroundColor: '#FFFFFF',
       marginHorizontal: 20,
       borderColor: '#808080',
@@ -128,6 +125,7 @@ const styles = StyleSheet.create({
   
     },
     inputLabel: {
+      fontFamily: 'Kanit Medium',
       marginBottom: 10,
       textAlign: 'left',
       paddingLeft: 25,
@@ -157,11 +155,13 @@ const styles = StyleSheet.create({
     btn_sign_up: {
       
       textAlign: 'center',
+      fontFamily: 'Poppins Light',
       // marginVe,
     },
     btn_continue_google: {
       textAlign: 'center',
       marginTop: -10,
+      fontFamily: 'Poppins Light',
       
 
     },
@@ -169,11 +169,7 @@ const styles = StyleSheet.create({
     regbtns: {
         gap: 10
     },
-    toSignIn: {
-      textAlign: 'center',
-      marginTop: 10,
-      color: '#85D1DB'
-    },
+    
     
 });
 

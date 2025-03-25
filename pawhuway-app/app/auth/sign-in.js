@@ -64,11 +64,7 @@ const SignIn = () => {
               </TouchableOpacity>
 
             </View>
-            <View>
-              <TouchableOpacity onPress={() => router.push('/auth/sign-up')}>
-                <Text style = {styles.toSignUp}>Don't have an account?</Text>
-              </TouchableOpacity>
-            </View>
+            
           </View>
         </View>
       </SafeAreaView>
@@ -95,6 +91,7 @@ const styles = StyleSheet.create({
     marginBottom: -50,
   },
   inputControl: {
+    fontFamily: 'Poppins Light',
     backgroundColor: '#FFFFFF',
     marginHorizontal: 20,
     borderColor: '#808080',
@@ -107,6 +104,7 @@ const styles = StyleSheet.create({
 
   },
   inputLabel: {
+    fontFamily: 'Kanit Medium',
     marginBottom: 10,
     textAlign: 'left',
     paddingLeft: 25,
@@ -136,13 +134,10 @@ const styles = StyleSheet.create({
 
   btn_txt: {
     textAlign: 'center',
+    fontFamily: 'Poppins Light',
   },
 
-  toSignUp: {
-    textAlign: 'center',
-    marginTop: 10,
-    color: '#85D1DB'
-  },
+  
   
 });
 

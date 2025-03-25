@@ -15,5 +15,5 @@ export default function Index() {
   };
 
 
-  return <Redirect href="/components/help-page" />;
+  return <Redirect href="/starting-page" />;
 }

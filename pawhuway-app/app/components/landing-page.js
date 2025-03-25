@@ -13,6 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 const LandingPage = () => {
     const router = useRouter();
     const [image, setImage] = useState(null);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     async function signOut() {
         const { error } = await supabase.auth.signOut()
         if(error)
@@ -76,6 +78,8 @@ const LandingPage = () => {
                 console.error('Error fetching user:', profileError);
             else{
                 setImage(data.profile_picture || null);
+                setFirstName(data.first_name)
+                setLastName(data.last_name)
             }
         };
 
@@ -93,6 +97,10 @@ const LandingPage = () => {
         router.push('/components/help-page')
     };
 
+    const profiles = () => {
+        router.push('/components/profiles-page')
+    }
+
     
     return(
         <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
@@ -105,13 +113,15 @@ const LandingPage = () => {
                         <Image source={image ? { uri: image } : require('../../assets/pictures/blank-profile-pic.png')}style={styles.image}/>
                     </View>
                     <View>
-                        <Text style = {styles.name}>
-                            GABRIEL PAUL MAGDUGO
-                        </Text>
+                        <TextInput style = {styles.name}
+                            editable={false}
+                            value={firstName + ' ' + lastName}
+                            placeholder='Your Name'
+                        />
                     </View>
                     <View style = {styles.options}>
                         <View>
-                            <TouchableOpacity style = {styles.btn} >
+                            <TouchableOpacity style = {styles.btn} onPress={profiles} >
                                 <Text style = {styles.btn_txt}>Profiles</Text>
                             </TouchableOpacity>
                         </View>
@@ -157,12 +167,14 @@ const styles = StyleSheet.create({
         borderRadius: 100,
     },
     name: {
+        fontFamily: 'Poppins Light',
         textAlign: 'center',
         marginTop: 20,
         fontSize: 20,
-        fontWeight: '900'
+        // fontWeight: '900'
     },
     btn_txt: {
+        fontFamily: 'Poppins Light',
         textAlign: 'center',
         fontSize: 16,
     },
