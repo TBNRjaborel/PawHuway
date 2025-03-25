@@ -4,14 +4,17 @@ import { supabase }from '../../src/lib/supabase';
 import { Stack,useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const ticketPage = () => {
-    const [tickets, setTicketId] = useState('')
-    const [subject,setSubject] = useState('');
-    const [body, setBody] = useState('');
-    const [userId, setUserId] = useState(null);
     const router = useRouter();
 
+    const createTicket = () => {
+        router.push('/components/create-ticket')
+    }
+    const goBack = () => {
+        router.push('/components/landing-page')
+    }
 
     return(
         <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
@@ -19,11 +22,16 @@ const ticketPage = () => {
                 <Stack.Screen options={{ headerShown: false }} />
                 <StatusBar hidden={true} />
                 <View>
+                    <TouchableOpacity style = {styles.backbtn} onPress={goBack}>
+                        <View>
+                            <AntDesign name="left" size={24} color="black" />
+                        </View>
+                    </TouchableOpacity>
                     <Text style = {styles.yourTickets}>YOUR TICKETS</Text>
                     <Text style = {styles.subtext}>Send us a message</Text>
                 </View>
                 <View style = {styles.addTicket}>
-                    <TouchableOpacity style = {styles.newbtn}>
+                    <TouchableOpacity style = {styles.newbtn} onPress={createTicket}>
                         <Text style = {styles.newText}>+ New</Text>
                     </TouchableOpacity>
                 </View>
@@ -89,18 +97,25 @@ const styles = StyleSheet.create({
     addTicket:{
         position: 'absolute',
         alignSelf: 'flex-end',
-        padding: 10,
-        marginVertical: 80,
-        right: 30,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 10,
-        
 
     },
     newText:{
         fontFamily: 'Poppins Light',
         textAlign: 'center',
-    }
+    },
+    newbtn:{
+        // marginHorizontal: 20,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 10,
+        marginVertical: 80,
+        right: 30,
+        padding: 10,
+    },
+    backbtn:{
+        position: 'absolute',
+        marginHorizontal: 20,
+        marginVertical: 30,
+    },
 
 
 

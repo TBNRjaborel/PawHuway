@@ -13,6 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 const LandingPage = () => {
     const router = useRouter();
     const [image, setImage] = useState(null);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     async function signOut() {
         const { error } = await supabase.auth.signOut()
         if(error)
@@ -76,6 +78,8 @@ const LandingPage = () => {
                 console.error('Error fetching user:', profileError);
             else{
                 setImage(data.profile_picture || null);
+                setFirstName(data.first_name)
+                setLastName(data.last_name)
             }
         };
 
@@ -105,9 +109,11 @@ const LandingPage = () => {
                         <Image source={image ? { uri: image } : require('../../assets/pictures/blank-profile-pic.png')}style={styles.image}/>
                     </View>
                     <View>
-                        <Text style = {styles.name}>
-                            GABRIEL PAUL MAGDUGO
-                        </Text>
+                        <TextInput style = {styles.name}
+                            editable={false}
+                            value={firstName + ' ' + lastName}
+                            placeholder='Your Name'
+                        />
                     </View>
                     <View style = {styles.options}>
                         <View>
