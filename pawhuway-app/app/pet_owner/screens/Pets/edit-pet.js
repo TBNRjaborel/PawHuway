@@ -315,7 +315,7 @@ const EditPet = () => {
           <Text style={styles.addButtonText}>Update Pet</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.push(`/pet_owner/screens/Pets/pet-details?petId=${petData.id}`)}>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>
