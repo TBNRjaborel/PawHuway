@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@bam.tech/react-native-image-resizer": "^3.0.11",
     "@expo/vector-icons": "^14.0.2",
     "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-native-community/datetimepicker": "8.2.0",
@@ -17,7 +18,7 @@
     "@react-navigation/native": "^7.0.15",
     "@supabase/storage-js": "^2.7.1",
     "@supabase/supabase-js": "^2.48.1",
-    "expo": "~52.0.31",
+    "expo": "^52.0.41",
     "expo-document-picker": "~13.0.3",
     "expo-font": "^13.0.4",
     "expo-image-manipulator": "~13.0.6",
@@ -30,14 +31,13 @@
     "expo-updates": "~0.27.1",
     "react": "18.3.1",
     "react-native": "0.76.7",
-<<<<<<< HEAD
-    "react-native-calendars": "^1.1310.0",
-=======
     "react-native-bouncy-checkbox": "^4.1.2",
->>>>>>> ac3a8212c17c853e35c79af890f1de576395034a
+    "react-native-calendars": "^1.1310.0",
     "react-native-date-picker": "^5.0.10",
     "react-native-elements": "^3.4.3",
+    "react-native-fast-image": "^8.6.3",
     "react-native-image-picker": "^8.2.0",
+    "react-native-image-resizer": "^1.4.5",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-qrcode-svg": "^6.3.15",
     "react-native-svg": "^15.11.2",
