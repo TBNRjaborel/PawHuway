@@ -20,8 +20,9 @@ const PetDetails = () => {
         type: '',
         height: '',
         weight: '',
-        medicalHistory: '',
-        imageUrl: null,  // Fixed: Ensure imageUrl is part of state
+        owner_email: '',
+        img_path: '',
+        file_path: ''
     });
 
     // const [loading, setLoading] = useState(true);
@@ -68,8 +69,10 @@ const PetDetails = () => {
 
                             const { error } = await supabase.from("pets").delete().eq("id", petId);
                             if (error) console.error("Error deleting pet:", error);
-                            else setPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
+                            // else setPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
 
+                            Alert.alert('Success', 'Pet deleted successfully!');
+                            router.push("pet_owner/dashboard");
                         } catch (err) {
                             console.error("Unexpected error deleting pet:", err);
                         }
@@ -88,11 +91,9 @@ const PetDetails = () => {
         async function fetchPetDetails() {
             const { data, error } = await supabase
                 .from('pets')
-                .select('id, name, age, birthDate, sex, type, height, weight')
+                .select('id, name, age, birthDate, sex, type, height, weight, img_path, file_path')
                 .eq('id', petId)
                 .single();
-
-            // console.log("", data);
 
             if (error) {
                 Alert.alert('Error', 'Failed to fetch pet details.');
@@ -132,7 +133,7 @@ const PetDetails = () => {
                 </TouchableOpacity>
             </View>
 
-            <Image source={{ uri: petData.imageUrl || "../../../assets/pictures/paw-logo.png" }} style={styles.petImage} />
+            <Image source={{ uri: petData.img_path || "../../../assets/pictures/paw-logo.png" }} style={styles.petImage} />
             <View style={styles.detailsContainer}>
                 <Text style={styles.label}>Name: <Text style={styles.value}>{petData.name}</Text></Text>
                 <Text style={styles.label}>Age: <Text style={styles.value}>{petData.age} years</Text></Text>
@@ -141,12 +142,13 @@ const PetDetails = () => {
                 <Text style={styles.label}>Type: <Text style={styles.value}>{petData.type}</Text></Text>
                 <Text style={styles.label}>Height: <Text style={styles.value}>{petData.height} cm</Text></Text>
                 <Text style={styles.label}>Weight: <Text style={styles.value}>{petData.weight} kg</Text></Text>
-                <Text style={styles.label}>Medical History: <Text style={styles.value}>{petData.medicalHistory || "N/A"}</Text></Text>
             </View>
 
 
 
-
+            <TouchableOpacity style={styles.editButton}>
+                <Text style={styles.buttonText}>Medical History</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/pet_owner/screens/Pets/pet-tasks?petId=${petData.id}`)}>
                 <Text style={styles.buttonText}>Tasks</Text>
             </TouchableOpacity>
