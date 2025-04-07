@@ -15,6 +15,29 @@ const ticketPage = () => {
     const goBack = () => {
         router.push('/components/landing-page')
     }
+    // const fetchUserProfile = async () => {
+    //             const { data: user, error } = await supabase.auth.getUser();
+                
+    //             if (error) {
+    //                 console.error('Error fetching user:', error);
+    //                 return;
+    //             }
+    //             const userEmail = user?.user?.email;
+    //             // console.log("User ID:", userId);
+    //             const { data, error: profileError } = await supabase
+    //                 .from('user_accounts')
+    //                 .select('*')
+    //                 .eq('email_add',userEmail)
+    //                 .maybeSingle();
+                
+    //             if (profileError) 
+    //                 console.error('Error fetching user:', profileError);
+    //             else{
+    //                 setImage(data.profile_picture || null);
+    //                 setFirstName(data.first_name)
+    //                 setLastName(data.last_name)
+    //             }
+    // };
 
     return(
         <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>

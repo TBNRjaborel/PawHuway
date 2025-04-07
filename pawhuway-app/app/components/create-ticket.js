@@ -52,8 +52,8 @@ const createTicket = () => {
     }, []);
     
     return(
-        <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
-            <SafeAreaView>
+        // <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
+            <SafeAreaView style = {styles.container}>
                 <Stack.Screen options={{ headerShown: false }} />
                 <StatusBar hidden={true} />
                 <View>
@@ -88,14 +88,15 @@ const createTicket = () => {
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
-        </LinearGradient>
+        // </LinearGradient>
     )
 }
 
 
 const styles = StyleSheet.create({
-    gradient:{
+    container:{
         flex: 1,
+        backgroundColor: '#B3EBF2',
     },
     subject_form:{
         marginTop: 100,
@@ -123,22 +124,25 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     bodyheader:{
+        marginTop: 20,
         marginLeft: 20,
         fontSize: 20,
         fontFamily: 'Poppins Light',
     },
     createText:{
+        color: 'white',
         fontFamily: 'Poppins Light',
-        fontSize: 30,
+        fontSize: 20,
         textAlign: 'center',
         // alignSelf: 'center'
     },
     createbutton:{
         alignSelf: 'center',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#3C3C4C',
         marginTop: 20,
         width:'90%',
         borderRadius: 10,
+        padding: 10,
         
     },
     backbtn: {

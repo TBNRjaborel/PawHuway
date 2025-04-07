@@ -15,5 +15,9 @@ export default function Index() {
   };
 
 
+<<<<<<< HEAD
   return <Redirect href="/pet_owner/screens/Calendar/Calendar"/>;
+=======
+  return <Redirect href="/vet/create-vet-profile" />;
+>>>>>>> 2c4f4e6b29aa9a23f826e2e425ff80b15baacbbc
 }
