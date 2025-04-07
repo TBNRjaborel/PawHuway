@@ -12,18 +12,16 @@ import * as FileSystem from "expo-file-system";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
-const AddPet = () => {
+const AddEvent = () => {
   const router = useRouter();
   const [petData, setPetData] = useState({
-    name: '',
-    age: '',
-    birthDate: '',
-    sex: '',
+    title: '',
+    location: '',
+    duration: '',
+    reminder: '',
     type: '',
     height: '',
     weight: '',
-    medicalHistory: '',
-    image: null,
   });
 
   const [dob, setDob] = useState(null);
@@ -34,73 +32,6 @@ const AddPet = () => {
     }
     setShowPicker(false);
   };
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const file = result.assets[0];
-      let quality = 1;
-      let newImg = file;
-      let fileInfo = await FileSystem.getInfoAsync(newImg.uri);
-
-      console.log(`Original Size: ${(fileInfo.size / 1024 / 1024).toFixed(2)}MB`);
-
-      while (fileInfo.size > MAX_FILE_SIZE && quality > 0.3) {
-        newImg = await ImageManipulator.manipulateAsync(
-          newImg.uri,
-          [],
-          { compress: quality, format: ImageManipulator.SaveFormat.JPEG }
-        );
-
-        console.log("after resize");
-        fileInfo = await FileSystem.getInfoAsync(newImg.uri);
-        console.log(`Compressed Size: ${(fileInfo.size / 1024 / 1024).toFixed(2)}MB at quality ${quality}`);
-
-        quality -= 0.05;
-      }
-
-      if (fileInfo.size > MAX_FILE_SIZE) {
-        alert("Could not compress image below 50MB. Try selecting a smaller image.");
-        return;
-      }
-
-      setPetData({ ...petData, image: newImg.uri });
-    } else {
-      Alert.alert("Upload Failed", error.message);
-    }
-  };
-
-  const [medicalFile, setMedicalFile] = useState(null);
-
-  const pickFile = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: 'application/pdf',
-      copyToCacheDirectory: true,
-    });
-
-    if (!result.canceled) {
-      const file = result.assets[0];
-
-      if (file.mimeType !== "application/pdf") {
-        Alert.alert("Invalid Format", "Please select a PDF file.");
-        return;
-      }
-      if (file.size > MAX_FILE_SIZE) {
-        Alert.alert("File Too Large", "Please upload a PDF smaller than 50MB.");
-        return;
-      }
-
-      setMedicalFile(file);
-      setPetData({ ...petData, medicalHistory: file.uri });
-    }
-  };
-
 
   async function CreatePet() {
     console.log("petData:", petData);
@@ -170,27 +101,20 @@ const AddPet = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <TouchableOpacity onPress={pickImage} style={styles.imageUploadContainer}>
-        {petData.image ? (
-          <Image source={{ uri: petData.image }} style={styles.image} />
-        ) : (
-          <Image source={require('../../../../assets/pictures/add_image.webp')} style={styles.image} />
-        )}
-      </TouchableOpacity>
 
       <View style={styles.form}>
 
-        <View key="Name" style={styles.inputContainer}>
-          <Text style={styles.label}>Name:</Text>
+        <View key="Title" style={styles.inputContainer}>
+          <Text style={styles.label}>Title:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter Name"
+            placeholder="Title"
             value={petData.name}
             onChangeText={(text) => setPetData({ ...petData, name: text })}
           />
         </View>
 
-        <View key="Age" style={styles.inputContainer}>
+        {/* <View key="Age" style={styles.inputContainer}>
           <Text style={styles.label}>Age:</Text>
           <TextInput
             style={styles.input}
@@ -199,14 +123,14 @@ const AddPet = () => {
             keyboardType="numeric"
             onChangeText={(text) => setPetData({ ...petData, age: text })}
           />
-        </View>
+        </View> */}
 
-        <Text style={styles.label}>Date of Birth:</Text>
+        <Text style={styles.label}>Date:</Text>
         <TouchableOpacity onPress={() => setShowPicker(true)}>
           <TextInput
             style={[styles.input, { marginBottom: 10 }]}
             value={dob ? dob.toDateString() : ''}
-            placeholder="Enter Date of Birth"
+            placeholder="Enter Date of Event"
             editable={false}
           />
         </TouchableOpacity>
@@ -221,61 +145,35 @@ const AddPet = () => {
         )}
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Sex:</Text>
+          <Text style={styles.label}>Type:</Text>
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={petData.sex}
               onValueChange={(itemValue) => setPetData({ ...petData, sex: itemValue })}
               style={styles.picker}
             >
-              <Picker.Item label="Enter Sex" value="" style={styles.pickerPlaceholder} />
-              <Picker.Item label="Male" value="Male" style={styles.pickerItem} />
-              <Picker.Item label="Female" value="Female" style={styles.pickerItem} />
+              <Picker.Item label="Enter Type" value="" style={styles.pickerPlaceholder} />
+              <Picker.Item label="Grooming" value="Grooming" style={styles.pickerItem} />
+              <Picker.Item label="Operation" value="Operation" style={styles.pickerItem} />
             </Picker>
           </View>
         </View>
 
         <View key="Type" style={styles.inputContainer}>
-          <Text style={styles.label}>Type:</Text>
+          <Text style={styles.label}>Reminder:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter Type"
+            placeholder="Notification time"
             value={petData.type}
             onChangeText={(text) => setPetData({ ...petData, type: text })}
           />
         </View>
 
-        {['Height', 'Weight'].map((field) => (
-          <View key={field} style={styles.inputContainer}>
-            <Text style={styles.label}>{field}:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={`Enter ${field}`}
-              keyboardType='numeric'
-              value={petData[field.toLowerCase().replace(/ /g, '')]}
-              onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
-            />
-          </View>
-        ))}
-
-        <View style={styles.fileUploadContainer}>
-          <Text style={styles.label}>Medical History: </Text>
-
-          <TouchableOpacity style={styles.fileButton} onPress={pickFile}>
-            <Text style={styles.fileButtonText}>Attach File</Text>
-          </TouchableOpacity>
-
-          {/* Show the filename to the right of the button */}
-          {medicalFile && (
-            <Text style={styles.fileName}>{medicalFile.name}</Text>
-          )}
-        </View>
-
         <TouchableOpacity style={styles.addButton} onPress={CreatePet}>
-          <Text style={styles.addButtonText}>Add Pet</Text>
+          <Text style={styles.addButtonText}>Add Event</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.push('/pet_owner/dashboard')}>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => router.push('/pet_owner/screens/Calendar/Calendar')}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>
@@ -404,4 +302,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddPet;
+export default AddEvent;

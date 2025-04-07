@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { supabase } from '../../../src/lib/supabase';
+import { supabase } from '../../../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { Calendar, Agenda, LocaleConfig } from 'react-native-calendars';
@@ -10,11 +10,7 @@ import { Calendar, Agenda, LocaleConfig } from 'react-native-calendars';
 const CalendarScreen = () => {
     const router = useRouter();
     const [selectedDate, setSelectedDate] = useState('');
-    const [items, setItems] = useState({
-        '2025-03-25': [{ name: 'Event 1', description: 'Description for Event 1' }],
-        '2025-03-26': [{ name: 'Event 2', description: 'Description for Event 2' }],
-        '2025-03-27': [{ name: 'Event 3', description: 'Description for Event 3' }],
-    });
+    const [items, setItems] = useState('');
 
     return (
         <SafeAreaView style={styles.container}>
@@ -25,15 +21,16 @@ const CalendarScreen = () => {
                     console.log('Selected day:', day.dateString);
                 }}
                 markedDates={{
-                    [selectedDate]: { selected: true, marked: true, selectedColor: '#735BF2' }
+                    [selectedDate]: { selected: true, marked: true, selectedColor: '#FFFAD6' }
                 }}
                 theme={{
                     backgroundColor: '#FFFAD6',
-                    calendarBackground: '#FFFAD6',
+                    calendarBackground: '#B3EBF2',
                     textSectionTitleColor: '#1E1E1E',
-                    selectedDayTextColor: 'white',
+                    selectedDayTextColor: 'black',
                     todayTextColor: '#FF6347',
                     dayTextColor: '#1E1E1E',
+                    textDisabledColor: '#9BA19D',
                     arrowColor: 'black',
                     monthTextColor: '#1E1E1E',
                     arrowStyle: {
@@ -64,6 +61,10 @@ const CalendarScreen = () => {
             ) : (
                 <Text style={styles.placeholderText}>Select a date</Text>
             )}
+
+            <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/screens/Calendar/add-event')}>
+                <Text style={styles.btnText}>+</Text>
+            </TouchableOpacity>
         </SafeAreaView>
     );
 };
@@ -95,6 +96,25 @@ const styles = StyleSheet.create({
         marginTop: 20,
         marginLeft: 180, 
         marginRight: 180,
+    },
+    addButton: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        backgroundColor: '#FFD166',
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+    },
+    btnText: {
+        fontSize: 24,
+        fontWeight: 'bold',
     },
 });
 

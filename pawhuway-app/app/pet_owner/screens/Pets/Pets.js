@@ -15,8 +15,6 @@ const Pets = () => {
   const [qrVisible, setQrVisible] = useState(false);
   const [qrValue, setQrValue] = useState('');
 
-
-
   useEffect(() => {
     const fetchPets = async () => {
       const { data, error } = await supabase.from('pets').select('id, name, age, sex, type, height, weight');
@@ -96,7 +94,7 @@ const Pets = () => {
       />
 
 
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/add-pet')}>
+      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/screens/Pets/add-pet')}>
         <Text style={styles.btnText}>+</Text>
       </TouchableOpacity>
     </SafeAreaView>
