@@ -5,43 +5,59 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../../../src/lib/supabase';
 import { Alert } from 'react-native';
 import QRCodeGenerator from './generate-qr';
+import ImageResizer from 'react-native-image-resizer';
 
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
 
 const Pets = () => {
   const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [owner, setOwner] = useState(null);
   const [pets, setPets] = useState([]);
   const [qrVisible, setQrVisible] = useState(false);
   const [qrValue, setQrValue] = useState('');
 
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+    
+      if (error) {
+        console.error('Error fetching user:', error.message);
+        return null;
+      }
+      console.log("usersdfdsf: ", user.email);
+    
+      setUser(user);
 
+      const { data: petOwner, error: ownerError } = await supabase
+        .from("pet_owners")
+        .select("*") 
+        .eq("email", user.email)
+        .single();
+
+      if (ownerError) {
+        console.error("Error fetching pet owner:", ownerError.message);
+        return;
+      }
+
+      setOwner(petOwner);
+    };
+
+    getUser();
+  }, [])
 
   useEffect(() => {
     const fetchPets = async () => {
-      const { data, error } = await supabase.from('pets').select('id, name, age, sex, type, height, weight');
-      // console.log("fetched: ", data);
+      const { data, error } = await supabase.from('pets').select('id, name, age, sex, type, height, weight, owner_id, img_path, file_path').eq('owner_id', owner.id);
+      console.log("fetched: ", data);
+      setPets(data);
       if (error) {
         console.error('Error fetching pets:', error);
-      } else {
-
-        const petsWithImages = data.map((pet) => {
-          if (pet.image_path) {
-            const { data: { publicUrl } } = supabase
-              .storage
-              .from('pet-images')
-              .getPublicUrl(pet.image_path);
-
-            return { ...pet, imageUrl: publicUrl };
-          }
-          return { ...pet, imageUrl: null };
-        });
-
-        setPets(petsWithImages);
-      }
+      } 
     };
-    fetchPets();
-  }, []);
+    fetchPets(); 
+  }, [user, owner]);
 
 
   return (
@@ -82,10 +98,11 @@ const Pets = () => {
             style={styles.petCard}
             onPress={() => router.push(`/pet_owner/screens/Pets/pet-details?petId=${item.id}`)}
           >
-            <Image
-              source={{ uri: item.imageUrl || '../../../../assets/pictures/paw-logo.png' }}
-              style={styles.petImage}
-            />
+            {item.img_path ? (
+                      <Image source={{ uri: item.img_path }} style={styles.petImage} onError={() => console.log("Error loading image")}/>
+                    ) : (
+                      <Image source={require('../../../../assets/pictures/paw-logo.png')} style={styles.petImage} />
+                    )}
             <View style={styles.petInfo}>
               <Text style={styles.petName}>{capitalizeFirstLetter(item.name)}</Text>
               <Text style={styles.petDetails}>{item.age} years • {item.sex}</Text>
