@@ -83,6 +83,7 @@ const SignIn = () => {
                 Or
               </Text>
               <TouchableOpacity style = {styles.googlebtn}>
+                <Image source={require('../../assets/pictures/google-logo.png')} style = {styles.google_logo} alt="logo"/>
                 <Text style = {styles.google}>
                   Continue with Google
                 </Text>
@@ -127,6 +128,14 @@ const styles = StyleSheet.create({
     // marginTop: 10,
     // marginBottom: -50,
   },
+  google_logo: {
+    width: 30,
+    height: 30,
+    alignSelf: 'left',
+    marginBottom: -25,
+    marginLeft: 30,
+
+  },
   inputControl: {
     fontFamily: 'Poppins Light',
     backgroundColor: '#FFFFFF',
@@ -163,7 +172,7 @@ const styles = StyleSheet.create({
   btn: {
     marginTop: 20,
     // color: '#B3EBF2',
-    backgroundColor: '#B3EBF2',
+    backgroundColor: '#3C3C4C',
     marginHorizontal: 10,
     borderColor: '#1E1E1E',
     borderWidth: 1/2,
@@ -174,6 +183,7 @@ const styles = StyleSheet.create({
   btn_txt: {
     textAlign: 'center',
     fontFamily: 'Poppins Light',
+    color: 'white',
   },
   forgot:{
     fontFamily: 'Poppins Light',
@@ -197,11 +207,11 @@ const styles = StyleSheet.create({
   },
   googlebtn:{
     marginTop: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#B3EBF2',
     marginHorizontal: 10,
     borderColor: '#808080',
     borderWidth: 1/2,
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderRadius: 15,
   }
 
