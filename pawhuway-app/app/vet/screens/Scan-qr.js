@@ -6,7 +6,7 @@ import { supabase } from '../../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 
-const Search_Clinic = () => {
+const ScanQR = () => {
     const router = useRouter();
 
     return (
@@ -14,7 +14,7 @@ const Search_Clinic = () => {
             <Stack.Screen options={{ headerShown: false }} />
             <View>
                 <View style={styles.container}>
-                    <Text>Search Clinic</Text>
+                    <Text>Scan QR</Text>
                 </View>
             </View>
         </SafeAreaView>
@@ -62,4 +62,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default Search_Clinic;
+export default ScanQR;
