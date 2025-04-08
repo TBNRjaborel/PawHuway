@@ -4,6 +4,7 @@ import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, Touchab
 import { supabase }from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { LinearGradient } from 'expo-linear-gradient';
 // import { useEffect } from 'react';
 
@@ -28,15 +29,23 @@ const SignIn = () => {
       router.push('/components/landing-page')
   }
   
+  const goBack = () => {
+    router.push('/starting-page');
+  }
   return(
-    <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
-      <SafeAreaView style={styles.container}>
+    // <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
+      <SafeAreaView style={styles.background}>
         <Stack.Screen options={{ headerShown: false }} />
         <StatusBar hidden={true} />
-        <View style={styles.container}>
+          <TouchableOpacity style = {styles.backbtn} onPress={goBack}>
+            <View>
+                <AntDesign name="left" size={15} color="black"  />
+            </View>
+          </TouchableOpacity>
           <View>
-            <Image source={require('../../assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
+            <Image source={require('../../assets/pictures/paw-logo2.png')} style = {styles.logo} alt="logo"/>
           </View>
+        <View style={styles.container}>
           <View style = {styles.form}>
             <View style = {styles.input}>
               <Text style = {styles.inputLabel}>Email Address</Text>
@@ -56,6 +65,11 @@ const SignIn = () => {
                 secureTextEntry
                 />
             </View>
+            <View>
+              <TouchableOpacity >
+                <Text style = {styles.forgot}> Forgot Password?</Text>
+              </TouchableOpacity>
+            </View>
 
             <View>
               {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
@@ -64,41 +78,64 @@ const SignIn = () => {
               </TouchableOpacity>
 
             </View>
+            <View>
+              <Text style = {styles.or}>
+                Or
+              </Text>
+              <TouchableOpacity style = {styles.googlebtn}>
+                <Text style = {styles.google}>
+                  Continue with Google
+                </Text>
+              </TouchableOpacity>
+            </View>
             
           </View>
         </View>
       </SafeAreaView>
-    </LinearGradient>
+    // </LinearGradient>
 
   );
 };
 
 
 const styles = StyleSheet.create({
-  gradient: {
+  background: {
     flex: 1,
+    backgroundColor: '#B3EBF2',
   },
-  container: {
-    // flex: 1,
-    // backgroundColor: '#C9FDF2', // 🟢 Add background color to the entire screen
+  backbtn: {
+    margin: 30,
+    position: 'absolute',
+    padding: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 50,
+    zIndex: 10, 
+  },
+  container:{
+    backgroundColor: '#FFFFFF',
+      height: '100%',
+      borderTopLeftRadius: 70,  
+      borderTopRightRadius: 70, 
+      marginTop: 400,
   },
   logo: {
-    width: 350,
-    height: 350,
+    width: 450,
+    height: 450,
     alignSelf: 'center',
+    position: 'absolute',
     // borderRadius: 200, 
-    marginTop: 80,
-    marginBottom: -50,
+    // marginTop: 10,
+    // marginBottom: -50,
   },
   inputControl: {
     fontFamily: 'Poppins Light',
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
+    marginHorizontal: 10,
     borderColor: '#808080',
     borderWidth: 1/2,
     paddingLeft: 15,
     marginBottom: 20,
-    borderRadius: 20,
+    borderRadius: 15,
     // alignSelf: 'center',
     
 
@@ -114,21 +151,23 @@ const styles = StyleSheet.create({
 
   form: {
     borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 50,
-    paddingHorizontal: -90,
-    paddingVertical: 20,
+    // backgroundColor: '#FFFFFF',
+    marginHorizontal: 40,
+    marginVertical: 40,
+    // paddingHorizontal: -90,
+    // paddingVertical: 20,
     // borderColor: '#808080',
     // borderWidth: 1,
   },
 
   btn: {
-    color: '#B6F2D1',
-    backgroundColor: '#B6F2D1',
-    marginHorizontal: 20,
+    marginTop: 20,
+    // color: '#B3EBF2',
+    backgroundColor: '#B3EBF2',
+    marginHorizontal: 10,
     borderColor: '#1E1E1E',
     borderWidth: 1/2,
-    borderRadius: 20,
+    borderRadius: 15,
     paddingVertical: 8
   },
 
@@ -136,6 +175,35 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Poppins Light',
   },
+  forgot:{
+    fontFamily: 'Poppins Light',
+    textAlign: 'right',
+    marginTop: -10,
+    marginRight: 20,
+    fontSize: 12,
+  },
+  or:{
+    fontFamily: 'Kanit Medium',
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    // fontWeight: 'bold',
+  },
+  google:{
+    fontFamily: 'Poppins Light',
+    textAlign: 'center',
+    fontSize: 16,
+    // fontWeight: 'bold',
+  },
+  googlebtn:{
+    marginTop: 20,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 10,
+    borderColor: '#808080',
+    borderWidth: 1/2,
+    paddingVertical: 8,
+    borderRadius: 15,
+  }
 
   
   
