@@ -399,13 +399,8 @@ const AddPet = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-<<<<<<< HEAD
-    backgroundColor: '#B3EBF2',
-    alignItems: 'center',
-=======
     backgroundColor: "#B3EBF2", // Gradient-like light background from Style 1
     alignItems: "center",
->>>>>>> 2c4f4e6b29aa9a23f826e2e425ff80b15baacbbc
     padding: 20,
   },
   imageUploadContainer: {

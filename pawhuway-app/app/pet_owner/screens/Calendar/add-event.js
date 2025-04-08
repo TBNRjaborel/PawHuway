@@ -2,10 +2,11 @@ import React, { useState } from 'react'
 import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Platform, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../../../src/lib/supabase';
 import { Stack } from 'expo-router';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+// import { useSearchParams } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
@@ -14,17 +15,19 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 const AddEvent = () => {
   const router = useRouter();
-  const [petData, setPetData] = useState({
+  const params = useLocalSearchParams();
+  const { date } = params;
+  const [eventData, setEventData] = useState({
     title: '',
-    location: '',
-    duration: '',
-    reminder: '',
     type: '',
-    height: '',
-    weight: '',
+    description: '',
+    startTime: '',
+    endTime: '',
+    clinic: '',
+    veterinarian: '',
   });
 
-  const [dob, setDob] = useState(null);
+  const [dob, setDob] = useState(date ? new Date(date) : null);
   const [showPicker, setShowPicker] = useState(false);
   const onChange = (event, selectedDate) => {
     if (selectedDate) {
@@ -33,69 +36,40 @@ const AddEvent = () => {
     setShowPicker(false);
   };
 
-  async function CreatePet() {
-    console.log("petData:", petData);
-    if (petData.name == "" || petData.type == "" || petData.sex == "" || petData.height == "" || petData.weight == "") {
+  async function CreateEvent() {
+    console.log("eventData:", eventData);
+  
+    // Validate required fields
+    if (!eventData.title || !eventData.type || !eventData.description || !eventData.startTime || !eventData.endTime || !eventData.clinic || !eventData.veterinarian) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
-
-    const { data, error } = await supabase.from('pets').insert([
+  
+    // Insert event into the database
+    const { data, error } = await supabase.from('events').insert([
       {
-        name: petData.name,
-        age: petData.age ? parseInt(petData.age) : null,
-        birthDate: dob ? dob.toISOString().split('T')[0] : null, // Formats the date
-        sex: petData.sex,
-        type: petData.type,
-        height: petData.height,
-        weight: petData.weight,
-
+        title: eventData.title,
+        type: eventData.type,
+        description: eventData.description,
+        startTime: eventData.startTime,
+        endTime: eventData.endTime,
+        clinic: eventData.clinic,
+        veterinarian: eventData.veterinarian,
       },
     ]).select();
-
+  
     if (error) {
       Alert.alert('Error', error.message);
       return;
     }
-
-    const petId = data[0].id;
-
-    if (petData.image) {
-      const imgFileName = `${petId}-${petData.name}-${Date.now()}-${petData.image.split('/').pop()}`;
-
-      const { error: imgError } = await supabase.storage
-        .from("pet-images")
-        .upload(imgFileName, petData.image, { contentType: "image/jpeg" });
-
-      if (!imgError) {
-        imageUrl = supabase.storage.from("pet-images").getPublicUrl(imgFileName).publicUrl;
-        setPetData({ ...petData, image: imageUrl });
-      } else {
-        Alert.alert("Image Upload Failed", imgError.message);
-      }
+  
+    if (data && data.length > 0) {
+      Alert.alert('Success', 'Event added successfully!');
+      router.push({
+        pathname: '/pet_owner/screens/Calendar/Calendar',
+        params: { newEvent: JSON.stringify(data[0]) }, // Pass the created event as a parameter
+      });
     }
-
-    if (petData.medicalHistory) {
-      const medFileName = `${petId}-${petData.name}-${Date.now()}-${medicalFile.name}`;
-
-      const { error: fileError } = await supabase.storage
-        .from("pet-medical-history")
-        .upload(medFileName, {
-          uri: medicalFile.uri,
-          type: medicalFile.mimeType,
-          name: medFileName,
-        });
-
-      if (!fileError) {
-        fileUrl = supabase.storage.from("pet-medical-history").getPublicUrl(medFileName).publicUrl;
-        setPetData({ ...petData, medicalHistory: fileUrl });
-      } else {
-        Alert.alert("File Upload Failed", fileError.message);
-      }
-    }
-
-    Alert.alert('Success', 'Pet added successfully!');
-    router.push("pet_owner/dashboard");
   }
 
   return (
@@ -109,8 +83,8 @@ const AddEvent = () => {
           <TextInput
             style={styles.input}
             placeholder="Title"
-            value={petData.name}
-            onChangeText={(text) => setPetData({ ...petData, name: text })}
+            value={eventData.title} // Use "title" instead of "name"
+            onChangeText={(text) => setEventData({ ...eventData, title: text })}
           />
         </View>
 
@@ -119,21 +93,79 @@ const AddEvent = () => {
           <TextInput
             style={styles.input}
             placeholder="Enter Age"
-            value={petData.age.toString()}
+            value={eventData.age.toString()}
             keyboardType="numeric"
-            onChangeText={(text) => setPetData({ ...petData, age: text })}
+            onChangeText={(text) => setEventData({ ...eventData, age: text })}
           />
         </View> */}
 
-        <Text style={styles.label}>Date:</Text>
-        <TouchableOpacity onPress={() => setShowPicker(true)}>
+        <View key="Type" style={styles.inputContainer}>
+          <Text style={styles.label}>Type:</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={eventData.type}
+              onValueChange={(itemValue) => setEventData({ ...eventData, type: itemValue })}
+              style={styles.picker}
+            >
+              <Picker.Item label="Enter Type" value="" style={styles.pickerPlaceholder} />
+              <Picker.Item label="Grooming" value="Grooming" style={styles.pickerItem} />
+              <Picker.Item label="Operation" value="Operation" style={styles.pickerItem} />
+            </Picker>
+          </View>
+        </View>
+
+        <View key="Description" style={styles.inputContainer}>
+          <Text style={styles.label}>Description:</Text>
           <TextInput
-            style={[styles.input, { marginBottom: 10 }]}
-            value={dob ? dob.toDateString() : ''}
-            placeholder="Enter Date of Event"
-            editable={false}
+            style={styles.input}
+            placeholder="Enter Description"
+            value={eventData.description}
+            onChangeText={(text) => setEventData({ ...eventData, description: text })}
           />
-        </TouchableOpacity>
+        </View>
+
+        <View key="StartTime" style={styles.inputContainer}>
+          <Text style={styles.label}>Start Time:</Text>
+          <TouchableOpacity onPress={() => setShowPicker({ type: 'start', visible: true })}>
+            <TextInput
+              style={[styles.input, { marginBottom: 10 }]}
+              value={eventData.startTime ? eventData.startTime : ''}
+              placeholder="Select Start Time"
+              editable={false}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View key="EndTime" style={styles.inputContainer}>
+          <Text style={styles.label}>End Time:</Text>
+          <TouchableOpacity onPress={() => setShowPicker({ type: 'end', visible: true })}>
+            <TextInput
+              style={[styles.input, { marginBottom: 10 }]}
+              value={eventData.endTime ? eventData.endTime : ''}
+              placeholder="Select End Time"
+              editable={false}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {showPicker.visible && (
+          <DateTimePicker
+            value={new Date()}
+            mode="time"
+            display={Platform.OS === 'ios' ? 'spinner' : 'clock'}
+            onChange={(event, selectedTime) => {
+              if (selectedTime) {
+                const formattedTime = selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                if (showPicker.type === 'start') {
+                  setEventData({ ...eventData, startTime: formattedTime });
+                } else if (showPicker.type === 'end') {
+                  setEventData({ ...eventData, endTime: formattedTime });
+                }
+              }
+              setShowPicker({ type: '', visible: false });
+            }}
+          />
+        )}
 
         {showPicker && (
           <DateTimePicker
@@ -144,32 +176,27 @@ const AddEvent = () => {
           />
         )}
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Type:</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={petData.sex}
-              onValueChange={(itemValue) => setPetData({ ...petData, sex: itemValue })}
-              style={styles.picker}
-            >
-              <Picker.Item label="Enter Type" value="" style={styles.pickerPlaceholder} />
-              <Picker.Item label="Grooming" value="Grooming" style={styles.pickerItem} />
-              <Picker.Item label="Operation" value="Operation" style={styles.pickerItem} />
-            </Picker>
-          </View>
-        </View>
-
-        <View key="Type" style={styles.inputContainer}>
-          <Text style={styles.label}>Reminder:</Text>
+        <View key="Clinic" style={styles.inputContainer}>
+          <Text style={styles.label}>Clinic:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Notification time"
-            value={petData.type}
-            onChangeText={(text) => setPetData({ ...petData, type: text })}
+            placeholder="Enter Clinic"
+            value={eventData.clinic}
+            onChangeText={(text) => setEventData({ ...eventData, clinic: text })}
           />
         </View>
 
-        <TouchableOpacity style={styles.addButton} onPress={CreatePet}>
+        <View key="Veterinarian" style={styles.inputContainer}>
+          <Text style={styles.label}>Veterinarian:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter Veterinarian"
+            value={eventData.veterinarian}
+            onChangeText={(text) => setEventData({ ...eventData, veterinarian: text })}
+          />
+        </View>
+
+        <TouchableOpacity style={styles.addButton} onPress={CreateEvent}>
           <Text style={styles.addButtonText}>Add Event</Text>
         </TouchableOpacity>
 
