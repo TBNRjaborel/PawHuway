@@ -191,36 +191,113 @@ const Profile = () => {
     fetchUserProfile();
   }, []);
 
+
   const deleteOwnerProfile = async () => {
     Alert.alert(
-      "Confirm Deletion",
-      "Are you sure you want to delete this profile?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const { error } = await supabase
-                .from("pet_owners")
-                .delete()
-                .eq("email", user.email);
-              if (error) console.error("Error deleting profile:", error);
+        "Confirm Deletion",
+        "Are you sure you want to delete this profile?",
+        [
+            {
+                text: "Cancel",
+                style: "cancel",
+            },
+            {
+                text: "Delete",
+                style: "destructive",
+                onPress: async () => {
+                    try {
+                        const { data: petOwner, error: ownerError } = await supabase
+                            .from("pet_owners")
+                            .select("id")
+                            .eq("email", user.email)
+                            .single();
 
-              Alert.alert("Success", "Profile deleted successfully!");
-              router.push("/components/landing-page");
-            } catch (err) {
-              console.error("Unexpected error deleting profile:", err);
-            }
-          },
-        },
-      ]
+                        if (ownerError) {
+                            console.error("Error fetching pet owner:", ownerError);
+                            Alert.alert("Error", "Failed to fetch pet owner.");
+                            return;
+                        }
+
+                        const ownerId = petOwner.id;
+
+                        const { data: pets, error: petsError } = await supabase
+                            .from("pets")
+                            .select("id")
+                            .eq("owner_id", ownerId);
+
+                        if (petsError) {
+                            console.error("Error fetching pets:", petsError);
+                            Alert.alert("Error", "Failed to fetch pets.");
+                            return;
+                        }
+
+                        for (const pet of pets) {
+                            const petId = pet.id;
+
+                            const { data: imageFiles, error: imageError } = await supabase
+                                .storage
+                                .from("pet-images")
+                                .list("", { search: `${petId}-` });
+
+                            if (imageError) {
+                                console.error(`Error listing files for pet ${petId} in pet-images:`, imageError);
+                            } else {
+                                for (const file of imageFiles) {
+                                    const { error: deleteImageError } = await supabase
+                                        .storage
+                                        .from("pet-images")
+                                        .remove([file.name]);
+
+                                    if (deleteImageError) {
+                                        console.error(`Error deleting file ${file.name} in pet-images:`, deleteImageError);
+                                    }
+                                }
+                            }
+
+                            const { data: medFiles, error: medError } = await supabase
+                                .storage
+                                .from("pet-medical-history")
+                                .list("", { search: `${petId}-` });
+
+                            if (medError) {
+                                console.error(`Error listing files for pet ${petId} in pet-medical-history:`, medError);
+                            } else {
+                                for (const file of medFiles) {
+                                    const { error: deleteMedError } = await supabase
+                                        .storage
+                                        .from("pet-medical-history")
+                                        .remove([file.name]);
+
+                                    if (deleteMedError) {
+                                        console.error(`Error deleting file ${file.name} in pet-medical-history:`, deleteMedError);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Delete the pet owner profile
+                        const { error } = await supabase
+                            .from("pet_owners")
+                            .delete()
+                            .eq("email", user.email);
+
+                        if (error) {
+                            console.error("Error deleting profile:", error);
+                            Alert.alert("Error", "Failed to delete profile.");
+                            return;
+                        }
+
+                        Alert.alert("Success", "Profile deleted successfully!");
+                        router.push("/components/landing-page");
+                    } catch (err) {
+                        console.error("Unexpected error deleting profile:", err);
+                        Alert.alert("Error", "An unexpected error occurred.");
+                    }
+                },
+            },
+        ]
     );
-  };
+};
 
   return (
     <LinearGradient

@@ -15,5 +15,5 @@ export default function Index() {
   };
 
 
-  return <Redirect href="/pet_owner/dashboard" />;
+  return <Redirect href="/starting-page" />;
 }
