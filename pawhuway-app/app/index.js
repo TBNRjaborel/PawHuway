@@ -15,5 +15,5 @@ export default function Index() {
   };
 
 
-  return <Redirect href="/vet_clinic/search_clinic" />;
+  return <Redirect href="/vet/add_patients" />;
 }
