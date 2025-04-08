@@ -44,13 +44,14 @@ const addPatient = () => {
         if (pet) {
             setSelectedPet(petId); // Set the selected pet ID
             setPatientName(pet.name); // Fill out the form fields
-            setAge(pet.age);
-            setDob(pet.dob);
-            setGender(pet.gender);
+            setAge(pet.age.toString());
+            setDob(pet.birthDate);
+            setGender(pet.sex);
             setType(pet.type);
             setHeight(pet.height);
             setWeight(pet.weight);
         }
+        // console.log("pet age: ", pet.age);
     };
     const addNewPatient = async () => {
 
@@ -77,24 +78,46 @@ const addPatient = () => {
         // } catch (err) {
         //     console.error('Error uploading file:', err);
         // }
+        
+        const { data, error } = await supabase
+            .from('patients')
+            .insert([
+                {
+                    id: selectedPet,
+                    patient_name: patientName,
+                    age: age,
+                    date_of_birth: dob,
+                    gender: gender,
+                    type: type,
+                    height: height,
+                    weight: weight,
+                },
+            ])
+            .select();
+        
+            if (error) {
+                console.error('Error inserting patient:', error);
+                alert('Failed to add patient.');
+            }
+
 
     }
-    // const selectFile = async () => {
-    //     try {
-    //         const res = await DocumentPicker.getDocumentAsync({
-    //             type: 'application/pdf', // Allow only PDF files
-    //         });
+    const selectFile = async () => {
+        try {
+            const res = await DocumentPicker.getDocumentAsync({
+                type: 'application/pdf', // Allow only PDF files
+            });
     
-    //         if (res.type === 'success') {
-    //             setMedicalHistory(res); // Save the selected file
-    //             console.log('Selected file:', res);
-    //         } else {
-    //             console.log('User canceled file picker');
-    //         }
-    //     } catch (err) {
-    //         console.error('File picker error:', err);
-    //     }
-    // };
+            if (res.type === 'success') {
+                setMedicalHistory(res); // Save the selected file
+                console.log('Selected file:', res);
+            } else {
+                console.log('User canceled file picker');
+            }
+        } catch (err) {
+            console.error('File picker error:', err);
+        }
+    };
 
     return(
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -106,10 +129,10 @@ const addPatient = () => {
                     <View style = {styles.profileSection}>
 
                         <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Patient Name</Text>
-                            {/* <TextInput style={styles.inputInline} 
-                            value = {patientName} 
-                            onChangeText={setPatientName}  /> */}
+                            <Text style={styles.label}>Patients Name</Text>
+                            <TextInput style={styles.inputInline} 
+                            value = {patientName}
+                            editable = {false}/>
                             <RNPickerSelect
                                 onValueChange={(value) => handlePetSelection(value)}
                                 items={pets.map((pet) => ({
@@ -130,13 +153,12 @@ const addPatient = () => {
                             <Text style={styles.label}>Age</Text>
                             <TextInput style={styles.inputInline}
                             value = {age} 
-                            onChangeText={setAge} />
+                            editable = {false} />
                         </View>
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>Date of Birth</Text>
                             <TextInput style={styles.inputInline}
                             value = {dob}
-                            onChangeText={setDob}
                             editable = {false}  />
                             
                         </View>
@@ -170,14 +192,14 @@ const addPatient = () => {
                         </View>
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>Medical History:</Text>
-                            <TouchableOpacity style = {styles.attachButton} >
+                            <TouchableOpacity style = {styles.attachButton} onPress = {selectFile}>
                                 <Text style = {styles.attachButtonText}>
                                 {medicalHistory ? 'File Selected' : 'Attach File'}
                                 </Text>
                             </TouchableOpacity>
                         </View>
                         <View>
-                            <TouchableOpacity style = {styles.addPatientButton}>
+                            <TouchableOpacity style = {styles.addPatientButton} onPress={addNewPatient}>
                                 <Text style = {styles.addPatientButtonText}>
                                     Add Patient
                                 </Text>
@@ -255,7 +277,6 @@ const styles = StyleSheet.create({
     dropdownInline: {
         flex: 1, // Allow the dropdown to take the remaining space
         backgroundColor: '#FFFFFF',
-        borderColor: '#808080',
         borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 10,
