@@ -130,7 +130,6 @@ const CalendarScreen = () => {
                 )}
             </View>
 
-            {/* Modal for Appointment Details */}
             {selectedAppointment && (
                 <Modal
                     visible={modalVisible}
