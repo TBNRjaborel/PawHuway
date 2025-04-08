@@ -10,7 +10,7 @@ const PatientDetails = () => {
     const router = useRouter();
     const { petId } = useLocalSearchParams(); // Get petId from URL params
     // const [qrVisible, setQrVisible] = useState(false);
-    // const [qrValue, setQrValue] = useState('');
+    // const [ownerName, setOwnerName] = useState('');
 
     const [petData, setPetData] = useState({
         name: '',
@@ -22,7 +22,8 @@ const PatientDetails = () => {
         weight: '',
         owner_email: '',
         img_path: '',
-        file_path: ''
+        file_path: '',
+        owner_id: '',
     });
 
     // const [loading, setLoading] = useState(true);
@@ -91,9 +92,17 @@ const PatientDetails = () => {
         async function fetchPetDetails() {
             const { data, error } = await supabase
                 .from('pets')
-                .select('id, name, age, birthDate, sex, type, height, weight, img_path, file_path')
+                .select(`
+                id, name, age, birthDate, sex, type, height, weight, img_path, file_path,
+                owner_id,
+                pet_owner:owner_id (
+                    id,
+                    email
+                )
+            `)
                 .eq('id', petId)
                 .single();
+
 
             if (error) {
                 Alert.alert('Error', 'Failed to fetch pet details.');
@@ -102,11 +111,32 @@ const PatientDetails = () => {
 
             const { publicUrl } = supabase.storage.from('pet-images').getPublicUrl(`${petId}.jpg`);
 
+            // console.log("current data:", data)
+            const email = petData.pet_owner?.email;
+            // console.log("email:", email)
+            let ownerInfo = null;
+
+            if (email) {
+                const { data: userData, error: userError } = await supabase
+                    .from('user_accounts')
+                    .select('first_name, last_name, address')
+                    .eq('email_add', email)
+                    .single();
+
+                if (userError) {
+                    Alert.alert('Error', 'Failed to fetch owner info.');
+                } else {
+                    ownerInfo = userData;
+                }
+            }
             setPetData({
                 ...data,
                 birthDate: data.birthDate || '',
                 imageUrl: publicUrl || null,
+                ownerInfo: ownerInfo,
             });
+
+            // console.log("current pet data:", petData)
 
             setDob(data.birthDate ? new Date(data.birthDate) : null);
             setLoading(false);
@@ -128,11 +158,27 @@ const PatientDetails = () => {
                     <Ionicons name="arrow-back" size={28} color="black" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Patient Details</Text>
+                <View />
             </View>
 
             <Image source={{ uri: petData.img_path || "../../../assets/pictures/paw-logo.png" }} style={styles.petImage} />
             <View style={styles.detailsContainer}>
                 <Text style={styles.label}>Name: <Text style={styles.value}>{petData.name}</Text></Text>
+                {(petData?.ownerInfo?.first_name || petData?.ownerInfo?.last_name) && (
+                    <Text style={styles.label}>
+                        Owner:{" "}
+                        <Text style={styles.value}>
+                            {`${petData.ownerInfo.first_name || ""} ${petData.ownerInfo.last_name || ""}`.trim()}
+                        </Text>
+                    </Text>
+                )}
+
+                {petData?.ownerInfo?.address && (
+                    <Text style={styles.label}>
+                        Address:{" "}
+                        <Text style={styles.value}>{petData.ownerInfo.address}</Text>
+                    </Text>
+                )}
                 <Text style={styles.label}>Age: <Text style={styles.value}>{petData.age} years</Text></Text>
                 <Text style={styles.label}>Birthdate: <Text style={styles.value}>{petData.birthDate || "N/A"}</Text></Text>
                 <Text style={styles.label}>Sex: <Text style={styles.value}>{petData.sex}</Text></Text>
