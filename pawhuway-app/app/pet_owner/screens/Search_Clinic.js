@@ -5,6 +5,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../src/lib/supabase';
+import { useFonts } from 'expo-font';
 
 const Search_Clinic = () => {
     const router = useRouter();
@@ -18,6 +19,14 @@ const Search_Clinic = () => {
     const [selectedPet, setSelectedPet] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showTimePicker, setShowTimePicker] = useState(false);
+
+    const [fontsLoaded] = useFonts({
+        'Poppins Light': require('../../../assets/fonts/Poppins-Light.ttf'),
+    });
+
+    if (!fontsLoaded) {
+        return null; // Prevent rendering until fonts are loaded
+    }
 
     useEffect(() => {
         const fetchPets = async () => {
@@ -60,7 +69,7 @@ const Search_Clinic = () => {
         fetchPets();
     }, []);
 
-    const handleRequestAppointment = () => {
+    const handleRequestAppointment = async () => {
         // Validation
         if (!clinic) {
             Alert.alert('Validation Error', 'Please select a clinic.');
@@ -83,8 +92,30 @@ const Search_Clinic = () => {
             return;
         }
 
-        setModalVisible(false);
-        Alert.alert('Appointment request submitted');
+        try {
+            // Insert the appointment request into the database
+            const { data, error } = await supabase
+                .from('appointment_requests')
+                .insert([
+                    {
+                        clinic_id: clinic,
+                        pet_id: selectedPet,
+                        date: date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+                        time: time.toTimeString().split(' ')[0], // Format time as HH:MM:SS
+                        desc: description.trim(),
+                    },
+                ]);
+
+            if (error) {
+                throw error;
+            }
+
+            // Success message
+            setModalVisible(false);
+            Alert.alert('Success', 'Appointment request submitted successfully!');
+        } catch (error) {
+            Alert.alert('Error', error.message);
+        }
     };
 
     const handleDateChange = (event, selectedDate) => {
@@ -116,75 +147,95 @@ const Search_Clinic = () => {
                         <Text style={styles.modalTitle}>Request Appointment</Text>
 
                         {/* Clinic Picker */}
-                        <Text>Clinic:</Text>
-                        <Picker
-                            selectedValue={clinic}
-                            onValueChange={(itemValue) => setClinic(itemValue)}
-                        >
-                            <Picker.Item label="Clinic 1" value="1" />
-                            <Picker.Item label="Clinic 2" value="2" />
-                            <Picker.Item label="Clinic 3" value="3" />
-                        </Picker>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Clinic:</Text>
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    selectedValue={clinic}
+                                    onValueChange={(itemValue) => setClinic(itemValue)}
+                                    style={styles.picker}
+                                >
+                                    <Picker.Item style={{ fontFamily: "Poppins Light" }} label="Clinic 1" value="1" />
+                                    <Picker.Item label="Clinic 2" value="2" />
+                                    <Picker.Item label="Clinic 3" value="3" />
+                                </Picker>
+                            </View>
+                        </View>
 
                         {/* Date Picker */}
-                        <Text>Date:</Text>
-                        <TouchableOpacity
-                            style={styles.input}
-                            onPress={() => setShowDatePicker(true)}
-                        >
-                            <Text>{date.toISOString().split('T')[0]}</Text>
-                        </TouchableOpacity>
-                        {showDatePicker && (
-                            <DateTimePicker
-                                value={date}
-                                mode="date"
-                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                onChange={handleDateChange}
-                            />
-                        )}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Date:</Text>
+                            <TouchableOpacity
+                                style={[styles.input, { justifyContent: 'center' }]}
+                                onPress={() => setShowDatePicker(true)}
+                            >
+                                <Text>{date.toISOString().split('T')[0]}</Text>
+                            </TouchableOpacity>
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    value={date}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={handleDateChange}
+                                />
+                            )}
+                        </View>
 
                         {/* Time Picker */}
-                        <Text>Time:</Text>
-                        <TouchableOpacity
-                            style={styles.input}
-                            onPress={() => setShowTimePicker(true)}
-                        >
-                            <Text>{time.toTimeString().split(' ')[0]}</Text>
-                        </TouchableOpacity>
-                        {showTimePicker && (
-                            <DateTimePicker
-                                value={time}
-                                mode="time"
-                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                onChange={handleTimeChange}
-                            />
-                        )}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Time:</Text>
+                            <TouchableOpacity
+                                style={[styles.input, { justifyContent: 'center' }]}
+                                onPress={() => setShowTimePicker(true)}
+                            >
+                                <Text>{time.toTimeString().split(' ')[0]}</Text>
+                            </TouchableOpacity>
+                            {showTimePicker && (
+                                <DateTimePicker
+                                    value={time}
+                                    mode="time"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={handleTimeChange}
+                                />
+                            )}
+                        </View>
 
                         {/* Description Input */}
-                        <Text>Description:</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter request details"
-                            value={description}
-                            onChangeText={setDescription}
-                            multiline
-                        />
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Description:</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter request details"
+                                value={description}
+                                onChangeText={setDescription}
+                                multiline
+                            />
+                        </View>
 
                         {/* Pet Picker */}
-                        <Text>Pet:</Text>
-                        <Picker
-                            selectedValue={selectedPet}
-                            onValueChange={(itemValue) => setSelectedPet(itemValue)}
-                        >
-                            {pets.map((pet) => (
-                                <Picker.Item key={pet.id} label={pet.name} value={pet.id} />
-                            ))}
-                        </Picker>
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>Pet:</Text>
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    selectedValue={selectedPet}
+                                    onValueChange={(itemValue) => setSelectedPet(itemValue)}
+                                    style={styles.picker}
+                                >
+                                    {pets.map((pet) => (
+                                        <Picker.Item key={pet.id} label={pet.name} value={pet.id} />
+                                    ))}
+                                </Picker>
+                            </View>
+                        </View>
 
                         {/* Buttons */}
                         <View style={styles.buttonContainer}>
-                            <Button title="Request Appointment" onPress={handleRequestAppointment} />
-                            <Button title="Cancel" color="red" onPress={() => setModalVisible(false)} />
+                            <TouchableOpacity style={styles.addButton} onPress={handleRequestAppointment}>
+                                <Text style={styles.addButtonText}>Request Appointment</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
+                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
@@ -196,51 +247,116 @@ const Search_Clinic = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFAD6',
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: "#B3EBF2", // Match AddPet form background
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 20,
     },
     btn: {
-        color: '#F9FE62',
-        backgroundColor: '#F9FE62',
+        backgroundColor: "#85D1DB", // Match AddPet button color
         marginHorizontal: 20,
-        borderColor: '#1E1E1E',
+        borderColor: "#1E1E1E",
         borderWidth: 1 / 2,
-        borderRadius: 5,
-        paddingVertical: 8,
+        borderRadius: 10,
+        padding: 15,
+        alignItems: "center",
     },
     modalOverlay: {
-        position: 'absolute',
+        position: "absolute",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "center",
+        alignItems: "center",
     },
     modalContent: {
-        width: 300,
-        padding: 20,
-        backgroundColor: 'white',
-        borderRadius: 10,
+        width: "90%",
+        backgroundColor: "#C9FDF2", // Match AddPet form background
+        borderRadius: 30, // Rounded corners
+        paddingVertical: 20,
+        paddingHorizontal: 20,
     },
     modalTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
+        fontWeight: "bold",
+        fontFamily: "Poppins Light", // Match description input font
+        marginBottom: 20,
+        textAlign: "center",
+    },
+    inputContainer: {
+        marginBottom: 15,
+    },
+    label: {
+        fontSize: 18,
+        fontWeight: "bold",
+        fontFamily: "Poppins Light", // Match description input font
+        marginBottom: 5,
     },
     input: {
+        backgroundColor: "#FFFFFF",
         borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        padding: 8,
-        marginBottom: 10,
+        borderColor: "#808080",
+        borderRadius: 10,
+        padding: 10,
+        fontSize: 16,
+        fontFamily: "Poppins Light", // Match description input font
+    },
+    pickerContainer: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "#808080",
+        height: 50,
+        justifyContent: "center",
+    },
+    picker: {
+        height: 50,
+        width: "100%",
+        fontFamily: "Poppins Light", // Match description input font
     },
     buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 10,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 20,
+    },
+    addButton: {
+        backgroundColor: "#85D1DB", // Match AddPet button color
+        paddingVertical: 15,
+        paddingHorizontal: 30,
+        borderRadius: 10,
+        alignItems: "center",
+        flex: 1,
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: "#1E1E1E",
+        fontFamily: "Poppins Light", // Match description input font
+    },
+    addButtonText: {
+        fontWeight: "bold",
+        fontSize: 18,
+        fontFamily: "Poppins Light", // Match description input font
+        color: "#1E1E1E", // Dark text for contrast
+        textAlign: "center",
+    },
+    cancelButton: {
+        backgroundColor: "#1E1E1E", // Match AddPet cancel button color
+        paddingVertical: 15,
+        paddingHorizontal: 30,
+        borderRadius: 10,
+        alignItems: "center",
+        justifyContent: "center",
+        flex: 1,
+        marginLeft: 10,
+        borderWidth: 1,
+        borderColor: "#FFFFFF",
+    },
+    cancelButtonText: {
+        color: "#FFFFFF", // White text for contrast
+        fontWeight: "bold",
+        fontSize: 18,
+        fontFamily: "Poppins Light", // Match description input font
     },
 });
 
