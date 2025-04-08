@@ -6,8 +6,8 @@ import { Stack } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 
 // Screens
-import Pets from './screens/Pets/Pets';
-import SearchClinic from './screens/Search_Clinic';
+import Patients from './screens/Patients/Patients';
+import ScanQR from './screens/Scan-qr';
 import Calendar from './screens/Calendar';
 import Profile from './screens/Profile';
 
@@ -19,15 +19,15 @@ const Dashboard = () => {
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar hidden={true} />
             <Tab.Navigator
-                initialRouteName="Pets"
+                initialRouteName="Patients"
                 screenOptions={({ route }) => ({
                     tabBarIcon: ({ focused, color, size }) => {
                         let iconName;
 
-                        if (route.name === 'Pets') {
+                        if (route.name === 'Patients') {
                             iconName = focused ? 'paw' : 'paw-outline';
-                        } else if (route.name === 'Search Clinic') {
-                            iconName = focused ? 'search' : 'search-outline';
+                        } else if (route.name === 'Scan QR') {
+                            iconName = focused ? 'scan' : 'scan-outline';
                         } else if (route.name === 'Calendar') {
                             iconName = focused ? 'calendar' : 'calendar-outline';
                         } else if (route.name === 'Profile') {
@@ -36,12 +36,12 @@ const Dashboard = () => {
 
                         return <Ionicons name={iconName} size={size} color={color} />;
                     },
-                    tabBarActiveTintColor: '#B3EBF2',
+                    tabBarActiveTintColor: '#85D1DB',
                     tabBarInactiveTintColor: '#3C3C4C',
                     headerShown: false,
                 })}>
-                <Tab.Screen name="Pets" component={Pets} />
-                <Tab.Screen name="Search Clinic" component={SearchClinic} />
+                <Tab.Screen name="Patients" component={Patients} />
+                <Tab.Screen name="Scan QR" component={ScanQR} />
                 <Tab.Screen name="Calendar" component={Calendar} />
                 <Tab.Screen name="Profile" component={Profile} />
             </Tab.Navigator>

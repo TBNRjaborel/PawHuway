@@ -14,6 +14,7 @@ import { supabase } from "../../../../src/lib/supabase";
 import { Alert } from "react-native";
 import QRCodeGenerator from "./generate-qr";
 import ImageResizer from "react-native-image-resizer";
+import { Ionicons } from '@expo/vector-icons';
 
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
@@ -149,11 +150,8 @@ const Pets = () => {
         )}
       />
 
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => router.push("/pet_owner/screens/Pets/add-pet")}
-      >
-        <Text style={styles.btnText}>+</Text>
+      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/screens/Pets/add-pet')}>
+        <Ionicons name="add" size={24} color="white" />
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -242,7 +240,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 20,
     right: 20,
-    backgroundColor: "#FFD166",
+    backgroundColor: '#3C3C4C',
     width: 50,
     height: 50,
     borderRadius: 25,

@@ -238,10 +238,19 @@ const Search_Clinic = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#B3EBF2", 
-        justifyContent: "center",
-        alignItems: "center",
         padding: 20,
+        backgroundColor: '#B3EBF2',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    logo: {
+        width: 350,
+        height: 350,
+        alignSelf: 'center',
+        // borderRadius: 200, 
+        marginTop: 180,
+        marginBottom: -75,
     },
     btn: {
         backgroundColor: "#85D1DB",
