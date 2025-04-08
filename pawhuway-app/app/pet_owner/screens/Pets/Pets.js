@@ -1,11 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList } from 'react-native';
-import { Stack } from 'expo-router';
-import { useRouter } from 'expo-router';
-import { supabase } from '../../../../src/lib/supabase';
-import { Alert } from 'react-native';
-import QRCodeGenerator from './generate-qr';
-import ImageResizer from 'react-native-image-resizer';
+import React, { useEffect, useState } from "react";
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  FlatList,
+} from "react-native";
+import { Stack } from "expo-router";
+import { useRouter } from "expo-router";
+import { supabase } from "../../../../src/lib/supabase";
+import { Alert } from "react-native";
+import QRCodeGenerator from "./generate-qr";
+import ImageResizer from "react-native-image-resizer";
 
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
@@ -16,23 +24,26 @@ const Pets = () => {
   const [owner, setOwner] = useState(null);
   const [pets, setPets] = useState([]);
   const [qrVisible, setQrVisible] = useState(false);
-  const [qrValue, setQrValue] = useState('');
+  const [qrValue, setQrValue] = useState("");
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-    
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
       if (error) {
-        console.error('Error fetching user:', error.message);
+        console.error("Error fetching user:", error.message);
         return null;
       }
       console.log("usersdfdsf: ", user.email);
-    
+
       setUser(user);
 
       const { data: petOwner, error: ownerError } = await supabase
         .from("pet_owners")
-        .select("*") 
+        .select("*")
         .eq("email", user.email)
         .single();
 
@@ -45,27 +56,36 @@ const Pets = () => {
     };
 
     getUser();
-  }, [])
+  }, []);
 
   useEffect(() => {
     const fetchPets = async () => {
-      const { data, error } = await supabase.from('pets').select('id, name, age, sex, type, height, weight, owner_id, img_path, file_path').eq('owner_id', owner.id);
+      const { data, error } = await supabase
+        .from("pets")
+        .select(
+          "id, name, age, sex, type, height, weight, owner_id, img_path, file_path"
+        )
+        .eq("owner_id", owner.id);
       console.log("fetched: ", data);
       setPets(data);
       if (error) {
-        console.error('Error fetching pets:', error);
-      } 
+        console.error("Error fetching pets:", error);
+      }
     };
-    fetchPets(); 
+    fetchPets();
   }, [user, owner]);
-
 
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.logo_container} >
+      <View style={styles.logo_container}>
         {/* style={styles.logo_container} */}
-        <Image source={require('../../../../assets/pictures/paw-logo.png')} style={styles.logo} resizeMode='stretch' alt="logo" />
+        <Image
+          source={require("../../../../assets/pictures/paw-logo.png")}
+          style={styles.logo}
+          resizeMode="stretch"
+          alt="logo"
+        />
         <Text style={styles.title}>PawHuway</Text>
       </View>
       <FlatList
@@ -96,24 +116,43 @@ const Pets = () => {
           // </View>
           <TouchableOpacity
             style={styles.petCard}
-            onPress={() => router.push(`/pet_owner/screens/Pets/pet-details?petId=${item.id}`)}
+            onPress={() =>
+              router.push(
+                `/pet_owner/screens/Pets/pet-details?petId=${item.id}`
+              )
+            }
           >
             {item.img_path ? (
-                      <Image source={{ uri: item.img_path }} style={styles.petImage} onError={() => console.log("Error loading image")}/>
-                    ) : (
-                      <Image source={require('../../../../assets/pictures/paw-logo.png')} style={styles.petImage} />
-                    )}
+              <Image
+                source={{ uri: item.img_path }}
+                style={styles.petImage}
+                onError={() => console.log("Error loading image")}
+              />
+            ) : (
+              <Image
+                source={require("../../../../assets/pictures/paw-logo.png")}
+                style={styles.petImage}
+              />
+            )}
             <View style={styles.petInfo}>
-              <Text style={styles.petName}>{capitalizeFirstLetter(item.name)}</Text>
-              <Text style={styles.petDetails}>{item.age} years • {item.sex}</Text>
-              <Text style={styles.petType}>{capitalizeFirstLetter(item.type)}</Text>
+              <Text style={styles.petName}>
+                {capitalizeFirstLetter(item.name)}
+              </Text>
+              <Text style={styles.petDetails}>
+                {item.age} years • {item.sex}
+              </Text>
+              <Text style={styles.petType}>
+                {capitalizeFirstLetter(item.type)}
+              </Text>
             </View>
           </TouchableOpacity>
         )}
       />
 
-
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/screens/Pets/add-pet')}>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => router.push("/pet_owner/screens/Pets/add-pet")}
+      >
         <Text style={styles.btnText}>+</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -123,17 +162,17 @@ const Pets = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#B3EBF2',
+    backgroundColor: "#B3EBF2",
   },
 
   logo_container: {
-    width: '100%',
+    width: "100%",
     height: 80,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 10,
     paddingTop: 35,
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   logo: {
@@ -143,14 +182,14 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginLeft: 0,
     marginTop: 5,
   },
 
   petCard: {
-    flexDirection: 'row',
-    backgroundColor: '#3C3C4C',
+    flexDirection: "row",
+    backgroundColor: "#3C3C4C",
     marginHorizontal: 28,
     marginVertical: 8,
     padding: 10,
@@ -162,107 +201,105 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   petInfo: {
-    color: 'white',
+    color: "white",
     flex: 1,
     marginLeft: 10,
-    padding: 4
+    padding: 4,
   },
   petName: {
-    color: 'white',
+    color: "white",
     fontSize: 28,
     fontWeight: "bold",
     // color: "#333",
   },
   petDetails: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
     // fontWeight: "bold",
     // color: "#666",
-    padding: 2
+    padding: 2,
   },
   petType: {
     fontSize: 12,
     fontWeight: "bold",
-    color: 'white',
-    padding: 2
+    color: "white",
+    padding: 2,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   viewButton: {
     padding: 8,
     marginRight: 5,
     marginTop: 5,
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderRadius: 5,
-    alignItems: 'center',
+    alignItems: "center",
     minWidth: 60,
   },
   addButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 20,
     right: 20,
-    backgroundColor: '#FFD166',
+    backgroundColor: "#FFD166",
     width: 50,
     height: 50,
     borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
   },
   btnText: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
   body: {
-    flex: 1,  // Takes up remaining space, allowing space-between to work
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flex: 1, // Takes up remaining space, allowing space-between to work
+    justifyContent: "space-between",
+    alignItems: "center",
     // backgroundColor: 'red'
   },
 
   petList: {
-    width: '90%',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: "90%",
+    alignItems: "center",
+    justifyContent: "center",
     // backgroundColor: 'orange',
     padding: 10,
-    marginTop: 200
+    marginTop: 200,
   },
 
   petListText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: 'gray'
+    fontWeight: "bold",
+    color: "gray",
   },
 
   regbtns: {
-    alignSelf: 'flex-end', // Centers button
-    width: '25%',
-    marginBottom: 20,  // Pushes it to the bottom
-    marginRight: 20
+    alignSelf: "flex-end", // Centers button
+    width: "25%",
+    marginBottom: 20, // Pushes it to the bottom
+    marginRight: 20,
   },
 
   btn: {
-    backgroundColor: '#F9FE62',
+    backgroundColor: "#F9FE62",
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 5,
-    borderColor: '#1E1E1E',
+    borderColor: "#1E1E1E",
     borderWidth: 0.5,
   },
 
   btn_sign_up: {
-    textAlign: 'center',
-    fontWeight: 'bold',
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });
-
-
 
 export default Pets;

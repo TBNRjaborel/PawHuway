@@ -227,7 +227,7 @@ const AddPet = () => {
           month: "2-digit",
           day: "2-digit",
         })
-        .replace(/\//g, "-")}-(${petData.medfile.name})`;
+        .replace(/\//g, "-")}-${petData.medfile.name}`;
 
       const { error: fileError } = await supabase.storage
         .from("pet-medical-history")

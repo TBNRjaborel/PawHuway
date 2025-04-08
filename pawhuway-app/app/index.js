@@ -15,5 +15,5 @@ export default function Index() {
   };
 
 
-  return <Redirect href="/vet/create-vet-profile" />;
+  return <Redirect href="/pet_owner/dashboard" />;
 }
