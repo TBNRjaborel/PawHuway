@@ -4,19 +4,19 @@ import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../../src/lib/supabase';
 import { Alert } from 'react-native';
-import QRCodeGenerator from './generate-qr';
-import ImageResizer from 'react-native-image-resizer';
+// import QRCodeGenerator from './generate-qr';
+// import ImageResizer from 'react-native-image-resizer';
 
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
 
-const Pets = () => {
+const Patient = () => {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [owner, setOwner] = useState(null);
-  const [pets, setPets] = useState([]);
-  const [qrVisible, setQrVisible] = useState(false);
-  const [qrValue, setQrValue] = useState('');
+  const [Vet, setVet] = useState(null);
+  const [Patient, setPatient] = useState([]);
+  // const [qrVisible, setQrVisible] = useState(false);
+  // const [qrValue, setQrValue] = useState('');
 
   useEffect(() => {
     const getUser = async () => {
@@ -30,34 +30,34 @@ const Pets = () => {
 
       setUser(user);
 
-      const { data: petOwner, error: ownerError } = await supabase
-        .from("pet_owners")
+      const { data: petVet, error: VetError } = await supabase
+        .from("vet_profiles")
         .select("*")
-        .eq("email", user.email)
+        .eq("id", user.id)
         .single();
 
-      if (ownerError) {
-        console.error("Error fetching pet owner:", ownerError.message);
+      if (VetError) {
+        console.error("Error fetching vet:", VetError.message);
         return;
       }
 
-      setOwner(petOwner);
+      setVet(petVet);
     };
 
     getUser();
   }, [])
 
   useEffect(() => {
-    const fetchPets = async () => {
-      const { data, error } = await supabase.from('pets').select('id, name, age, sex, type, height, weight, owner_id, img_path, file_path').eq('owner_id', owner.id);
+    const fetchPatient = async () => {
+      const { data, error } = await supabase.from('pets').select('id, name, age, sex, type, height, weight, owner_id, img_path, file_path').eq('vet_id', Vet.id);
       console.log("fetched: ", data);
-      setPets(data);
+      setPatient(data);
       if (error) {
-        console.error('Error fetching pets:', error);
+        console.error('Error fetching Patient:', error);
       }
     };
-    fetchPets();
-  }, [user, owner]);
+    fetchPatient();
+  }, [user, Vet]);
 
 
   return (
@@ -69,34 +69,12 @@ const Pets = () => {
         <Text style={styles.title}>PawHuway</Text>
       </View>
       <FlatList
-        data={pets}
+        data={Patient}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          // <View style={styles.petCard}>
-          //   <Image source={{ uri: item.imageUrl || '../../../assets/pictures/paw-logo.png' }} style={styles.petImage} />
-          //   <View style={styles.petInfo}>
-          //     <Text>Name: {item.name}</Text>
-          //     <Text>Age: {item.age}</Text>
-          //     <Text>Sex: {item.sex}</Text>
-          //     <Text>Type: {item.type}</Text>
-          //     <Text>Height: {item.height}</Text>
-          //     <Text>Weight: {item.weight}</Text>
-          //     <View style={styles.buttonContainer}>
-          //       <TouchableOpacity style={styles.viewButton} onPress={() => router.push(`/pet_owner/edit-pet?petId=${item.id}`)}>
-          //         <Text>Edit</Text>
-          //       </TouchableOpacity>
-          //       <TouchableOpacity style={styles.viewButton} onPress={() => deletePet(item.id)}>
-          //         <Text>Delete</Text>
-          //       </TouchableOpacity>
-          //       <TouchableOpacity style={styles.viewButton} onPress={() => handleGenerateQR(item)}>
-          //         <Text>Generate QR Code</Text>
-          //       </TouchableOpacity>
-          //     </View>
-          //   </View>
-          // </View>
           <TouchableOpacity
             style={styles.petCard}
-            onPress={() => router.push(`/pet_owner/screens/Pets/pet-details?petId=${item.id}`)}
+            onPress={() => router.push(`/vet/screens/Patients/patient-details?petId=${item.id}`)}
           >
             {item.img_path ? (
               <Image source={{ uri: item.img_path }} style={styles.petImage} onError={() => console.log("Error loading image")} />
@@ -113,9 +91,9 @@ const Pets = () => {
       />
 
 
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/screens/Pets/add-pet')}>
+      {/* <TouchableOpacity style={styles.addButton} onPress={() => router.push('/vet/screens/Patient/add-pet')}>
         <Text style={styles.btnText}>+</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </SafeAreaView>
   );
 };
@@ -265,4 +243,4 @@ const styles = StyleSheet.create({
 
 
 
-export default Pets;
+export default Patient;
