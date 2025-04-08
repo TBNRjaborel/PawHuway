@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
-import { supabase } from '../../../src/lib/supabase';
+import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { supabase } from '../../../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { Calendar, Agenda, LocaleConfig } from 'react-native-calendars';
@@ -11,10 +12,51 @@ import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
 const CalendarScreen = () => {
     const router = useRouter();
     const [selectedDate, setSelectedDate] = useState('');
+    const [items, setItems] = useState('');
 
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
+            <Calendar
+                onDayPress={(day) => {
+                    setSelectedDate(day.dateString);
+                    console.log('Selected day:', day.dateString);
+                }}
+                markedDates={{
+                    [selectedDate]: { selected: true, marked: true, selectedColor: '#FFFAD6' }
+                }}
+                theme={{
+                    backgroundColor: '#FFFAD6',
+                    calendarBackground: '#B3EBF2',
+                    textSectionTitleColor: '#1E1E1E',
+                    selectedDayTextColor: 'black',
+                    todayTextColor: '#FF6347',
+                    dayTextColor: '#1E1E1E',
+                    textDisabledColor: '#9BA19D',
+                    arrowColor: 'black',
+                    monthTextColor: '#1E1E1E',
+                    arrowStyle: {
+                        backgroundColor: '#FFFAD6', 
+                        borderRadius: 10, 
+                        borderColor: 'gray',
+                        borderWidth: 1, 
+                        padding: 5, 
+                    },
+                }}
+                renderHeader={(date) => {
+                    const formatter = new Intl.DateTimeFormat('en', { month: 'long' });
+                    const month = formatter.format(date); 
+                    const year = date.getFullYear(); 
+                    return (
+                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E1E1E' }}>{month}</Text>
+                            <Text style={{ fontSize: 16, color: '#1E1E1E' }}>{year}</Text>
+                        </View>
+                    );
+                }}
+            />
+
+            <View style={styles.divider} />
 
                 <Calendar
                     onDayPress={(day) => {
@@ -65,8 +107,8 @@ const CalendarScreen = () => {
             ) : (
                 <Text style={styles.placeholderText}>Select a date </Text>
             )}
-            </View>
-            <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/screens/Pets/add-pet')}>
+
+            <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/screens/Calendar/add-event')}>
                 <Text style={styles.btnText}>+</Text>
             </TouchableOpacity>
         </SafeAreaView>
@@ -115,7 +157,11 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 3,
-      },
+    },
+    btnText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
 });
 
 export default CalendarScreen;

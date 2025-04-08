@@ -18,6 +18,8 @@ const Pets = () => {
   const [qrVisible, setQrVisible] = useState(false);
   const [qrValue, setQrValue] = useState('');
 
+<<<<<<< HEAD
+=======
   useEffect(() => {
     const getUser = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
@@ -47,6 +49,7 @@ const Pets = () => {
     getUser();
   }, [])
 
+>>>>>>> 2c4f4e6b29aa9a23f826e2e425ff80b15baacbbc
   useEffect(() => {
     const fetchPets = async () => {
       const { data, error } = await supabase.from('pets').select('id, name, age, sex, type, height, weight, owner_id, img_path, file_path').eq('owner_id', owner.id);
