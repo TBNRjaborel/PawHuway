@@ -107,7 +107,7 @@ const CalendarScreen = () => {
             ) : (
                 <Text style={styles.placeholderText}>Select a date </Text>
             )}
-
+            </View>
             <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/screens/Calendar/add-event')}>
                 <Text style={styles.btnText}>+</Text>
             </TouchableOpacity>
