@@ -26,7 +26,7 @@ const Dashboard = () => {
 
                         if (route.name === 'Patients') {
                             iconName = focused ? 'paw' : 'paw-outline';
-                        } else if (route.name === 'ScanQR') {
+                        } else if (route.name === 'Scan QR') {
                             iconName = focused ? 'scan' : 'scan-outline';
                         } else if (route.name === 'Calendar') {
                             iconName = focused ? 'calendar' : 'calendar-outline';
@@ -36,8 +36,8 @@ const Dashboard = () => {
 
                         return <Ionicons name={iconName} size={size} color={color} />;
                     },
-                    tabBarActiveTintColor: '#FBC95F',
-                    tabBarInactiveTintColor: 'black',
+                    tabBarActiveTintColor: '#85D1DB',
+                    tabBarInactiveTintColor: '#3C3C4C',
                     headerShown: false,
                 })}>
                 <Tab.Screen name="Patients" component={Patients} />

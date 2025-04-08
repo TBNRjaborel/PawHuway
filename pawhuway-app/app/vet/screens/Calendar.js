@@ -37,17 +37,17 @@ const CalendarScreen = () => {
                     arrowColor: 'black',
                     monthTextColor: '#1E1E1E',
                     arrowStyle: {
-                        backgroundColor: '#FFFAD6', 
-                        borderRadius: 10, 
+                        backgroundColor: '#FFFAD6',
+                        borderRadius: 10,
                         borderColor: 'gray',
-                        borderWidth: 1, 
-                        padding: 5, 
+                        borderWidth: 1,
+                        padding: 5,
                     },
                 }}
                 renderHeader={(date) => {
                     const formatter = new Intl.DateTimeFormat('en', { month: 'long' });
-                    const month = formatter.format(date); 
-                    const year = date.getFullYear(); 
+                    const month = formatter.format(date);
+                    const year = date.getFullYear();
                     return (
                         <View style={{ alignItems: 'center', marginBottom: 20 }}>
                             <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E1E1E' }}>{month}</Text>
@@ -90,10 +90,10 @@ const styles = StyleSheet.create({
         color: '#999',
     },
     divider: {
-        height: 1, 
-        backgroundColor: 'gray', 
+        height: 1,
+        backgroundColor: 'gray',
         marginTop: 20,
-        marginLeft: 180, 
+        marginLeft: 180,
         marginRight: 180,
     },
 });

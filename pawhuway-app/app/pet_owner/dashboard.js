@@ -36,8 +36,8 @@ const Dashboard = () => {
 
                         return <Ionicons name={iconName} size={size} color={color} />;
                     },
-                    tabBarActiveTintColor: '#FBC95F',
-                    tabBarInactiveTintColor: 'black',
+                    tabBarActiveTintColor: '#B3EBF2',
+                    tabBarInactiveTintColor: '#3C3C4C',
                     headerShown: false,
                 })}>
                 <Tab.Screen name="Pets" component={Pets} />

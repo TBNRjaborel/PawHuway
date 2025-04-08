@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../../../src/lib/supabase';
 import { Alert } from 'react-native';
 import QRCodeGenerator from './generate-qr';
+import { Ionicons } from '@expo/vector-icons';
 import ImageResizer from 'react-native-image-resizer';
 
 const capitalizeFirstLetter = (string) =>
@@ -114,7 +115,7 @@ const Pets = () => {
 
 
       <TouchableOpacity style={styles.addButton} onPress={() => router.push('/pet_owner/screens/Pets/add-pet')}>
-        <Text style={styles.btnText}>+</Text>
+        <Ionicons name="add" size={24} color="white" />
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -203,7 +204,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: '#FFD166',
+    backgroundColor: '#3C3C4C',
     width: 50,
     height: 50,
     borderRadius: 25,
