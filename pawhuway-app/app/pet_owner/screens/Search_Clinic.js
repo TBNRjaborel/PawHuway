@@ -11,7 +11,7 @@ const Search_Clinic = () => {
     const router = useRouter();
 
     const [modalVisible, setModalVisible] = useState(false);
-    const [clinic, setClinic] = useState('1'); // Default clinic ID
+    const [clinic, setClinic] = useState('1'); 
     const [date, setDate] = useState(new Date());
     const [time, setTime] = useState(new Date());
     const [description, setDescription] = useState('');
@@ -25,7 +25,7 @@ const Search_Clinic = () => {
     });
 
     if (!fontsLoaded) {
-        return null; // Prevent rendering until fonts are loaded
+        return null; 
     }
 
     useEffect(() => {
@@ -70,7 +70,6 @@ const Search_Clinic = () => {
     }, []);
 
     const handleRequestAppointment = async () => {
-        // Validation
         if (!clinic) {
             Alert.alert('Validation Error', 'Please select a clinic.');
             return;
@@ -93,15 +92,14 @@ const Search_Clinic = () => {
         }
 
         try {
-            // Insert the appointment request into the database
             const { data, error } = await supabase
                 .from('appointment_requests')
                 .insert([
                     {
                         clinic_id: clinic,
                         pet_id: selectedPet,
-                        date: date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
-                        time: time.toTimeString().split(' ')[0], // Format time as HH:MM:SS
+                        date: date.toISOString().split('T')[0], 
+                        time: time.toTimeString().split(' ')[0],
                         desc: description.trim(),
                     },
                 ]);
@@ -110,7 +108,6 @@ const Search_Clinic = () => {
                 throw error;
             }
 
-            // Success message
             setModalVisible(false);
             Alert.alert('Success', 'Appointment request submitted successfully!');
         } catch (error) {
@@ -146,7 +143,6 @@ const Search_Clinic = () => {
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Request Appointment</Text>
 
-                        {/* Clinic Picker */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Clinic:</Text>
                             <View style={styles.pickerContainer}>
@@ -162,7 +158,6 @@ const Search_Clinic = () => {
                             </View>
                         </View>
 
-                        {/* Date Picker */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Date:</Text>
                             <TouchableOpacity
@@ -181,7 +176,6 @@ const Search_Clinic = () => {
                             )}
                         </View>
 
-                        {/* Time Picker */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Time:</Text>
                             <TouchableOpacity
@@ -200,7 +194,6 @@ const Search_Clinic = () => {
                             )}
                         </View>
 
-                        {/* Description Input */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Description:</Text>
                             <TextInput
@@ -212,7 +205,6 @@ const Search_Clinic = () => {
                             />
                         </View>
 
-                        {/* Pet Picker */}
                         <View style={styles.inputContainer}>
                             <Text style={styles.label}>Pet:</Text>
                             <View style={styles.pickerContainer}>
@@ -228,7 +220,6 @@ const Search_Clinic = () => {
                             </View>
                         </View>
 
-                        {/* Buttons */}
                         <View style={styles.buttonContainer}>
                             <TouchableOpacity style={styles.addButton} onPress={handleRequestAppointment}>
                                 <Text style={styles.addButtonText}>Request Appointment</Text>
@@ -247,13 +238,13 @@ const Search_Clinic = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#B3EBF2", // Match AddPet form background
+        backgroundColor: "#B3EBF2", 
         justifyContent: "center",
         alignItems: "center",
         padding: 20,
     },
     btn: {
-        backgroundColor: "#85D1DB", // Match AddPet button color
+        backgroundColor: "#85D1DB",
         marginHorizontal: 20,
         borderColor: "#1E1E1E",
         borderWidth: 1 / 2,
@@ -273,15 +264,15 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         width: "90%",
-        backgroundColor: "#C9FDF2", // Match AddPet form background
-        borderRadius: 30, // Rounded corners
+        backgroundColor: "#C9FDF2", 
+        borderRadius: 30, 
         paddingVertical: 20,
         paddingHorizontal: 20,
     },
     modalTitle: {
         fontSize: 18,
         fontWeight: "bold",
-        fontFamily: "Poppins Light", // Match description input font
+        fontFamily: "Poppins Light", 
         marginBottom: 20,
         textAlign: "center",
     },
@@ -291,7 +282,7 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 18,
         fontWeight: "bold",
-        fontFamily: "Poppins Light", // Match description input font
+        fontFamily: "Poppins Light", 
         marginBottom: 5,
     },
     input: {
@@ -301,7 +292,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
         fontSize: 16,
-        fontFamily: "Poppins Light", // Match description input font
+        fontFamily: "Poppins Light", 
     },
     pickerContainer: {
         backgroundColor: "#FFFFFF",
@@ -314,7 +305,7 @@ const styles = StyleSheet.create({
     picker: {
         height: 50,
         width: "100%",
-        fontFamily: "Poppins Light", // Match description input font
+        fontFamily: "Poppins Light",
     },
     buttonContainer: {
         flexDirection: "row",
@@ -322,7 +313,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     addButton: {
-        backgroundColor: "#85D1DB", // Match AddPet button color
+        backgroundColor: "#85D1DB", 
         paddingVertical: 15,
         paddingHorizontal: 30,
         borderRadius: 10,
@@ -331,17 +322,17 @@ const styles = StyleSheet.create({
         marginRight: 10,
         borderWidth: 1,
         borderColor: "#1E1E1E",
-        fontFamily: "Poppins Light", // Match description input font
+        fontFamily: "Poppins Light", 
     },
     addButtonText: {
         fontWeight: "bold",
         fontSize: 18,
-        fontFamily: "Poppins Light", // Match description input font
-        color: "#1E1E1E", // Dark text for contrast
+        fontFamily: "Poppins Light", 
+        color: "#1E1E1E", 
         textAlign: "center",
     },
     cancelButton: {
-        backgroundColor: "#1E1E1E", // Match AddPet cancel button color
+        backgroundColor: "#1E1E1E",
         paddingVertical: 15,
         paddingHorizontal: 30,
         borderRadius: 10,
@@ -353,10 +344,10 @@ const styles = StyleSheet.create({
         borderColor: "#FFFFFF",
     },
     cancelButtonText: {
-        color: "#FFFFFF", // White text for contrast
+        color: "#FFFFFF", 
         fontWeight: "bold",
         fontSize: 18,
-        fontFamily: "Poppins Light", // Match description input font
+        fontFamily: "Poppins Light", 
     },
 });
 
