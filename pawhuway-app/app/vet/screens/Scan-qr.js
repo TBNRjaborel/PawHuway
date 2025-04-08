@@ -25,7 +25,7 @@ const ScanQR = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFAD6',
+        backgroundColor: '#B3EBF2',
         justifyContent: 'center',
         alignItems: 'center',
     },

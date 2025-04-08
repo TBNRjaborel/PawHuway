@@ -83,6 +83,24 @@ const PatientDetails = () => {
         );
     };
 
+    async function fetchOwnerInfo(email) {
+        if (!email) return null;
+
+        const { data: userData, error } = await supabase
+            .from('user_accounts')
+            .select('first_name, last_name, address')
+            .eq('email_add', email)
+            .single();
+
+        if (error) {
+            Alert.alert('Error', 'Failed to fetch owner info.');
+            return null;
+        }
+
+        return userData;
+    }
+
+
     // const handleGenerateQR = (pet) => {
     //     setQrValue(JSON.stringify(pet)); // Encode pet data in QR code
     //     setQrVisible(true);
@@ -93,16 +111,15 @@ const PatientDetails = () => {
             const { data, error } = await supabase
                 .from('pets')
                 .select(`
-                id, name, age, birthDate, sex, type, height, weight, img_path, file_path,
-                owner_id,
-                pet_owner:owner_id (
-                    id,
-                    email
-                )
-            `)
+                    id, name, age, birthDate, sex, type, height, weight, img_path, file_path,
+                    owner_id,
+                    pet_owner:owner_id (
+                        id,
+                        email
+                    )
+                `)
                 .eq('id', petId)
                 .single();
-
 
             if (error) {
                 Alert.alert('Error', 'Failed to fetch pet details.');
@@ -111,32 +128,15 @@ const PatientDetails = () => {
 
             const { publicUrl } = supabase.storage.from('pet-images').getPublicUrl(`${petId}.jpg`);
 
-            // console.log("current data:", data)
-            const email = petData.pet_owner?.email;
-            // console.log("email:", email)
-            let ownerInfo = null;
+            const email = data?.pet_owner?.email;
+            const ownerInfo = await fetchOwnerInfo(email);
 
-            if (email) {
-                const { data: userData, error: userError } = await supabase
-                    .from('user_accounts')
-                    .select('first_name, last_name, address')
-                    .eq('email_add', email)
-                    .single();
-
-                if (userError) {
-                    Alert.alert('Error', 'Failed to fetch owner info.');
-                } else {
-                    ownerInfo = userData;
-                }
-            }
             setPetData({
                 ...data,
                 birthDate: data.birthDate || '',
                 imageUrl: publicUrl || null,
                 ownerInfo: ownerInfo,
             });
-
-            // console.log("current pet data:", petData)
 
             setDob(data.birthDate ? new Date(data.birthDate) : null);
             setLoading(false);
