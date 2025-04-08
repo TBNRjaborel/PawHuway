@@ -23,6 +23,7 @@ const AddPet = () => {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [owner, setOwner] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [petData, setPetData] = useState({
     name: "",
     age: "",
@@ -147,6 +148,7 @@ const AddPet = () => {
   };
 
   async function CreatePet() {
+    setSaving(true);
     console.log("petData:", petData);
     if (
       petData.name == "" ||
@@ -227,7 +229,7 @@ const AddPet = () => {
           month: "2-digit",
           day: "2-digit",
         })
-        .replace(/\//g, "-")}-(${petData.medfile.name})`;
+        .replace(/\//g, "-")}-${petData.medfile.name}`;
 
       const { error: fileError } = await supabase.storage
         .from("pet-medical-history")
@@ -254,6 +256,7 @@ const AddPet = () => {
     }
 
     Alert.alert("Success", "Pet added successfully!");
+    setSaving(false);
     router.push("pet_owner/dashboard");
   }
 
@@ -382,7 +385,7 @@ const AddPet = () => {
         </View>
 
         <TouchableOpacity style={styles.addButton} onPress={CreatePet}>
-          <Text style={styles.addButtonText}>Add Pet</Text>
+          <Text style={styles.addButtonText} disabled={saving}>Add Pet</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
