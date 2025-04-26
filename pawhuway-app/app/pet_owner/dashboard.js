@@ -8,7 +8,7 @@ import { View, StyleSheet } from 'react-native';
 // Screens
 import Pets from './screens/Pets/Pets';
 import SearchClinic from './screens/Search_Clinic';
-import Calendar from './screens/Calendar';
+import Calendar from './screens/Calendar/Calendar';
 import Profile from './screens/Profile';
 
 const Tab = createBottomTabNavigator();
