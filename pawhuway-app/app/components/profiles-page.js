@@ -53,7 +53,7 @@ const profiles = () => {
         .eq("email", user.email)
         .single();
 
-      console.log("checked ", user.email, existingOwner);
+      console.log("checked ", user.email, user.id, existingOwner);
 
       if (fetchError && fetchError.code !== "PGRST116") {
         console.error("Error checking existing pet owner:", fetchError.message);
@@ -81,6 +81,49 @@ const profiles = () => {
       return;
     }
   };
+
+  const vetProfile = async () => {
+    if (!user?.id) {
+      console.error("User id not found.");
+      return;
+    }
+
+    try {
+      const { data: existingVet, error: fetchError } = await supabase
+        .from("vet_profiles")
+        .select("id")
+        .eq("id", user.id)
+        .single();
+
+      console.log("checked ", user.id, existingVet);
+
+      if (fetchError && fetchError.code !== "PGRST116") {
+        console.error("Error checking existing vet:", fetchError.message);
+        return;
+      }
+
+      // if (!existingVet) {
+      //   console.log("making new profile");
+      //   const { error: insertError } = await supabase
+      //     .from("pet_owners")
+      //     .insert([{ email: user.email }]);
+
+      //   if (insertError) {
+      //     console.error(
+      //       "Error creating pet owner profile:",
+      //       insertError.message
+      //     );
+      //     return;
+      //   }
+      // }
+
+      router.push("/vet/vet-dashboard");
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return;
+    }
+  };
+
   return (
     <LinearGradient
       colors={["#B3EBF2", "#85D1DB", "#C9FDF2", "#B6F2D1"]}
@@ -96,7 +139,7 @@ const profiles = () => {
           <TouchableOpacity style={styles.buttons} onPress={petProfile}>
             <Text>Pet Owner</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttons}>
+          <TouchableOpacity style={styles.buttons} onPress={vetProfile}>
             <Text>Veterinarian</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.buttons}>

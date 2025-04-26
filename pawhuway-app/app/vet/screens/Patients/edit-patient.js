@@ -36,65 +36,49 @@ const EditPet = () => {
 
   useEffect(() => {
     async function fetchPetDetails() {
-        try {
-            // Fetch pet details
-            const { data, error } = await supabase
-                .from('pets')
-                .select('id, name, age, birthDate, sex, type, height, weight, img_path, file_path')
-                .eq('id', petId)
-                .single();
+      const { data, error } = await supabase
+        .from('pets')
+        .select('id, name, age, birthDate, sex, type, height, weight, img_path, file_path')
+        .eq('id', petId)
+        .single();
 
-            if (error) {
-                Alert.alert('Error', 'Failed to fetch pet details.');
-                return;
-            }
+      if (error) {
+        Alert.alert('Error', 'Failed to fetch pet details.');
+        return;
+      }
 
-            console.log("date: ", data.birthDate);
+      console.log("date: ", data.birthDate)
 
-            setPetData({
-                name: data.name,
-                age: data.age,
-                sex: data.sex,
-                birthDate: data.birthDate,
-                type: data.type,
-                height: data.height,
-                weight: data.weight,
-                img_path: data.img_path,
-                file_path: data.file_path,
-            });
+      setPetData({
+        name: data.name,
+        age: data.age,
+        sex: data.sex,
+        birthDate: data.birthDate,
+        type: data.type,
+        height: data.height,
+        weight: data.weight,
+        img_path: data.img_path,
+        file_path: data.file_path
+      })
 
-            setDob(new Date(data.birthDate));
+      setDob(new Date(data.birthDate));
 
-            // Fetch the list of files in the "pet-medical-history" bucket
-            const { data: files, error: fileError } = await supabase.storage
-                .from('pet-medical-history')
-                .list();
+      const { data: files, error: fileError } = await supabase.storage
+      .from('pet-medical-history')
+      .list();
 
-            if (fileError) {
-                console.error("Error fetching file list:", fileError);
-                return;
-            }
+      if (fileError) {
+        console.error("Error fetching file list:", fileError);
+      }
 
-            console.log(files);
-
-            // Find the medical history file for the pet
-            const medFile = files?.find(file => file.name.startsWith(`${petId}-`));
-
-            if (medFile) {
-              // Extract the filename from the pattern
-              const match = medFile.name.match(/\((.*?)\)/);
-              const shortName = match?.[1] || medFile.name; // Fallback to full name if no match
-              setFileName(shortName);
-            } else {
-              setFileName(""); // No file found
-            }
-        } catch (err) {
-            console.error("Error fetching pet details:", err);
-        }
+      const medFile = files?.find(file => file.name.startsWith(`${petId}-`));
+      const match = medFile.name.match(/\((.*?)\)/);
+      const shortName = medFile ? (match?.[1] || null) : null;
+      setFileName(shortName)
     }
 
     fetchPetDetails();
-}, [petId]);
+  }, [petId]);
 
   console.log("age", petData.age);
 
@@ -246,7 +230,7 @@ const EditPet = () => {
 
       console.log("gonna delete: ", petData.image);
 
-      const { error: uploadError } = await supabase.storage
+      const { error: imgError } = await supabase.storage
         .from("pet-images")
         .upload(imgFileName, {
           uri: petData.image.uri,
@@ -254,10 +238,7 @@ const EditPet = () => {
           name: imgFileName,
         });
 
-      if (uploadError) {
-        console.error("Error uploading image:", uploadError);
-        throw uploadError;
-      }
+      if (imgError) throw imgError;
 
       const { data: urlData } = supabase.storage
         .from("pet-images")
@@ -275,7 +256,6 @@ const EditPet = () => {
 
     console.log("image done")
 
-    
     if (petData.medfile) {
       const medFileName = `${petId}-${petData.name}-${new Date().toLocaleDateString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"}).replace(/\//g, "-")}-(${fileName})`;
 
@@ -301,7 +281,7 @@ const EditPet = () => {
         }
       }
 
-      const { error: uploadError } = await supabase.storage
+      const { error: fileError } = await supabase.storage
         .from("pet-medical-history")
         .upload(medFileName, {
           uri: petData.medfile.uri,
@@ -309,12 +289,27 @@ const EditPet = () => {
           name: medFileName,
         });
 
-      if (uploadError) throw uploadError;
+      if (fileError) throw fileError;
+
+      const { data: urlData } = supabase.storage
+        .from("pet-medical-history")
+        .getPublicUrl(medFileName);
+
+      const { error: updateError } = await supabase
+        .from("pets")
+        .update({
+          file_path: urlData.publicUrl
+        })
+        .eq('id', petId);
+
+      if (updateError) throw updateError;
+    }
+
+    console.log("file done")
 
     Alert.alert('Success', 'Pet updated successfully!');
     router.push("pet_owner/dashboard");
   };
-}
 
   return (
     <SafeAreaView style={styles.container}>

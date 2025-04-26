@@ -15,5 +15,4 @@ export default function Index() {
   };
 
   return <Redirect href="/pet_owner/screens/Calendar/Calendar"/>;
-
 }

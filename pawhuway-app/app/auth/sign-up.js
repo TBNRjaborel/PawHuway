@@ -6,6 +6,7 @@ import { Stack } from 'expo-router';
 import {useRouter} from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignUp = () => {
@@ -30,78 +31,101 @@ const SignUp = () => {
         Alert.alert('Click the verification link we sent to your email to verify your email.')
         router.push('/auth/create-profile')
     }
-    
+    const goBack = () => {
+      router.push('/starting-page');
+    }
     return(
-      <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
+      // <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
 
-        <SafeAreaView style = {styles.container}>
+        <SafeAreaView style = {styles.background}>
           <Stack.Screen options={{ headerShown: false }} />
           <View>
+            <TouchableOpacity style = {styles.backbtn} onPress={goBack}>
+              <View>
+                  <AntDesign name="left" size={15} color="black"  />
+              </View>
+            </TouchableOpacity>
             <View>
-              <Image source={require('../../assets/pictures/paw-logo.png')} style = {styles.logo} alt="logo"/>
+              <Image source={require('../../assets/pictures/paw-logo2.png')} style = {styles.logo} alt="logo"/>
             </View>
-    
-            <View style = {styles.form}>
-              <View style = {styles.input}>
-                <Text style = {styles.inputLabel}>Email Address</Text>
-                <TextInput style ={styles.inputControl}
-                  value = {email}
-                  onChangeText = {setEmail}
-                  placeholder='Enter your email address'
-                  />
-              </View>
-    
-              <View style = {styles.input}>
-                <Text style = {styles.inputLabel}>Password</Text>
-                <TextInput style ={styles.inputControl}
-                  value = {password}
-                  onChangeText = {setPassword}
-                  placeholder='Enter your password'
-                  secureTextEntry
-                  />
-              </View>
-              <View style = {styles.regbtns}>
-                <View>
-                    {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
-                    <TouchableOpacity style = {styles.btn} onPress={signUpWithEmail}>
-                    <Text style = {styles.btn_sign_up}>Sign Up with Email</Text>
-                    </TouchableOpacity>
-        
-                </View>
+            <View style = {styles.container}>
 
-                <View>
-                    {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
-                    <TouchableOpacity style = {styles.btn}  >
-                    <Image source={require('../../assets/pictures/google-logo.png')} style = {styles.google_logo} alt="logo"/>
-                    <Text style = {styles.btn_continue_google}>Continue with Google</Text>
-                    </TouchableOpacity>
+              <View style = {styles.form}>
+                <View style = {styles.input}>
+                  <Text style = {styles.inputLabel}>Email Address</Text>
+                  <TextInput style ={styles.inputControl}
+                    value = {email}
+                    onChangeText = {setEmail}
+                    placeholder='Enter your email address'
+                    />
                 </View>
-              </View>
+      
+                <View style = {styles.input}>
+                  <Text style = {styles.inputLabel}>Password</Text>
+                  <TextInput style ={styles.inputControl}
+                    value = {password}
+                    onChangeText = {setPassword}
+                    placeholder='Enter your password'
+                    secureTextEntry
+                    />
+                </View>
+                <View style = {styles.regbtns}>
+                  <View>
+                      {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
+                      <TouchableOpacity style = {styles.btn} onPress={signUpWithEmail}>
+                      <Text style = {styles.btn_sign_up}>Sign Up with Email</Text>
+                      </TouchableOpacity>
+          
+                  </View>
+
+                  <View>
+                      <Text style = {styles.or}>
+                        Or
+                      </Text>
+                      <TouchableOpacity style = {styles.google_button}  >
+                        <Image source={require('../../assets/pictures/google-logo.png')} style = {styles.google_logo} alt="logo"/>
+                        <Text style = {styles.btn_continue_google}>Continue with Google</Text>
+                      </TouchableOpacity>
+                  </View>
+                </View>
+                
               
-            
+              </View>
             </View>
           </View>
         </SafeAreaView>
-      </LinearGradient>
+      // </LinearGradient>
     
     );
 };
 
 const styles = StyleSheet.create({
-    gradient:{
+    background:{
       flex: 1,
+      backgroundColor: '#B3EBF2',
+      // alignItems: 'center',
+      // justifyContent: 'center',
+    },
+    backbtn: {
+      margin: 30,
+      position: 'absolute',
+      padding: 10,
+      backgroundColor: '#FFFFFF',
+      borderRadius: 50,
+      zIndex: 10, 
     },
     container: {
-      // flex: 1,
-      // backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
+      backgroundColor: '#FFFFFF',
+      height: '100%',
+      borderTopLeftRadius: 70,  
+      borderTopRightRadius: 70, 
+      marginTop: 400,
     },
     logo: {
-      width: 350,
-      height: 350,
+      width: 450,
+      height: 450,
       alignSelf: 'center',
-      // borderRadius: 200, 
-      marginTop: 80,
-      marginBottom: -50,
+      position: 'absolute',
     },
     google_logo: {
       width: 30,
@@ -114,12 +138,12 @@ const styles = StyleSheet.create({
     inputControl: {
       fontFamily: 'Poppins Light',
       backgroundColor: '#FFFFFF',
-      marginHorizontal: 20,
+      marginHorizontal: 10,
       borderColor: '#808080',
       borderWidth: 1/2,
       paddingLeft: 15,
       marginBottom: 20,
-      borderRadius: 10,
+      borderRadius: 15,
       // alignSelf: 'center',
       
   
@@ -135,35 +159,51 @@ const styles = StyleSheet.create({
   
     form: {
       borderRadius: 10,
-      backgroundColor: '#FFFFFF',
-      marginHorizontal: 50,
-      // paddingHorizontal: -90,
-      paddingVertical: 20,
-      // borderColor: '#808080',
-      // borderWidth: 1/2,
+      marginHorizontal: 40,
+      marginVertical: 40,
+      
     },
   
     btn: {
-      backgroundColor: '#B6F2D1',
-      marginHorizontal: 20,
+      marginTop: 20,
+      backgroundColor: '#3C3C4C',
+      marginHorizontal: 10,
       borderColor: '#1E1E1E',
       borderWidth: 1/2,
-      borderRadius: 5,
-      paddingVertical: 8
+      borderRadius: 15,
+      paddingVertical: 8,
+    },
+    google_button:{
+      marginTop: 20,
+      backgroundColor: '#B3EBF2',
+      marginHorizontal: 10,
+      borderColor: '#1E1E1E',
+      borderWidth: 1/2,
+      borderRadius: 15,
+      paddingVertical: 8,
     },
   
     btn_sign_up: {
       
       textAlign: 'center',
       fontFamily: 'Poppins Light',
+      color: 'white',
       // marginVe,
     },
     btn_continue_google: {
       textAlign: 'center',
       marginTop: -10,
       fontFamily: 'Poppins Light',
+      color: 'black',
       
 
+    },
+    or:{
+      fontFamily: 'Kanit Medium',
+      textAlign: 'center',
+      marginTop: 20,
+      fontSize: 16,
+      // fontWeight: 'bold',
     },
 
     regbtns: {
