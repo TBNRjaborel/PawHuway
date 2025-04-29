@@ -76,7 +76,7 @@ const VetClinicOnboarding = () => {
             }
             // console.log("here", data);
             const clinic_id = data[0].id;
-            console.log("Clinic Documents:", businessData.businessPermit, businessData.veterinaryLicense, ownerData.id);
+            // console.log("Clinic Documents:", businessData.businessPermit, businessData.veterinaryLicense, ownerData.id);
 
 
 
@@ -140,9 +140,13 @@ const VetClinicOnboarding = () => {
 
             // Show success alert only if there are no errors
             if (!hasErrors) {
-                Alert.alert("Success", "Vet Clinic Onboarding Sent for Approval", [
-                    { text: "OK", onPress: () => router.push("/starting-page") }
-                ]);
+                Alert.alert(
+                    "Application Submitted",
+                    "Your vet clinic onboarding form has been sent. We’ll review it shortly.",
+                    [
+                        { text: "OK", onPress: () => router.push("/starting-page") }
+                    ]
+                );
             }
         } catch (error) {
             console.error(error);
@@ -151,13 +155,13 @@ const VetClinicOnboarding = () => {
     }
 
     const handleDocumentSelection = async (type) => {
-        console.log("Type selected:", type);
+        // console.log("Type selected:", type);
         try {
             const result = await DocumentPicker.getDocumentAsync({
                 type: ["application/pdf", "image/png", "image/jpeg"],
                 copyToCacheDirectory: true,
             });
-            console.log("result:", result);
+            // console.log("result:", result);
 
             if (!result.canceled) {
                 const file = result.assets[0];
@@ -175,7 +179,7 @@ const VetClinicOnboarding = () => {
                     setbusinessData({ ...businessData, veterinaryLicense: file });
                 } else if (type === "ownerId") {
                     setownerData({ ...ownerData, id: file });
-                    console.log("Owner ID selected:", file);
+                    // console.log("Owner ID selected:", file);
                 };
             }
 
@@ -288,7 +292,7 @@ const VetClinicOnboarding = () => {
                             onChangeText={text => setbusinessData({ ...businessData, veterinaryLicenseNumber: text })}
                         />
                         <Text style={styles.label}>
-                            Upload Documents <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.pdf)</Text>
+                            Upload Documents <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.png/.jpg/.jpeg)</Text>
                         </Text>
                         <View style={styles.uploadCard}>
                             <View style={styles.cardContent}>
@@ -347,7 +351,9 @@ const VetClinicOnboarding = () => {
                             value={ownerData.contactNumber}
                             onChangeText={text => setownerData({ ...ownerData, contactNumber: text })}
                         />
-                        <Text style={styles.label}>Upload ID <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.png/.jpg/.jpeg</Text>)</Text>
+                        <Text style={styles.label}>Upload ID
+                            <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.png/.jpg/.jpeg)</Text>
+                        </Text>
                         <View style={styles.uploadCard}>
                             <View style={styles.cardContent}>
                                 <Text style={styles.fileName}>
