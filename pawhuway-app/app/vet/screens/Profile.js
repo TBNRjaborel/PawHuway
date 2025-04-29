@@ -230,6 +230,11 @@ const Profile = () => {
       <SafeAreaView style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
         <StatusBar hidden={true} />
+
+        <TouchableOpacity style={styles.backButton} onPress={() => {router.push("/components/profiles-page")}}>
+          <AntDesign name="home" size={24} color="black" />
+        </TouchableOpacity>
+
         <View style={styles.container}>
           <View style={styles.profileSection}>
             <View style={styles.inputGroup}>
@@ -394,6 +399,20 @@ const styles = StyleSheet.create({
   savetext: {
     fontFamily: "Poppins Light",
     textAlign: "center",
+  },
+  backButton: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: "#FFFFFF",
+    padding: 10,
+    borderRadius: 50,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
   },
 });
 

@@ -47,12 +47,14 @@ const profiles = () => {
     }
 
     try {
+      console.log ("checking for pet owner email: ", user.email);
       const { data: existingOwner, error: fetchError } = await supabase
         .from("pet_owners")
-        .select("id")
+        .select("email")
         .eq("email", user.email)
         .single();
 
+      console.log("found email: ", existingOwner);
       console.log("checked ", user.email, user.id, existingOwner);
 
       if (fetchError && fetchError.code !== "PGRST116") {
