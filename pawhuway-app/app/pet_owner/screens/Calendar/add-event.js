@@ -1,17 +1,10 @@
-import React, { useState } from 'react'
-import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Platform, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react'
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Platform, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-// import { useSearchParams } from 'expo-router';
-import * as DocumentPicker from 'expo-document-picker';
-import * as ImageManipulator from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 const AddEvent = () => {
   const router = useRouter();
@@ -27,7 +20,6 @@ const AddEvent = () => {
     veterinarian: '',
   });
 
-  const [dob, setDob] = useState(date ? new Date(date) : null);
   const [showPicker, setShowPicker] = useState(false);
   const onChange = (event, selectedDate) => {
     if (selectedDate) {
@@ -35,6 +27,37 @@ const AddEvent = () => {
     }
     setShowPicker(false);
   };
+
+  const [veterinarians, setVeterinarians] = useState([]); 
+  const [clinics, setClinics] = useState([]);
+
+  useEffect(() => {
+    async function fetchVeterinarians() {
+      const { data, error } = await supabase.from('vet_profiles').select('id, first_name, last_name'); // Adjust columns as needed
+      if (error) {
+        console.error('Error fetching veterinarians:', error.message);
+        Alert.alert('Error', 'Failed to fetch veterinarians.');
+      } else {
+        setVeterinarians(data || []); 
+      }
+    }
+
+    fetchVeterinarians();
+  }, []);
+
+  useEffect(() => {
+    async function fetchClinics() {
+      const { data, error } = await supabase.from('vet_clinics').select('id, clinic_name');
+      if (error) {
+        console.error('Error fetching clinics:', error.message);
+        Alert.alert('Error', 'Failed to fetch clinics.');
+      } else {
+        setClinics(data || []); 
+      }
+    }
+  
+    fetchClinics();
+  }, []);
 
   async function CreateEvent() {
     console.log("eventData:", eventData);
@@ -48,6 +71,7 @@ const AddEvent = () => {
     // Insert event into the database
     const { data, error } = await supabase.from('events').insert([
       {
+        date: date, 
         title: eventData.title,
         type: eventData.type,
         description: eventData.description,
@@ -66,7 +90,7 @@ const AddEvent = () => {
     if (data && data.length > 0) {
       Alert.alert('Success', 'Event added successfully!');
       router.push({
-        pathname: '/pet_owner/screens/Calendar/Calendar',
+        pathname: '/pet_owner/screens/Calendar/Calendar2',
         params: { newEvent: JSON.stringify(data[0]) }, // Pass the created event as a parameter
       });
     }
@@ -87,17 +111,6 @@ const AddEvent = () => {
             onChangeText={(text) => setEventData({ ...eventData, title: text })}
           />
         </View>
-
-        {/* <View key="Age" style={styles.inputContainer}>
-          <Text style={styles.label}>Age:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Age"
-            value={eventData.age.toString()}
-            keyboardType="numeric"
-            onChangeText={(text) => setEventData({ ...eventData, age: text })}
-          />
-        </View> */}
 
         <View key="Type" style={styles.inputContainer}>
           <Text style={styles.label}>Type:</Text>
@@ -152,55 +165,68 @@ const AddEvent = () => {
           <DateTimePicker
             value={new Date()}
             mode="time"
-            display={Platform.OS === 'ios' ? 'spinner' : 'clock'}
-            onChange={(event, selectedTime) => {
-              if (selectedTime) {
-                const formattedTime = selectedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            display="default"
+            onChange={(event, selectedDate) => {
+              if (selectedDate) {
+                const timeStr = selectedDate.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
                 if (showPicker.type === 'start') {
-                  setEventData({ ...eventData, startTime: formattedTime });
-                } else if (showPicker.type === 'end') {
-                  setEventData({ ...eventData, endTime: formattedTime });
+                  setEventData({ ...eventData, startTime: timeStr });
+                } else {
+                  setEventData({ ...eventData, endTime: timeStr });
                 }
               }
-              setShowPicker({ type: '', visible: false });
+              setShowPicker(false);
             }}
-          />
-        )}
-
-        {showPicker && (
-          <DateTimePicker
-            value={dob || new Date()}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
-            onChange={onChange}
           />
         )}
 
         <View key="Clinic" style={styles.inputContainer}>
           <Text style={styles.label}>Clinic:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Clinic"
-            value={eventData.clinic}
-            onChangeText={(text) => setEventData({ ...eventData, clinic: text })}
-          />
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={eventData.clinic}
+              onValueChange={(itemValue) => setEventData({ ...eventData, clinic: itemValue })}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Clinic" value="" style={styles.pickerPlaceholder} />
+              {clinics.map((clinic) => (
+                <Picker.Item
+                  key={clinic.id}
+                  label={clinic.clinic_name} 
+                  value={clinic.id} 
+                  style={styles.pickerItem}
+                />
+              ))}
+            </Picker>
+          </View>
         </View>
 
         <View key="Veterinarian" style={styles.inputContainer}>
           <Text style={styles.label}>Veterinarian:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Veterinarian"
-            value={eventData.veterinarian}
-            onChangeText={(text) => setEventData({ ...eventData, veterinarian: text })}
-          />
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={eventData.veterinarian}
+              onValueChange={(itemValue) => setEventData({ ...eventData, veterinarian: itemValue })}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Veterinarian" value="" style={styles.pickerPlaceholder} />
+                {veterinarians.map((vet) => (
+                  <Picker.Item
+                    key={vet.id}
+                    label={`${vet.first_name} ${vet.last_name}`} 
+                    value={vet.id} 
+                    style={styles.pickerItem}
+                  />
+                ))}
+            </Picker>
+          </View>
         </View>
 
         <TouchableOpacity style={styles.addButton} onPress={CreateEvent}>
           <Text style={styles.addButtonText}>Add Event</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.push('/pet_owner/screens/Calendar/Calendar')}>
+        <TouchableOpacity style={styles.cancelButton} onPress={() => router.push('/pet_owner/screens/Calendar/Calendar2')}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
       </View>
@@ -305,21 +331,6 @@ const styles = StyleSheet.create({
   },
   pickerItem: {
     fontSize: 14, // Smaller text size for items
-  },
-
-  fileUploadContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  fileButton: {
-    backgroundColor: 'black',
-    padding: 10,
-    borderRadius: 5,
-  },
-  fileButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
   },
   fileName: {
     marginLeft: 10, // Add space between button and filename
