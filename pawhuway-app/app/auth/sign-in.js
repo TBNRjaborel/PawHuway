@@ -19,6 +19,20 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // AUTO LOGIN FOR TESTING PURPOSES
+  useEffect(() =>  {
+    async function autoLogin(){
+      
+      const { error } = await supabase.auth.signInWithPassword({ email: "andeellenes@gmail.com", password: "password"});
+      if(error)
+        Alert.alert(error.message);
+      else
+        router.push('/components/profiles-page')
+    }
+
+    autoLogin();
+  }, []);
+
   async function signInWithEmail(){
     // const { email, password } = form;`
     

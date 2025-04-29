@@ -1,0 +1,54 @@
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
+import { Stack } from 'expo-router';
+import { View, StyleSheet } from 'react-native';
+
+// Screens
+import Vets from './screens/Vets/Vets';
+import Calendar from './screens/Calendar';
+import Profile from './screens/Profile';
+
+const Tab = createBottomTabNavigator();
+
+const Dashboard = () => {
+    return (
+        <View style={styles.container}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar hidden={true} />
+            <Tab.Navigator
+                initialRouteName="Vets"
+                screenOptions={({ route }) => ({
+                    tabBarIcon: ({ focused, color, size }) => {
+                        let iconName;
+
+                        if (route.name === 'Vets') {
+                            iconName = focused ? 'person' : 'person-outline';
+                        } else if (route.name === 'Calendar') {
+                            iconName = focused ? 'calendar' : 'calendar-outline';
+                        } else if (route.name === 'Profile') {
+                            iconName = focused ? 'person' : 'person-outline';
+                        }
+
+                        return <Ionicons name={iconName} size={size} color={color} />;
+                    },
+                    tabBarActiveTintColor: '#85D1DB',
+                    tabBarInactiveTintColor: '#3C3C4C',
+                    headerShown: false,
+                })}>
+                <Tab.Screen name="Vets" component={Vets} />
+                <Tab.Screen name="Calendar" component={Calendar} />
+                <Tab.Screen name="Profile" component={Profile} />
+            </Tab.Navigator>
+        </View>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1, // Ensures full-screen layout
+    }
+});
+
+export default Dashboard;

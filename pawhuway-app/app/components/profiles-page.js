@@ -32,7 +32,7 @@ const profiles = () => {
         console.error("Error fetching user:", error.message);
         return null;
       }
-      console.log("usersdfdsf: ", user.email);
+      console.log("user email: ", user.email);
 
       setUser(user);
     };
@@ -126,6 +126,45 @@ const profiles = () => {
     }
   };
 
+  const clinicProfile = async () => {
+    if (!user?.id) {
+      console.error("User id not found.");
+      return;
+    }
+
+    try {
+      const { data: existingClinic, error: fetchError } = await supabase
+        .from("vet_clinics")
+        .select("status")
+        .eq("clinic_email", user.email)
+        .single();
+
+      console.log("checked ", user.id, existingClinic);
+
+      if (fetchError && fetchError.code !== "PGRST116") {
+        console.error("Error checking existing vet:", fetchError.message);
+        return;
+      }
+
+      if (!existingClinic) {
+        return Alert.alert(
+          "You are not a registered clinic", "Please submit an application."
+        );
+      }
+      else if (existingClinic.status === "pending") {
+        return Alert.alert(
+          "Almost there!",
+          "Your application is still pending. Please wait for approval."
+        );
+      }
+
+      router.push("/vet_clinic/clinic-dashboard");
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      return;
+    }
+  };
+
   return (
     <LinearGradient
       colors={["#B3EBF2", "#85D1DB", "#C9FDF2", "#B6F2D1"]}
@@ -144,7 +183,7 @@ const profiles = () => {
           <TouchableOpacity style={styles.buttons} onPress={vetProfile}>
             <Text>Veterinarian</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttons}>
+          <TouchableOpacity style={styles.buttons} onPress={clinicProfile}>
             <Text>Vet Clinic</Text>
           </TouchableOpacity>
         </View>
