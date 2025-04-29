@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     },
     btn: {
         alignSelf: 'center',
-        marginTop: 100,
+        marginTop: 60,
         backgroundColor: '#3C3C4C',
         paddingHorizontal: 150,
         paddingVertical: 15,
@@ -99,10 +99,14 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginTop: 10,
         fontFamily: 'Poppins Light',
+        fontSize: 15,
         // color: 'white',
         // textShadowColor: 'black',
         // textShadowOffset: { width: 1, height: 1 },
         // textShadowRadius: 1,
+    },
+    buttoncontainer:{
+        gap: 10,
     },
 
 })

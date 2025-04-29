@@ -98,7 +98,7 @@ const LandingPage = () => {
     };
 
     const profiles = () => {
-        router.push('/components/profiles-page')
+        router.push('/components/profiles-page-v2')
     }
 
     
