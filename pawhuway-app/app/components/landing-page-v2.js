@@ -1,12 +1,13 @@
-import { SafeAreaView, View,StyleSheet, Text, TouchableOpacity, Image} from "react-native"
+import { SafeAreaView, View,StyleSheet, Text, TouchableOpacity, Image, Alert} from "react-native"
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-
+import { supabase }from '../../src/lib/supabase';
 
 
 
 
 const LandingPageV2 = () => {
+    const router = useRouter();
     async function signOut() {
         const { error } = await supabase.auth.signOut()
         if(error)
@@ -14,7 +15,6 @@ const LandingPageV2 = () => {
         else
             router.push('/auth/sign-in')
     }
-    const router = useRouter()
 
     const edit = () => {
         router.push('/auth/edit-profile')
