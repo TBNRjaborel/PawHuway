@@ -269,7 +269,7 @@ const AddPet = () => {
         ) : (
           <Image
             source={require("../../../../assets/pictures/add_image.webp")}
-            style={styles.image}
+            style={styles.noImage}
           />
         )}
       </TouchableOpacity>
@@ -404,29 +404,40 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#B3EBF2", // Gradient-like light background from Style 1
     alignItems: "center",
-    padding: 20,
+    justifyContent: "center",
+    paddingVertical: 20
   },
   imageUploadContainer: {
+    zIndex: 2,
     marginTop: 20,
     width: 120,
     height: 120,
     backgroundColor: "#85D1DB", // Soft background for image container from Style 1
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 50, // Soften the corners from Style 1
+    borderRadius: 100, // Soften the corners from Style 1
   },
   image: {
     width: 100,
     height: 100,
     resizeMode: "cover",
+    borderRadius: 100, // Circular image from Style 1
+  },
+  noImage: {
+    width: 70,
+    height: 70,
+    resizeMode: "cover",
+    borderRadius: 100, // Circular image from Style 1
   },
   form: {
     width: "100%",
-    marginTop: -10,
-    backgroundColor: "#C9FDF2", // Lighter background for form from Style 1
-    borderRadius: 30, // Rounded corners for form from Style 1
+    backgroundColor: "#C9FDF2", 
+    marginTop: -50,
+    borderRadius: 20, 
+    paddingTop: 40,
     paddingVertical: 20,
     paddingHorizontal: 20,
+    paddingBottom: 40
   },
   inputContainer: {
     marginBottom: 0,
@@ -455,18 +466,18 @@ const styles = StyleSheet.create({
     height: 50,
   },
   picker: {
-    height: 50,
+    height: "100%",
     width: "100%",
     fontFamily: "Poppins Light", // Font style from Style 1
-    fontSize: 14, // Adjusted font size to match Style 2's picker
+    fontSize: 16, // Adjusted font size to match Style 2's picker
   },
   pickerPlaceholder: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "Poppins Light", // Font style from Style 1
     color: "gray", // Gray color for "Select Sex"
   },
   pickerItem: {
-    fontSize: 14, // Adjusted to match Style 2's item font size
+    fontSize: 16, // Adjusted to match Style 2's item font size
   },
   fileUploadContainer: {
     flexDirection: "row",

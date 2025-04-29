@@ -16,8 +16,6 @@ import { Stack } from "expo-router";
 import { useRouter } from "expo-router";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as DocumentPicker from "expo-document-picker";
-import * as ImageManipulator from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
 import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';
 
 
@@ -32,7 +30,23 @@ const VetClinicOnboarding = () => {
     const [closeTime, setCloseTime] = useState(null);
 
     const submitOnboarding = async () => {
-
+        if (
+            !clinicData.clinicName ||
+            !clinicData.address ||
+            !clinicData.openTime ||
+            !clinicData.contactNumber ||
+            !businessData.businessRegistrationNumber ||
+            !businessData.veterinaryLicenseNumber ||
+            !businessData.businessPermit ||
+            !businessData.veterinaryLicense ||
+            !ownerData.ownerName ||
+            !ownerData.position ||
+            !ownerData.contactNumber ||
+            !ownerData.id
+        ) {
+            Alert.alert("Error", "Please fill in all required fields.");
+            return;
+        }
         try {
             const formattedOpenTime = openTime ? openTime.toISOString().split('T')[1].split('Z')[0] : null;
             const formattedCloseTime = closeTime ? closeTime.toISOString().split('T')[1].split('Z')[0] : null;
@@ -54,16 +68,121 @@ const VetClinicOnboarding = () => {
                         owner_contact_number: ownerData.contactNumber,
                         status: 'pending',
                     }
-                ]);
-
+                ])
+                .select();
             if (error) {
-                console.error(error);
-                Alert.alert("Error", error.message);
-            } else {
-                Alert.alert("Success", "Vet Clinic Onboarding Sent for Approval", [
-                    { text: "OK", onPress: () => router.push("/starting-page") }
-                ]);
+                Alert.alert("Error part", error.message);
+                return;
             }
+            // console.log("here", data);
+            const clinic_id = data[0].id;
+            // console.log("Clinic Documents:", businessData.businessPermit, businessData.veterinaryLicense, ownerData.id);
+
+
+
+            let hasErrors = false;
+            // Upload Business Permit
+            if (businessData.businessPermit) {
+                try {
+                    const fileName = `${clinic_id}/business_permit_${businessData.businessPermit.name}`;
+                    const { data: businessPermitData, error: businessPermitError } = await supabase.storage
+                        .from('clinic-documents')
+                        .upload(fileName, {
+                            uri: businessData.businessPermit.uri,
+                            name: businessData.businessPermit.name,
+                            type: businessData.businessPermit.mimeType,
+                        });
+
+                } catch (error) {
+                    console.error("Unexpected Business Permit Upload Error:", error);
+                    Alert.alert("Error", "An unexpected error occurred during Business Permit upload.");
+                    hasErrors = true;
+                }
+            }
+
+            // Upload Veterinary License
+            if (businessData.veterinaryLicense) {
+                try {
+                    const fileName = `${clinic_id}/veterinary_license_${businessData.veterinaryLicense.name}`;
+                    const { data: veterinaryLicenseData, error: veterinaryLicenseError } = await supabase.storage
+                        .from('clinic-documents')
+                        .upload(fileName, {
+                            uri: businessData.veterinaryLicense.uri,
+                            name: businessData.veterinaryLicense.name,
+                            type: businessData.veterinaryLicense.mimeType,
+                        });
+
+                } catch (error) {
+                    console.error("Unexpected Veterinary License Upload Error:", error);
+                    Alert.alert("Error", "An unexpected error occurred during Veterinary License upload.");
+                    hasErrors = true;
+                }
+            }
+
+            // Upload Owner ID
+            if (ownerData.id) {
+                try {
+                    const fileName = `${clinic_id}/owner_id_${ownerData.id.name}`;
+                    const { data: ownerIdData, error: ownerIdError } = await supabase.storage
+                        .from('clinic-documents')
+                        .upload(fileName, {
+                            uri: ownerData.id.uri,
+                            name: ownerData.id.name,
+                            type: ownerData.id.mimeType,
+                        });
+
+                } catch (error) {
+                    console.error("Unexpected Owner ID Upload Error:", error);
+                    Alert.alert("Error", "An unexpected error occurred during Owner ID upload.");
+                    hasErrors = true;
+                }
+            }
+
+            // Show success alert only if there are no errors
+            if (!hasErrors) {
+                Alert.alert(
+                    "Application Submitted",
+                    "Your vet clinic onboarding form has been sent. We’ll review it shortly.",
+                    [
+                        { text: "OK", onPress: () => router.push("/starting-page") }
+                    ]
+                );
+            }
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Error", "An unexpected error occurred.", error.message);
+        }
+    }
+
+    const handleDocumentSelection = async (type) => {
+        // console.log("Type selected:", type);
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: ["application/pdf", "image/png", "image/jpeg"],
+                copyToCacheDirectory: true,
+            });
+            // console.log("result:", result);
+
+            if (!result.canceled) {
+                const file = result.assets[0];
+
+                // console.log("File selected:", typeof file.mimeType);
+
+                if (file.mimeType != "application/pdf" && file.mimeType != "image/png" && file.mimeType != "image/jpeg") {
+                    Alert.alert("Error", "Invalid file type. Please select a PDF or image file.");
+                    return;
+                }
+
+                if (type === "businessPermit") {
+                    setbusinessData({ ...businessData, businessPermit: file });
+                } else if (type === "veterinaryLicense") {
+                    setbusinessData({ ...businessData, veterinaryLicense: file });
+                } else if (type === "ownerId") {
+                    setownerData({ ...ownerData, id: file });
+                    // console.log("Owner ID selected:", file);
+                };
+            }
+
         } catch (error) {
             console.error(error);
             Alert.alert("Error", "An unexpected error occurred.", error.message);
@@ -173,7 +292,7 @@ const VetClinicOnboarding = () => {
                             onChangeText={text => setbusinessData({ ...businessData, veterinaryLicenseNumber: text })}
                         />
                         <Text style={styles.label}>
-                            Upload Documents <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.pdf)</Text>
+                            Upload Documents <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.png/.jpg/.jpeg)</Text>
                         </Text>
                         <View style={styles.uploadCard}>
                             <View style={styles.cardContent}>
@@ -182,14 +301,14 @@ const VetClinicOnboarding = () => {
                                 </Text>
                                 <TouchableOpacity
                                     style={styles.uploadBtn}
-                                    onPress={() => {
-                                        console.log("Upload Pressed");
-                                    }}
+                                    onPress={handleDocumentSelection.bind(this, "businessPermit")}
                                 >
                                     <Entypo name="upload" size={20} color="white" />
                                 </TouchableOpacity>
                             </View>
-
+                            <Text style={{ maxWidth: "75%", fontStyle: 'italic', fontWeight: 200, color: 'white', marginTop: 2 }}>
+                                {businessData.businessPermit ? businessData.businessPermit.name : ""}
+                            </Text>
                         </View>
                         <View style={styles.uploadCard}>
                             <View style={styles.cardContent}>
@@ -198,14 +317,14 @@ const VetClinicOnboarding = () => {
                                 </Text>
                                 <TouchableOpacity
                                     style={styles.uploadBtn}
-                                    onPress={() => {
-                                        console.log("Upload Pressed");
-                                    }}
+                                    onPress={handleDocumentSelection.bind(this, "veterinaryLicense")}
                                 >
                                     <Entypo name="upload" size={20} color="white" />
                                 </TouchableOpacity>
                             </View>
-
+                            <Text style={{ maxWidth: "75%", fontStyle: 'italic', fontWeight: 200, color: 'white', marginTop: 2 }}>
+                                {businessData.veterinaryLicense ? businessData.veterinaryLicense.name : ""}
+                            </Text>
                         </View>
                     </View>
                 </ProgressStep>
@@ -232,20 +351,25 @@ const VetClinicOnboarding = () => {
                             value={ownerData.contactNumber}
                             onChangeText={text => setownerData({ ...ownerData, contactNumber: text })}
                         />
-                        <Text style={styles.label}>Upload ID <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.png/.jpg/.jpeg</Text>)</Text>
+                        <Text style={styles.label}>Upload ID
+                            <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.png/.jpg/.jpeg)</Text>
+                        </Text>
                         <View style={styles.uploadCard}>
                             <View style={styles.cardContent}>
                                 <Text style={styles.fileName}>
-                                    Any Valid Government ID
+                                    Any Valid ID
                                 </Text>
                                 <TouchableOpacity
                                     style={styles.uploadBtn}
-                                    onPress={() => {
-                                        console.log("Upload Pressed");
-                                    }}
+                                    onPress={handleDocumentSelection.bind(this, "ownerId")}
                                 >
                                     <Entypo name="upload" size={20} color="white" />
                                 </TouchableOpacity>
+                                {ownerData.id &&
+                                    <Text style={{ maxWidth: "75%", fontStyle: 'italic', fontWeight: 200, color: 'white', marginTop: 2 }}>
+                                        {ownerData ? ownerData.id.name : ""}
+                                    </Text>
+                                }
                             </View>
 
                         </View>
@@ -289,7 +413,7 @@ const styles = StyleSheet.create({
     },
     uploadCard: {
         backgroundColor: "#3C3C4C",
-        height: 120,
+        height: "auto",
         width: "100%",
         padding: 10,
         borderRadius: 16,
