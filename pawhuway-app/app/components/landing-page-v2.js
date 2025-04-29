@@ -2,6 +2,7 @@ import { SafeAreaView, View,StyleSheet, Text, TouchableOpacity, Image, Alert} fr
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { supabase }from '../../src/lib/supabase';
+import { useState } from "react";
 
 
 

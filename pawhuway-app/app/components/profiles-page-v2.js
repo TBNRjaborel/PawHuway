@@ -11,6 +11,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const profiles = () => {
     const router = useRouter();
     const [user, setUser] = useState(null);
+    const [currentPage, setCurrentPage] = useState(0);
 
     useEffect(() => {
         const getUser = async () => {
@@ -108,7 +109,7 @@ const profiles = () => {
         <SafeAreaView style = {styles.background}>
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar hidden={true} />
-            <PagerView style = {{ flex: 1 }}initialPage={0}>
+            <PagerView style = {{ flex: 1 }}initialPage={0} onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}>
                 <View key = "1" style= {styles.Pages}>
                     <View style={styles.closeIconContainer}>
                         <TouchableOpacity onPress={exit}>
@@ -171,6 +172,17 @@ const profiles = () => {
                         </View>
                     </View>
             </PagerView>
+            <View style={styles.dotsContainer}>
+                {[0, 1, 2].map((index) => (
+                    <View
+                        key={index}
+                        style={[
+                            styles.dot,
+                            currentPage === index && styles.activeDot,
+                        ]}
+                    />
+                ))}
+            </View>
 
         </SafeAreaView>
     
@@ -219,6 +231,21 @@ const styles = StyleSheet.create({
         top: 20,
         right: 20,
         zIndex: 1, // Ensure it appears above other elements
+    },
+    dotsContainer: {
+        flexDirection: "row",
+        justifyContent: "center",
+        marginBottom: 40,
+    },
+    dot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: 'white',
+        marginHorizontal: 5,
+    },
+    activeDot: {
+        backgroundColor: '#3C3C4C',
     },
 });
 
