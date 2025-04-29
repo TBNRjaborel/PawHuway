@@ -26,7 +26,7 @@ const SignIn = () => {
     if(error)
       Alert.alert(error.message);
     else
-      router.push('/components/landing-page')
+      router.push('/components/landing-page-v2')
   }
   
   const goBack = () => {
