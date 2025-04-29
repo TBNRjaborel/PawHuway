@@ -23,7 +23,7 @@ const editProfile = () => {
     // const [password, changePass] = useState('');
 
     const goBack = () => {
-        router.push('/components/landing-page')
+        router.push('/components/landing-page-v2')
     }
 
     async function profilePic() {

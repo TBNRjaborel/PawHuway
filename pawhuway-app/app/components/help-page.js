@@ -13,7 +13,7 @@ const ticketPage = () => {
         router.push('/components/create-ticket')
     }
     const goBack = () => {
-        router.push('/components/landing-page')
+        router.push('/components/landing-page-v2')
     }
     // const fetchUserProfile = async () => {
     //             const { data: user, error } = await supabase.auth.getUser();
