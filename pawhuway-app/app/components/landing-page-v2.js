@@ -129,6 +129,7 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 100,
         paddingBottom: 15,
         overflow: 'hidden',
+        marginBottom: 20,
     },
     illustrationContainer: {
         height: 200,
@@ -243,6 +244,10 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         paddingBottom: 30,
+    },
+    paws: {
+        display: 'flex',
+        marginTop: 10,
     },
     
 }); 
