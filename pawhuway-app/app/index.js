@@ -14,5 +14,5 @@ export default function Index() {
     return null; // Prevent rendering until fonts are loaded
   };
 
-  return <Redirect href="/components/landing-page-v2" />;
+  return <Redirect href="/starting-page" />;
 }
