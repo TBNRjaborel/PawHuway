@@ -17,9 +17,10 @@ import { Stack, useRouter } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import * as DocumentPicker from "expo-document-picker";
+// import * as DocumentPicker from "expo-document-picker";
 
 const VetClinic = () => {
+    const router = useRouter();
     const [clinic, setClinic] = useState(null);
 
     const formatTime = (timeString) => {
@@ -51,10 +52,96 @@ const VetClinic = () => {
             }
 
             setClinic(clinicData);
+
         };
 
         fetchClinic();
+        // console.log("hey", clinic.id)
     }, []);
+
+    const handleDelete = async () => {
+        console.log(clinic.id)
+        Alert.alert(
+            "Delete Clinic",
+            "Are you sure you want to delete your clinic profile? This action cannot be undone.",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            // 1. Delete from storage
+                            if (clinic.id) {
+                                const folderPath = `${clinic.id}`;
+                                const { data: files, error: listError } = await supabase.storage
+                                    .from('clinic-documents')
+                                    .list(folderPath);
+
+                                if (listError) {
+                                    console.error("Error listing files:", listError);
+                                    Alert.alert("Error", "Failed to list files in storage.");
+                                    return;
+                                }
+
+                                if (files && files.length > 0) {
+                                    console.log("files", files)
+                                    const filePaths = files.map(file => `${folderPath}/${file.name}`);
+                                    const { data: deleteData, error: deleteError } = await supabase.storage
+                                        .from('clinic-documents')
+                                        .remove(filePaths);
+
+                                    if (deleteError) {
+                                        console.error("Error deleting files from storage:", deleteError);
+                                        Alert.alert("Error", "Failed to delete files from storage.");
+                                        return;
+                                    }
+                                    console.log("Files deleted successfully from storage");
+                                } else {
+                                    console.log("No files found in storage to delete.");
+                                }
+                            }
+
+                            // 2. Delete from vet_clinics table
+                            const { error: dbError } = await supabase
+                                .from("vet_clinics")
+                                .delete()
+                                .eq("clinic_email", clinic.clinic_email);
+
+                            if (dbError) {
+                                console.error("Error deleting clinic from database:", dbError.message);
+                                Alert.alert("Error", "Failed to delete clinic from database. Please try again.");
+                                return;
+                            }
+
+                            // 3. Delete the user from auth
+                            // if (clinic.id) {
+                            //     const { error: authError } = await supabase.auth.admin.deleteUser(clinic.id);
+
+                            //     if (authError) {
+                            //         console.error("Error deleting user from auth:", authError.message);
+                            //         Alert.alert("Error", "Failed to delete user from authentication. Please contact support.");
+                            //         return;
+                            //     }
+                            //     console.log("User deleted successfully from auth");
+                            // }
+
+                            Alert.alert("Success", "Clinic deleted successfully.");
+                            router.push("/starting-page"); // Or wherever you want to redirect after deletion
+
+                        } catch (error) {
+                            console.error("Unexpected error during deletion:", error);
+                            Alert.alert("Error", "An unexpected error occurred during deletion.");
+                        }
+                    },
+                },
+            ],
+            { cancelable: false }
+        );
+    };
     return (
         <LinearGradient
             colors={["#B3EBF2", "#85D1DB", "#C9FDF2", "#B6F2D1"]}
@@ -101,10 +188,10 @@ const VetClinic = () => {
                         </Text>
 
                         <View style={styles.bottomButtons}>
-                            <TouchableOpacity style={styles.editButton} onPress={() => console.log("Edit pressed")}>
+                            <TouchableOpacity style={styles.editButton} onPress={() => router.push('../screens/EditScreen')}>
                                 <Text style={styles.buttonText}>Edit</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.deleteButton} onPress={() => console.log("Delete pressed")}>
+                            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
                                 <Text style={styles.buttonText}>Delete</Text>
                             </TouchableOpacity>
                         </View>
