@@ -1,15 +1,74 @@
 import { Text, View, ScrollView, StyleSheet, TouchableOpacity, Button, Image, Pressable } from 'react-native';
 import React, { Component, useEffect, useState } from 'react';
+import Animated, {
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Card } from 'react-native-paper';
 import { supabase } from '../../../../src/lib/supabase';
+
+
+function AccordionItem({
+  isExpanded,
+  children,
+  viewKey,
+  style,
+  duration = 500,
+}) {
+  const height = useSharedValue(0);
+
+  const derivedHeight = useDerivedValue(() =>
+    withTiming(height.value * Number(isExpanded.value), {
+      duration,
+    })
+  );
+  const bodyStyle = useAnimatedStyle(() => ({
+    height: derivedHeight.value,
+  }));
+
+  return (
+    <Animated.View
+      key={`accordionItem_${viewKey}`}
+      style={[styles.animatedView, bodyStyle, style]}>
+      <View
+        onLayout={(e) => {
+          height.value = e.nativeEvent.layout.height;
+        }}
+        style={styles.wrapper}>
+        {children}
+      </View>
+    </Animated.View>
+  );
+}
+
+function Item() {
+  return <View style={styles.box} />;
+}
+
+function Parent({ open }) {
+  return (
+    <View style={styles.parent}>
+      <AccordionItem isExpanded={open} viewKey="Accordion">
+        <Item />
+      </AccordionItem>
+    </View>
+  );
+}
 
 export default function Calendar() {
     const router = useRouter();
     const [index, setIndex] = React.useState(0);
     const [notifications, setNotifications] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
+    const open = useSharedValue(0); // 0 = collapsed, 1 = expanded
+
+    const toggleAccordion = () => {
+        open.value = open.value === 1 ? 0 : 1;
+    };
 
     // Helper: strip time for accurate date comparison
     const normalizeDate = (date) => {
@@ -20,24 +79,13 @@ export default function Calendar() {
     const now = new Date();
     const today = normalizeDate(now);
 
-    // Categorize
     const backlogs = notifications.filter(task => normalizeDate(task.date) < today);
     const todayTasks = notifications.filter(task => normalizeDate(task.date).getTime() === today.getTime());
     const comingTasks = notifications.filter(task => normalizeDate(task.date) > today);
 
-    // Sort (optional, ascending by date)
     const sortedBacklogs = [...backlogs].sort((a, b) => new Date(a.date) - new Date(b.date));
     const sortedToday = [...todayTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
     const sortedComing = [...comingTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    // Update parent counts
-    // React.useEffect(() => {
-    //     onCountUpdate({
-    //         backlog: sortedBacklogs.length,
-    //         today: sortedToday.length,
-    //         coming: sortedComing.length,
-    //     });
-    // }, [sortedBacklogs.length, sortedToday.length, sortedComing.length]);
 
     // Fetch from Supabase
     React.useEffect(() => {
@@ -58,6 +106,17 @@ export default function Calendar() {
 
         fetchNotifications();
     }, []);
+
+    const groupByDate = (events) => {
+        return events.reduce((acc, event) => {
+            const dateKey = new Date(event.date).toDateString(); // Normalize and group by readable date
+            if (!acc[dateKey]) {
+            acc[dateKey] = [];
+            }
+            acc[dateKey].push(event);
+            return acc;
+        }, {});
+    };
 
     return (
         <ScrollView style={styles.mainScreen}>
@@ -188,6 +247,15 @@ export default function Calendar() {
                     </Card>
                 </View>
             </View>
+            {/* Toggle Accordion */}
+            <TouchableOpacity onPress={toggleAccordion} style={{ margin: 20, backgroundColor: '#3C3C4C', padding: 10, borderRadius: 10 }}>
+                <Text style={{ color: 'white', textAlign: 'center' }}>
+                    Toggle Accordion
+                </Text>
+            </TouchableOpacity>
+
+            {/* Accordion Content */}
+            <Parent open={open} />
         </ScrollView>
     );
 }
@@ -216,5 +284,27 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: '#D9D9D9',
         backgroundColor: 'white', 
+    },
+    animatedView: {
+        width: '100%',
+        overflow: 'hidden',
+    },
+    box: {
+        height: 120,
+        width: 120,
+        color: '#f8f9ff',
+        backgroundColor: '#b58df1',
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    parent: {
+        width: 200,
+    },
+    wrapper: {
+        width: '100%',
+        position: 'absolute',
+        display: 'flex',
+        alignItems: 'center',
     },
 })
