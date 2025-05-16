@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert} from 'react-native';
-import { supabase }from '../../src/lib/supabase';
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert } from 'react-native';
+import { supabase } from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -19,80 +19,100 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  async function signInWithEmail(){
-    // const { email, password } = form;`
-    
-    const { error } = await supabase.auth.signInWithPassword({email,password});
-    if(error)
-      Alert.alert(error.message);
-    else
-      router.push('/components/landing-page-v2')
+  async function signInWithEmail() {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      Alert.alert("Login Failed", error.message);
+      return;
+    }
+
+    // Check if the user is a vet clinic
+    const { data: clinic, error: clinicError } = await supabase
+      .from("vet_clinics")
+      .select("clinic_email")
+      .eq("clinic_email", email)
+      .maybeSingle();
+
+    if (clinicError) {
+      Alert.alert("Error", "Unable to verify user type.");
+      return;
+    }
+
+    if (clinic) {
+      router.push("/vet_clinic/vet-clinic-dashboard"); // 👈 route for vet clinics
+    } else {
+      router.push("/components/landing-page-v2"); // 👈 route for regular users
+    }
   }
-  
+
   const goBack = () => {
     router.push('/starting-page');
   }
-  return(
+  return (
     // <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
-      <SafeAreaView style={styles.background}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <StatusBar hidden={true} />
-          <TouchableOpacity style = {styles.backbtn} onPress={goBack}>
-            <View>
-                <AntDesign name="left" size={15} color="black"  />
-            </View>
-          </TouchableOpacity>
-          <View>
-            <Image source={require('../../assets/pictures/paw-logo2.png')} style = {styles.logo} alt="logo"/>
-          </View>
-        <View style={styles.container}>
-          <View style = {styles.form}>
-            <View style = {styles.input}>
-              <Text style = {styles.inputLabel}>Email Address</Text>
-              <TextInput style ={styles.inputControl}
-                value = {email}
-                onChangeText = {setEmail}
-                placeholder='Enter your email address'
-                />
-            </View>
-
-            <View style = {styles.input}>
-              <Text style = {styles.inputLabel}>Password</Text>
-              <TextInput style ={styles.inputControl}
-                value = {password}
-                onChangeText = {setPassword}
-                placeholder='Enter your password'
-                secureTextEntry
-                />
-            </View>
-            <View>
-              <TouchableOpacity >
-                <Text style = {styles.forgot}> Forgot Password?</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View>
-              {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
-              <TouchableOpacity style = {styles.btn} onPress={signInWithEmail}>
-                <Text style = {styles.btn_txt}>Login</Text>
-              </TouchableOpacity>
-
-            </View>
-            <View>
-              <Text style = {styles.or}>
-                Or
-              </Text>
-              <TouchableOpacity style = {styles.googlebtn}>
-                <Image source={require('../../assets/pictures/google-logo.png')} style = {styles.google_logo} alt="logo"/>
-                <Text style = {styles.google}>
-                  Continue with Google
-                </Text>
-              </TouchableOpacity>
-            </View>
-            
-          </View>
+    <SafeAreaView style={styles.background}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar hidden={true} />
+      <TouchableOpacity style={styles.backbtn} onPress={goBack}>
+        <View>
+          <AntDesign name="left" size={15} color="black" />
         </View>
-      </SafeAreaView>
+      </TouchableOpacity>
+      <View>
+        <Image source={require('../../assets/pictures/paw-logo2.png')} style={styles.logo} alt="logo" />
+      </View>
+      <View style={styles.container}>
+        <View style={styles.form}>
+          <View style={styles.input}>
+            <Text style={styles.inputLabel}>Email Address</Text>
+            <TextInput style={styles.inputControl}
+              value={email}
+              onChangeText={setEmail}
+              placeholder='Enter your email address'
+            />
+          </View>
+
+          <View style={styles.input}>
+            <Text style={styles.inputLabel}>Password</Text>
+            <TextInput style={styles.inputControl}
+              value={password}
+              onChangeText={setPassword}
+              placeholder='Enter your password'
+              secureTextEntry
+            />
+          </View>
+          <View>
+            <TouchableOpacity >
+              <Text style={styles.forgot}> Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View>
+            {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
+            <TouchableOpacity style={styles.btn} onPress={signInWithEmail}>
+              <Text style={styles.btn_txt}>Login</Text>
+            </TouchableOpacity>
+
+          </View>
+          <View>
+            <Text style={styles.or}>
+              Or
+            </Text>
+            <TouchableOpacity style={styles.googlebtn}>
+              <Image source={require('../../assets/pictures/google-logo.png')} style={styles.google_logo} alt="logo" />
+              <Text style={styles.google}>
+                Continue with Google
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+        </View>
+      </View>
+    </SafeAreaView>
     // </LinearGradient>
 
   );
@@ -110,14 +130,14 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#FFFFFF',
     borderRadius: 50,
-    zIndex: 10, 
+    zIndex: 10,
   },
-  container:{
+  container: {
     backgroundColor: '#FFFFFF',
-      height: '100%',
-      borderTopLeftRadius: 70,  
-      borderTopRightRadius: 70, 
-      marginTop: 400,
+    height: '100%',
+    borderTopLeftRadius: 70,
+    borderTopRightRadius: 70,
+    marginTop: 400,
   },
   logo: {
     width: 450,
@@ -141,12 +161,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     marginHorizontal: 10,
     borderColor: '#808080',
-    borderWidth: 1/2,
+    borderWidth: 1 / 2,
     paddingLeft: 15,
     marginBottom: 20,
     borderRadius: 15,
     // alignSelf: 'center',
-    
+
 
   },
   inputLabel: {
@@ -175,7 +195,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3C3C4C',
     marginHorizontal: 10,
     borderColor: '#1E1E1E',
-    borderWidth: 1/2,
+    borderWidth: 1 / 2,
     borderRadius: 15,
     paddingVertical: 8
   },
@@ -185,38 +205,38 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins Light',
     color: 'white',
   },
-  forgot:{
+  forgot: {
     fontFamily: 'Poppins Light',
     textAlign: 'right',
     marginTop: -10,
     marginRight: 20,
     fontSize: 12,
   },
-  or:{
+  or: {
     fontFamily: 'Kanit Medium',
     textAlign: 'center',
     marginTop: 20,
     fontSize: 16,
     // fontWeight: 'bold',
   },
-  google:{
+  google: {
     fontFamily: 'Poppins Light',
     textAlign: 'center',
     fontSize: 16,
     // fontWeight: 'bold',
   },
-  googlebtn:{
+  googlebtn: {
     marginTop: 20,
     backgroundColor: '#B3EBF2',
     marginHorizontal: 10,
     borderColor: '#808080',
-    borderWidth: 1/2,
+    borderWidth: 1 / 2,
     paddingVertical: 6,
     borderRadius: 15,
   }
 
-  
-  
+
+
 });
 
 export default SignIn;
