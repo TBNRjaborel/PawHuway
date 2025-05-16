@@ -1,221 +1,220 @@
-import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { Text, View, ScrollView, StyleSheet, TouchableOpacity, Button, Image, Pressable } from 'react-native';
+import React, { Component, useEffect, useState } from 'react';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Card } from 'react-native-paper';
 import { supabase } from '../../../../src/lib/supabase';
-import { Stack } from 'expo-router';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Calendar, Agenda, LocaleConfig } from 'react-native-calendars';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { GestureDetector } from 'react-native-gesture-handler';
-import Animated from 'react-native-reanimated';
 
-
-const CalendarScreen = () => {
+export default function Calendar() {
     const router = useRouter();
-    const params = useLocalSearchParams();
-    const [events, setEvents] = useState([]);
-    const [selectedDate, setSelectedDate] = useState('');
-    const [items, setItems] = useState('');
-    const snapPoints = useMemo(() => [50, 280, 420, '100%'], []);
-    const bottomSheetRef = useRef(null);
-    // const handleSheetChanges = useCallback((index) => {
-    //     console.log('handleSheetChanges', index);
-        // if (index === -1) {
-        //     handleCloseScroll();
-        // } else if (index > -1) {
-        //     handleOpenScroll();
-        // }
-    // }, []);
-    // const handleOpenScroll = () => { 
-    //     console.log('open');
+    const [index, setIndex] = React.useState(0);
+    const [notifications, setNotifications] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
 
-    //     bottomSheetRef.current?.expand(); 
-    // };
-    // const handleCloseScroll = () => { 
-    //     console.log('close');
-    //     bottomSheetRef.current?.close(); 
-    // };
+    // Helper: strip time for accurate date comparison
+    const normalizeDate = (date) => {
+        const d = new Date(date);
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    };
 
-    useEffect(() => {
-        if (params.newEvent) {
-          const newEvent = JSON.parse(params.newEvent);
-          setEvents((prevEvents) => [...prevEvents, newEvent]); // Add the new event to the list
-        }
-      }, [params.newEvent]);
-    
-      const handleSheetChanges = useCallback((index) => {
-        console.log('handleSheetChanges', index);
-      }, []);
+    const now = new Date();
+    const today = normalizeDate(now);
+
+    // Categorize
+    const backlogs = notifications.filter(task => normalizeDate(task.date) < today);
+    const todayTasks = notifications.filter(task => normalizeDate(task.date).getTime() === today.getTime());
+    const comingTasks = notifications.filter(task => normalizeDate(task.date) > today);
+
+    // Sort (optional, ascending by date)
+    const sortedBacklogs = [...backlogs].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const sortedToday = [...todayTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const sortedComing = [...comingTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Update parent counts
+    // React.useEffect(() => {
+    //     onCountUpdate({
+    //         backlog: sortedBacklogs.length,
+    //         today: sortedToday.length,
+    //         coming: sortedComing.length,
+    //     });
+    // }, [sortedBacklogs.length, sortedToday.length, sortedComing.length]);
+
+    // Fetch from Supabase
+    React.useEffect(() => {
+        const fetchNotifications = async () => {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('events')
+                .select('*')
+                .order('date', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching notifications:', error.message);
+            } else {
+                setNotifications(data);
+            }
+            setLoading(false);
+        };
+
+        fetchNotifications();
+    }, []);
 
     return (
-        <GestureHandlerRootView style={{ flex: 1 }}>
-            <SafeAreaView style={styles.container}>
-                <Stack.Screen options={{ headerShown: false }} />
-
-                <Calendar
-                    onDayPress={(day) => {
-                        setSelectedDate(day.dateString);
-                        console.log('Selected day:', day.dateString);
-                    }}
-                    markedDates={{
-                        [selectedDate]: { selected: true, marked: true, selectedColor: '#FFFAD6' }
-                    }}
-                    theme={{
-                        backgroundColor: '#FFFAD6',
-                        calendarBackground: '#B3EBF2',
-                        textSectionTitleColor: '#1E1E1E',
-                        selectedDayTextColor: 'black',
-                        todayTextColor: '#FF6347',
-                        dayTextColor: '#1E1E1E',
-                        textDisabledColor: '#9BA19D',
-                        arrowColor: 'black',
-                        monthTextColor: '#1E1E1E',
-                        arrowStyle: {
-                            backgroundColor: '#FFFAD6', 
-                            borderRadius: 10, 
-                            borderColor: 'gray',
-                            borderWidth: 1, 
-                            padding: 5, 
-                        },
-                    }}
-                    renderHeader={(date) => {
-                        const formatter = new Intl.DateTimeFormat('en', { month: 'long' });
-                        const month = formatter.format(date); 
-                        const year = date.getFullYear(); 
-                        return (
-                            <View style={{ alignItems: 'center', marginBottom: 20 }}>
-                                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E1E1E' }}>{month}</Text>
-                                <Text style={{ fontSize: 16, color: '#1E1E1E' }}>{year}</Text>
-                            </View>
-                        );
-                    }}
+        <ScrollView style={styles.mainScreen}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar hidden={true} />
+            <View style={{ marginTop: 20, marginLeft: 20 }}>
+                <Text style={{ fontSize: 22, fontWeight: 'bold', }}>Events</Text>
+            </View>
+            <TouchableOpacity style={{ marginTop: 14, marginRight: 20, alignItems: 'flex-end' }} onPress={() => console.log('Pressed View Calendar')}>
+                <Button 
+                    title="View Calendar"
+                    color="#3C3C4C"
+                    onPress={() => router.push('/pet_owner/screens/Calendar/Calendar2')}
                 />
-                <BottomSheet
-                    ref={bottomSheetRef}
-                    index={3}
-                    snapPoints={snapPoints}
-                    onChange={handleSheetChanges}
-                    // enablePanDownToClose={true}
-                    backgroundStyle={{ backgroundColor: '#C9FDF2' }}
-                    handleIndicatorStyle={{ backgroundColor: '#0066b2' }}
-                >
-                    <BottomSheetView style={styles.contentContainer}>
-                        <FlatList
-                            data={events}
-                            keyExtractor={(item) => item.id.toString()}
-                            renderItem={({ item }) => (
-                                <View style={styles.card}>
-                                <Text style={styles.cardTitle}>{item.title}</Text>
-                                <Text style={styles.cardDescription}>{item.description}</Text>
-                                <Text style={styles.cardTime}>
-                                    {item.startTime} - {item.endTime}
-                                </Text>
-                                <Text style={styles.cardClinic}>Clinic: {item.clinic}</Text>
-                                <Text style={styles.cardVeterinarian}>Veterinarian: {item.veterinarian}</Text>
+            </TouchableOpacity>
+            <View>
+                <View style={{ alignItems: 'center' }}>
+                    <Card style={styles.profileCard}>
+                        <Pressable 
+                            onPress={() => { 
+                                router.push('/pet_owner/screens/Calendar/coming-screen')
+                                console.log('Coming clicked')
+                            }}
+                        >
+                            <View style={{ flexDirection: 'row', marginLeft: 7, alignItems: 'center' }}>
+                                <Image
+                                    source={require('../../../../assets/pictures/coming.png')}
+                                    style={{ 
+                                        width: 40, 
+                                        height: 40,
+                                        marginTop: 2,
+                                        marginLeft: 5,
+                                        marginRight: 10,
+                                    }}
+                                />
+                                <View>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Coming</Text>
+                                    <Text style={{ fontSize: 12 }}>{sortedComing.length} tasks incoming</Text>
                                 </View>
-                            )}
-                        />
-                    </BottomSheetView>
-                </BottomSheet>
-                {/* <View style={{ flex:1 }}>
-                {selectedDate ? (
-                    <Text style={styles.selectedText}>Selected Date: {selectedDate} </Text>
-                ) : (
-                    <Text style={styles.placeholderText}>Select a date </Text>
-                )}
-                </View> */}
-                <TouchableOpacity style={styles.addButton} onPress={() => router.push(`/pet_owner/screens/Calendar/add-event?date=${selectedDate}`)}>
-                    <Text style={styles.btnText}>+</Text>
-                </TouchableOpacity>
-            </SafeAreaView>
-        </GestureHandlerRootView>
+                                <Image
+                                    source={require('../../../../assets/pictures/back-btn.png')}
+                                    style={{ 
+                                        width: 18, 
+                                        height: 18,
+                                        marginTop: 2,
+                                        marginRight: 10,
+                                        marginLeft: 142,
+                                        tintColor: '#3C3C4C',
+                                        transform: [{ scaleX: -1 }],
+                                    }}
+                                />
+                            </View>
+                        </Pressable>
+                        <View style={styles.divider} />
+                        <Pressable 
+                            onPress={() => {
+                                router.push('/pet_owner/screens/Calendar/today-screen')
+                                console.log('Today clicked')
+                            }}
+                        >
+                            <View style={{ flexDirection: 'row', marginLeft: 10, alignItems: 'center' }}>
+                                <Image
+                                    source={require('../../../../assets/pictures/in_progress.png')}
+                                    style={{ 
+                                        width: 34, 
+                                        height: 34,
+                                        marginTop: 2,
+                                        marginLeft: 2,
+                                        marginRight: 16,
+                                        tintColor: '#008000',
+                                    }}
+                                />
+                                <View>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Today</Text>
+                                    <Text style={{ fontSize: 12 }}>{sortedToday.length} tasks today</Text>
+                                </View>
+                                <Image
+                                    source={require('../../../../assets/pictures/back-btn.png')}
+                                    style={{ 
+                                        width: 18, 
+                                        height: 18,
+                                        marginTop: 2,
+                                        marginRight: 10,
+                                        marginLeft: 160,
+                                        tintColor: '#3C3C4C',
+                                        transform: [{ scaleX: -1 }],
+                                    }}
+                                />
+                            </View>
+                        </Pressable>
+                        <View style={styles.divider} />
+                        <Pressable 
+                            onPress={() => {
+                                router.push('/pet_owner/screens/Calendar/backlogs-screen')
+                                console.log('Backlog clicked')
+                            }}
+                        >
+                            <View style={{ flexDirection: 'row', marginLeft: 10, alignItems: 'center' }}>
+                                <Image
+                                    source={require('../../../../assets/pictures/backlog.png')}
+                                    style={{ 
+                                        width: 34, 
+                                        height: 34,
+                                        marginTop: 2,
+                                        marginLeft: 2,
+                                        marginRight: 16,
+                                        tintColor: '#F9A603',
+                                    }}
+                                />
+                                <View>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Backlogs</Text>
+                                    <Text style={{ fontSize: 12 }}>{sortedBacklogs.length} tasks not addressed</Text>
+                                </View>
+                                <Image
+                                    source={require('../../../../assets/pictures/back-btn.png')}
+                                    style={{ 
+                                        width: 18, 
+                                        height: 18,
+                                        marginTop: 2,
+                                        marginRight: 10,
+                                        marginLeft: 112,
+                                        tintColor: '#3C3C4C',
+                                        transform: [{ scaleX: -1 }],
+                                    }}
+                                />
+                            </View>
+                        </Pressable>
+                    </Card>
+                </View>
+            </View>
+        </ScrollView>
     );
-};
+}
 
 const styles = StyleSheet.create({
-    container: {
+    mainScreen: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: '#B3EBF2',
     },
-    header: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        color: '#1E1E1E',
-    },
-    selectedText: {
+    icons: {
+        width: 20,
+        height: 20,
+        marginLeft: 20,
         marginTop: 20,
-        fontSize: 18,
-        color: '#1E1E1E',
     },
-    placeholderText: {
+    divider: {
+        height: 1,
+        backgroundColor: '#D9D9D9',
+        marginVertical: 10,
+    },
+    profileCard: {
         marginTop: 20,
-        fontSize: 18,
-        color: '#999',
-    },
-    bottomSheetContainer : {
-        flex: 1,
-        padding: 20,
-        backgroundColor: "orange",
-    },
-    addButton: {
-        position: 'absolute',
-        bottom: 20,
-        right: 20,
-        backgroundColor: '#FFD166',
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
+        width: '90%',
+        height: 182,
+        borderWidth: 2,
+        borderColor: '#D9D9D9',
+        backgroundColor: 'white', 
     },
-    btnText: {
-        fontSize: 24,
-        fontWeight: 'bold',
-    },
-    contentContainer: {
-        padding: 20,
-      },
-      card: {
-        backgroundColor: '#FFF',
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-      },
-      cardTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
-      },
-      cardDescription: {
-        fontSize: 14,
-        marginBottom: 5,
-      },
-      cardTime: {
-        fontSize: 12,
-        color: '#555',
-        marginBottom: 5,
-      },
-      cardClinic: {
-        fontSize: 12,
-        color: '#555',
-        marginBottom: 5,
-      },
-      cardVeterinarian: {
-        fontSize: 12,
-        color: '#555',
-      },
-});
-
-export default CalendarScreen;
+})

@@ -28,7 +28,7 @@ const Dashboard = () => {
                             iconName = focused ? 'paw' : 'paw-outline';
                         } else if (route.name === 'Search Clinic') {
                             iconName = focused ? 'search' : 'search-outline';
-                        } else if (route.name === 'Calendar') {
+                        } else if (route.name === 'Events') {
                             iconName = focused ? 'calendar' : 'calendar-outline';
                         } else if (route.name === 'Profile') {
                             iconName = focused ? 'person' : 'person-outline';
@@ -42,7 +42,7 @@ const Dashboard = () => {
                 })}>
                 <Tab.Screen name="Pets" component={Pets} />
                 <Tab.Screen name="Search Clinic" component={SearchClinic} />
-                <Tab.Screen name="Calendar" component={Calendar} />
+                <Tab.Screen name="Events" component={Calendar} />
                 <Tab.Screen name="Profile" component={Profile} />
             </Tab.Navigator>
         </View>

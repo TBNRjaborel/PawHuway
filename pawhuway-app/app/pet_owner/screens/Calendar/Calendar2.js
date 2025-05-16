@@ -3,18 +3,50 @@ import React, { useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { Agenda } from 'react-native-calendars';
 import { useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { Stack } from 'expo-router';
+import { supabase } from '../../../../src/lib/supabase';
 
 export default function Calendar2() {
     const [items, setItems] = useState ({
-        '2025-04-30': [{ name: 'Testing Lorem Ipsum' }, { name: 'TUN TUN TUN SAHUR' }],
-        '2025-05-01': [{ name: 'BOMBARDINO CROCODINO' }, { name: 'test test test' }],
-        '2025-05-02': [],
-        '2025-05-03': [{ name: 'Dog Grooming Test' }],
-        '2025-05-04': [{ name: 'Last event test' }, { name: 'ASSASINO CAPPUCINO' }],
+        // '2025-04-30': [{ name: 'Testing Lorem Ipsum' }, { name: 'TUN TUN TUN SAHUR' }],
+        // '2025-05-01': [{ name: 'BOMBARDINO CROCODINO' }, { name: 'test test test' }],
+        // '2025-05-02': [],
+        // '2025-05-03': [{ name: 'Dog Grooming Test' }],
+        // '2025-05-04': [{ name: 'Last event test' }, { name: 'ASSASINO CAPPUCINO' }],
     });
     const [selectedDate, setSelectedDate] = useState(null);
     const params = useLocalSearchParams();
     const router = useRouter();
+
+    useFocusEffect(
+        useCallback(() => {
+            const fetchEvents = async () => {
+            const { data, error } = await supabase
+                .from('events')
+                .select('*');
+
+            if (error) {
+                console.error('Error fetching events:', error.message);
+                return;
+            }
+
+            // Process the fetched data into `Agenda` format
+            const formattedItems = {};
+            data.forEach(event => {
+                const dateKey = event.date.split('T')[0]; // format: YYYY-MM-DD
+                if (!formattedItems[dateKey]) {
+                formattedItems[dateKey] = [];
+                }
+                formattedItems[dateKey].push({ name: event.title }); // or add more fields if needed
+            });
+
+            setItems(formattedItems);
+            };
+
+            fetchEvents();
+        }, [])
+    );
+
 
     useFocusEffect(
         useCallback(() => {
@@ -37,6 +69,7 @@ export default function Calendar2() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <Stack.Screen options={{ headerShown: false }} />
             <Agenda
                 items={items}
                 hideExtraDays={true}

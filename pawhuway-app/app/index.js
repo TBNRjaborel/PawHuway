@@ -14,5 +14,5 @@ export default function Index() {
     return null; // Prevent rendering until fonts are loaded
   };
 
-  return <Redirect href="/starting-page" />;
+  return <Redirect href="/pet_owner/screens/Calendar/Calendar" />;
 }
