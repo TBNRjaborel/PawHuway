@@ -13,6 +13,7 @@ export default function Index() {
   if (!fontsLoaded) {
     return null; // Prevent rendering until fonts are loaded
   };
+  
+  return <Redirect href="/starting-page" />;
 
-  return <Redirect href="/vet_clinic/vet-clinic-dashboard" />;
 }
