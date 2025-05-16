@@ -28,6 +28,48 @@ const VetClinicOnboarding = () => {
     const [showClosePicker, setShowClosePicker] = useState(false);
     const [openTime, setOpenTime] = useState(null);
     const [closeTime, setCloseTime] = useState(null);
+    const [emailError, setEmailError] = useState("")
+
+    async function checkEmailExists(email) {
+        try {
+            const { data: userAccount } = await supabase
+                .from('user_accounts')
+                .select('email_add')
+                .eq('email_add', email)
+                .maybeSingle();
+
+            if (userAccount) return true;
+
+            const { data: vetClinic } = await supabase
+                .from('vet_clinics')
+                .select('clinic_email')
+                .eq('clinic_email', email)
+                .maybeSingle();
+
+            return !!vetClinic;
+        } catch (error) {
+            console.error("Email check failed:", error);
+            return false; // default to false if there's a network or query error
+        }
+    }
+
+    const handleEmailBlur = async () => {
+        if (!clinicData.email) {
+            setEmailError("Email is required.");
+            return;
+        }
+
+        const exists = await checkEmailExists(clinicData.email.trim().toLowerCase());
+
+        if (exists === true) {
+            setEmailError("This email is already registered. Please use a different one.");
+        } else if (exists === false) {
+            setEmailError(""); // clear any previous error
+            console.log("Email is available.");
+        } else {
+            setEmailError("Something went wrong. Please try again later.");
+        }
+    };
 
     const submitOnboarding = async () => {
         if (
@@ -47,6 +89,15 @@ const VetClinicOnboarding = () => {
             Alert.alert("Error", "Please fill in all required fields.");
             return;
         }
+
+        if (emailError) {
+            if (emailError == "Email is required.") {
+                Alert.alert("Email Taken", "This email is already registered. Please use a different one.");
+            } else if (emailError == "Something went wrong. Please try again later.") {
+                Alert.alert("Error", "Unable to verify email at the moment. Please try again later.");
+            }
+        }
+
         try {
             const formattedOpenTime = openTime ? openTime.toISOString().split('T')[1].split('Z')[0] : null;
             const formattedCloseTime = closeTime ? closeTime.toISOString().split('T')[1].split('Z')[0] : null;
@@ -200,7 +251,7 @@ const VetClinicOnboarding = () => {
                 progressBarColor="#c0c0c0"
 
             >
-                <ProgressStep label="Clinic Info" buttonFillColor="#3C3C4C" buttonBorderColor="#3C3C4C">
+                <ProgressStep label="Clinic Info" buttonFillColor="#3C3C4C" buttonBorderColor="#3C3C4C" buttonNextDisabled={!clinicData.email || emailError !== ""}>
                     <View style={styles.stepContent}>
                         <Text style={styles.label}>Clinic Name</Text>
                         <TextInput
@@ -209,6 +260,15 @@ const VetClinicOnboarding = () => {
                             value={clinicData.clinicName}
                             onChangeText={text => setclinicData({ ...clinicData, clinicName: text })}
                         />
+                        <Text style={styles.label}>Clinic Email Address</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="example@email.com"
+                            value={clinicData.email}
+                            onChangeText={text => setclinicData({ ...clinicData, email: text })}
+                            onBlur={handleEmailBlur}
+                        />
+                        {emailError ? <Text style={[styles.text, { color: "red", marginTop: -16, marginLeft: 4 }]}>{emailError}</Text> : null}
                         <Text style={styles.label}>Address</Text>
                         <TextInput
                             style={styles.input}
@@ -266,13 +326,7 @@ const VetClinicOnboarding = () => {
                             value={clinicData.contactNumber}
                             onChangeText={text => setclinicData({ ...clinicData, contactNumber: text })}
                         />
-                        <Text style={styles.label}>Email Address</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="example@email.com"
-                            value={clinicData.email}
-                            onChangeText={text => setclinicData({ ...clinicData, email: text })}
-                        />
+
                     </View>
                 </ProgressStep>
                 <ProgressStep label="Documents" buttonFillColor="#3C3C4C" buttonBorderColor="#3C3C4C">

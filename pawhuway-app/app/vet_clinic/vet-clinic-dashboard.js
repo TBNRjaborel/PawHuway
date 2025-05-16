@@ -6,10 +6,9 @@ import { Stack } from 'expo-router';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 
 // Screens
-import Patients from './screens/Patients/Patients';
-import ScanQR from './screens/Scan-qr';
-import Calendar from './screens/Calendar';
-import Profile from './screens/Profile';
+import VetScreen from "./screens/VetScreen"
+import Calendar from "./screens/Calendar"
+import VetClinic from "./screens/VetClinic"
 
 const Tab = createBottomTabNavigator();
 
@@ -19,19 +18,17 @@ const Dashboard = () => {
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar hidden={true} />
             <Tab.Navigator
-                initialRouteName="Patients"
+                initialRouteName="Vets"
                 screenOptions={({ route }) => ({
                     tabBarIcon: ({ focused, color, size }) => {
                         let iconName;
 
-                        if (route.name === 'Patients') {
-                            iconName = focused ? 'paw' : 'paw-outline';
-                        } else if (route.name === 'Scan QR') {
-                            iconName = focused ? 'scan' : 'scan-outline';
+                        if (route.name === 'Vets') {
+                            iconName = focused ? 'medkit' : 'medkit-outline';
                         } else if (route.name === 'Calendar') {
                             iconName = focused ? 'calendar' : 'calendar-outline';
-                        } else if (route.name === 'Profile') {
-                            iconName = focused ? 'person' : 'person-outline';
+                        } else if (route.name === 'Vet Clinic') {
+                            iconName = focused ? 'business' : 'business-outline';
                         }
 
                         return <Ionicons name={iconName} size={size} color={color} />;
@@ -40,14 +37,13 @@ const Dashboard = () => {
                     tabBarInactiveTintColor: '#3C3C4C',
                     headerShown: false,
                 })}>
-                <Tab.Screen name="Patients" component={Patients} />
-                <Tab.Screen name="Scan QR" component={ScanQR} />
+                <Tab.Screen name="Vets" component={VetScreen} />
                 <Tab.Screen name="Calendar" component={Calendar} />
-                <Tab.Screen name="Profile" component={Profile} />
+                <Tab.Screen name="Vet Clinic" component={VetClinic} />
             </Tab.Navigator>
         </SafeAreaView>
-    );
-};
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
