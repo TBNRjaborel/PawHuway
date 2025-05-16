@@ -9,6 +9,7 @@ import {
   Platform,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
 import { supabase } from "../../../../src/lib/supabase";
 import { Stack } from "expo-router";
@@ -47,13 +48,11 @@ const AddPet = () => {
         console.error("Error fetching user:", error.message);
         return null;
       }
-      console.log("user: ", user.email);
-
       setUser(user);
 
       const { data: petOwner, error: ownerError } = await supabase
         .from("pet_owners")
-        .select("*") 
+        .select("*")
         .eq("email", user.email)
         .single();
 
@@ -87,16 +86,12 @@ const AddPet = () => {
 
     const file = result.assets[0];
 
-    console.log("uri: ", file.uri);
-
     let sizeMB = file.size / (1024 * 1024);
-    console.log("filesize: ", sizeMB);
 
     let resizedImg = file;
-    let quality = 0.9
+    let quality = 0.9;
 
     while (sizeMB > 5 && quality > 0.1) {
-      console.log("resizing");
       try {
         resizedImg = await ImageManipulator.manipulateAsync(
           resizedImg.uri,
@@ -105,26 +100,19 @@ const AddPet = () => {
         );
 
         const fileInfo = await FileSystem.getInfoAsync(resizedImg.uri);
-        console.log("done resizing, size: ", fileInfo.size / (1024 * 1024));
-        console.log(fileInfo);
         sizeMB = fileInfo.size / (1024 * 1024);
         quality = quality - 0.1;
-        
       } catch (error) {
         console.error("error resizing: ", error);
         break;
       }
     }
 
-    console.log("exited with size ", sizeMB);
-
     const newImg = {
       name: file.name,
       uri: resizedImg.uri,
       mimeType: "image/jpeg",
-    }
-
-    console.log("file: ", newImg);
+    };
 
     setPetData({ ...petData, image: newImg });
   };
@@ -149,7 +137,6 @@ const AddPet = () => {
 
   async function CreatePet() {
     setSaving(true);
-    console.log("petData:", petData);
     if (
       petData.name == "" ||
       petData.type == "" ||
@@ -158,6 +145,7 @@ const AddPet = () => {
       petData.weight == ""
     ) {
       Alert.alert("Error", "Please fill in all required fields.");
+      setSaving(false);
       return;
     }
 
@@ -179,6 +167,7 @@ const AddPet = () => {
 
     if (error) {
       Alert.alert("Error", error.message);
+      setSaving(false);
       return;
     }
 
@@ -194,7 +183,7 @@ const AddPet = () => {
         .replace(/\//g, "-")}-(${petData.image.name})`;
 
       try {
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from("pet-images")
           .upload(imgFileName, {
             uri: petData.image.uri,
@@ -263,138 +252,145 @@ const AddPet = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <TouchableOpacity onPress={pickImage} style={styles.imageUploadContainer}>
-        {petData.image ? (
-          <Image source={{ uri: petData.image.uri }} style={styles.image} />
-        ) : (
-          <Image
-            source={require("../../../../assets/pictures/add_image.webp")}
-            style={styles.noImage}
-          />
-        )}
-      </TouchableOpacity>
-
-      <View style={styles.form}>
-        <View key="Name" style={styles.inputContainer}>
-          <Text style={styles.label}>Name:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Name"
-            value={petData.name}
-            onChangeText={(text) => setPetData({ ...petData, name: text })}
-          />
-        </View>
-
-        <View key="Age" style={styles.inputContainer}>
-          <Text style={styles.label}>Age:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Age"
-            value={petData.age.toString()}
-            keyboardType="numeric"
-            onChangeText={(text) => setPetData({ ...petData, age: text })}
-          />
-        </View>
-
-        <Text style={styles.label}>Date of Birth:</Text>
-        <TouchableOpacity onPress={() => setShowPicker(true)}>
-          <TextInput
-            style={[styles.input, { marginBottom: 10 }]}
-            value={dob ? dob.toDateString() : ""}
-            placeholder="Enter Date of Birth"
-            editable={false}
-          />
-        </TouchableOpacity>
-
-        {showPicker && (
-          <DateTimePicker
-            value={dob || new Date()}
-            mode="date"
-            display={Platform.OS === "ios" ? "spinner" : "calendar"}
-            onChange={onChange}
-          />
-        )}
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Sex:</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={petData.sex}
-              onValueChange={(itemValue) =>
-                setPetData({ ...petData, sex: itemValue })
-              }
-              style={styles.picker}
-            >
-              <Picker.Item
-                label="Enter Sex"
-                value=""
-                style={styles.pickerPlaceholder}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.imageWrapper}>
+          <TouchableOpacity onPress={pickImage} style={styles.imageUploadContainer}>
+            {petData.image ? (
+              <Image source={{ uri: petData.image.uri }} style={styles.image} />
+            ) : (
+              <Image
+                source={require("../../../../assets/pictures/add_image.webp")}
+                style={styles.imageAdd}
               />
-              <Picker.Item
-                label="Male"
-                value="Male"
-                style={styles.pickerItem}
-              />
-              <Picker.Item
-                label="Female"
-                value="Female"
-                style={styles.pickerItem}
-              />
-            </Picker>
-          </View>
+            )}
+          </TouchableOpacity>
         </View>
-
-        <View key="Type" style={styles.inputContainer}>
-          <Text style={styles.label}>Type:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Type"
-            value={petData.type}
-            onChangeText={(text) => setPetData({ ...petData, type: text })}
-          />
-        </View>
-
-        {["Height", "Weight"].map((field) => (
-          <View key={field} style={styles.inputContainer}>
-            <Text style={styles.label}>{field}:</Text>
+        <View style={styles.form}>
+          <View key="Name" style={styles.inputContainer}>
+            <Text style={styles.label}>Name:</Text>
             <TextInput
               style={styles.input}
-              placeholder={`Enter ${field}`}
-              keyboardType="numeric"
-              value={petData[field.toLowerCase().replace(/ /g, "")]}
-              onChangeText={(text) =>
-                setPetData({
-                  ...petData,
-                  [field.toLowerCase().replace(/ /g, "")]: text,
-                })
-              }
+              placeholder="Enter Name"
+              value={petData.name}
+              onChangeText={(text) => setPetData({ ...petData, name: text })}
             />
           </View>
-        ))}
 
-        <View style={styles.fileUploadContainer}>
-          <Text style={styles.label}>Medical History: </Text>
+          <View key="Age" style={styles.inputContainer}>
+            <Text style={styles.label}>Age:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Age"
+              value={petData.age.toString()}
+              keyboardType="numeric"
+              onChangeText={(text) => setPetData({ ...petData, age: text })}
+            />
+          </View>
 
-          <TouchableOpacity style={styles.fileButton} onPress={pickFile}>
-            <Text style={styles.fileButtonText}>Attach File</Text>
+          <Text style={styles.label}>Date of Birth:</Text>
+          <TouchableOpacity onPress={() => setShowPicker(true)}>
+            <TextInput
+              style={[styles.input, { marginBottom: 10 }]}
+              value={dob ? dob.toDateString() : ""}
+              placeholder="Enter Date of Birth"
+              editable={false}
+            />
           </TouchableOpacity>
 
-          {petData.medfile && (
-            <Text style={styles.fileName}>{petData.medfile.name}</Text>
+          {showPicker && (
+            <DateTimePicker
+              value={dob || new Date()}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "calendar"}
+              onChange={onChange}
+            />
           )}
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Sex:</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={petData.sex}
+                onValueChange={(itemValue) =>
+                  setPetData({ ...petData, sex: itemValue })
+                }
+                style={styles.picker}
+              >
+                <Picker.Item
+                  label="Enter Sex"
+                  value=""
+                  style={styles.pickerPlaceholder}
+                />
+                <Picker.Item
+                  label="Male"
+                  value="Male"
+                  style={styles.pickerItem}
+                />
+                <Picker.Item
+                  label="Female"
+                  value="Female"
+                  style={styles.pickerItem}
+                />
+              </Picker>
+            </View>
+          </View>
+
+          <View key="Type" style={styles.inputContainer}>
+            <Text style={styles.label}>Type:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Type"
+              value={petData.type}
+              onChangeText={(text) => setPetData({ ...petData, type: text })}
+            />
+          </View>
+
+          {["Height", "Weight"].map((field) => (
+            <View key={field} style={styles.inputContainer}>
+              <Text style={styles.label}>{field}:</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={`Enter ${field}`}
+                keyboardType="numeric"
+                value={petData[field.toLowerCase().replace(/ /g, "")]}
+                onChangeText={(text) =>
+                  setPetData({
+                    ...petData,
+                    [field.toLowerCase().replace(/ /g, "")]: text,
+                  })
+                }
+              />
+            </View>
+          ))}
+
+          <View style={styles.fileUploadContainer}>
+            <Text style={styles.label}>Medical History: </Text>
+
+            <TouchableOpacity style={styles.fileButton} onPress={pickFile}>
+              <Text style={styles.fileButtonText}>Attach File</Text>
+            </TouchableOpacity>
+
+            {petData.medfile && (
+              <Text style={styles.fileName}>{petData.medfile.name}</Text>
+            )}
+          </View>
+
+          <TouchableOpacity style={styles.addButton} onPress={CreatePet}>
+            <Text style={styles.addButtonText} disabled={saving}>Add Pet</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => router.push("/pet_owner/dashboard")}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.addButton} onPress={CreatePet}>
-          <Text style={styles.addButtonText} disabled={saving}>Add Pet</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => router.push("/pet_owner/dashboard")}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -402,50 +398,69 @@ const AddPet = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#B3EBF2", // Gradient-like light background from Style 1
+    backgroundColor: "#B3EBF2",
+  },
+  scrollContent: {
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 20
+    paddingBottom: 40,
+    paddingHorizontal: 0,
+    flexGrow: 1,
+  },
+  imageWrapper: {
+    width: "100%",
+    alignItems: "center",
+    zIndex: 2,
+    marginTop: 30,
+    marginBottom: -60,
   },
   imageUploadContainer: {
-    zIndex: 2,
-    marginTop: 20,
     width: 120,
     height: 120,
-    backgroundColor: "#85D1DB", // Soft background for image container from Style 1
+    backgroundColor: "#85D1DB",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 100, // Soften the corners from Style 1
+    borderRadius: 60,
+    borderWidth: 4,
+    borderColor: "#fff",
+    overflow: "hidden",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   image: {
-    width: 100,
-    height: 100,
+    width: 112,
+    height: 112,
+    borderRadius: 56,
     resizeMode: "cover",
-    borderRadius: 100, // Circular image from Style 1
   },
-  noImage: {
-    width: 70,
-    height: 70,
+  imageAdd: {
+    width: 60,
+    height: 60,
+    borderRadius: 56,
     resizeMode: "cover",
-    borderRadius: 100, // Circular image from Style 1
+    opacity: 0.5,
   },
   form: {
-    width: "100%",
-    backgroundColor: "#C9FDF2", 
-    marginTop: -50,
-    borderRadius: 20, 
-    paddingTop: 40,
-    paddingVertical: 20,
+    width: "90%",
+    marginTop: 0,
+    backgroundColor: "#C9FDF2",
+    borderRadius: 30,
+    paddingVertical: 30,
     paddingHorizontal: 20,
-    paddingBottom: 40
+    alignSelf: "center",
+    zIndex: 1,
+    paddingTop: 70,
+    marginBottom: 30,
   },
   inputContainer: {
     marginBottom: 0,
   },
   label: {
-    fontSize: 18, // Larger font size for label from Style 1
+    fontSize: 18,
     fontWeight: "bold",
-    fontFamily: "Kanit Medium", // Font style from Style 1
+    fontFamily: "Kanit Medium",
   },
   input: {
     backgroundColor: "#FFFFFF",
@@ -453,9 +468,9 @@ const styles = StyleSheet.create({
     borderColor: "#808080",
     borderRadius: 10,
     padding: 10,
-    fontSize: 16, // Larger text for input from Style 1
+    fontSize: 16,
     marginBottom: 10,
-    fontFamily: "Poppins Light", // Font style from Style 1
+    fontFamily: "Poppins Light",
   },
   pickerContainer: {
     backgroundColor: "#FFFFFF",
@@ -466,18 +481,18 @@ const styles = StyleSheet.create({
     height: 50,
   },
   picker: {
-    height: "100%",
+    height: 50,
     width: "100%",
-    fontFamily: "Poppins Light", // Font style from Style 1
-    fontSize: 16, // Adjusted font size to match Style 2's picker
+    fontFamily: "Poppins Light",
+    fontSize: 14,
   },
   pickerPlaceholder: {
-    fontSize: 16,
-    fontFamily: "Poppins Light", // Font style from Style 1
-    color: "gray", // Gray color for "Select Sex"
+    fontSize: 14,
+    fontFamily: "Poppins Light",
+    color: "gray",
   },
   pickerItem: {
-    fontSize: 16, // Adjusted to match Style 2's item font size
+    fontSize: 14,
   },
   fileUploadContainer: {
     flexDirection: "row",
@@ -485,7 +500,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   fileButton: {
-    backgroundColor: "#1E1E1E", // Dark button for contrast from Style 1
+    backgroundColor: "#1E1E1E",
     padding: 12,
     borderRadius: 8,
     marginLeft: 10,
@@ -495,7 +510,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   addButton: {
-    backgroundColor: "#B3EBF2", // Accent yellow from Style 1
+    backgroundColor: "#B3EBF2",
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 10,
@@ -504,7 +519,7 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontWeight: "bold",
-    fontSize: 18, // Larger font size from Style 1
+    fontSize: 18,
   },
   cancelButton: {
     backgroundColor: "black",
@@ -517,15 +532,14 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: "white",
     fontWeight: "bold",
-    fontSize: 18, // Adjusted font size for button text from Style 1
+    fontSize: 18,
   },
   fileName: {
-    marginLeft: 10, // Space between button and filename
+    marginLeft: 10,
     fontSize: 14,
-    color: "gray", // Gray color for file name text
-    flexShrink: 1, // Prevents text from overflowing
+    color: "gray",
+    flexShrink: 1,
   },
 });
-
 
 export default AddPet;

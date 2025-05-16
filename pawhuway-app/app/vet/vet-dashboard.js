@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 
 // Screens
 import Patients from './screens/Patients/Patients';
@@ -15,7 +15,7 @@ const Tab = createBottomTabNavigator();
 
 const Dashboard = () => {
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar hidden={true} />
             <Tab.Navigator
@@ -45,7 +45,7 @@ const Dashboard = () => {
                 <Tab.Screen name="Calendar" component={Calendar} />
                 <Tab.Screen name="Profile" component={Profile} />
             </Tab.Navigator>
-        </View>
+        </SafeAreaView>
     );
 };
 
