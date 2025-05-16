@@ -19,6 +19,18 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  useEffect(() => {
+    const autoLogin = async () =>  {
+      setEmail("andeellenes@gmail.com");
+      setPassword("password");  
+      if (email && password) {
+        signInWithEmail();
+      }
+    }
+    
+    autoLogin()
+  }, [email, password]);
+
   async function signInWithEmail(){
     // const { email, password } = form;`
     

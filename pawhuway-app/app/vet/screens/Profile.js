@@ -231,7 +231,7 @@ const Profile = () => {
         <Stack.Screen options={{ headerShown: false }} />
         <StatusBar hidden={true} />
 
-        <TouchableOpacity style={styles.backButton} onPress={() => {router.push("/components/profiles-page-v2")}}>
+        <TouchableOpacity style={styles.backButton} onPress={() => {router.push("/components/landing-page-v2")}}>
           <AntDesign name="home" size={24} color="black" />
         </TouchableOpacity>
 
