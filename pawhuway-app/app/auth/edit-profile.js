@@ -5,7 +5,6 @@ import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, Touchab
 import { supabase }from '../../src/lib/supabase';
 import { Stack,useRouter  } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 
@@ -147,80 +146,75 @@ const editProfile = () => {
     useEffect(() => {
         fetchUserProfile();
     }, []);
-    return (
-        <LinearGradient colors={['#B3EBF2', '#85D1DB','#C9FDF2', '#B6F2D1']} style={styles.gradient}>
-            <SafeAreaView style = {styles.container}>
-                <Stack.Screen options={{ headerShown: false }} />
-                <StatusBar hidden={true} />
-                <View style = {styles.container}>
-                    
-                    <TouchableOpacity style = {styles.backbtn} onPress={goBack}>
+    return (    
+        <SafeAreaView style = {styles.container}>
+            <Stack.Screen options={{ headerShown: false }} />
+            <StatusBar hidden={true} />
+            <View style = {styles.container}>
+                
+                <TouchableOpacity style = {styles.backbtn} onPress={goBack}>
+                    <View>
+                        <AntDesign name="left" size={24} color="black" />
+                    </View>
+                </TouchableOpacity>
+                <View style = {styles.profileSection}>
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>FIRST NAME</Text>
+                        <TextInput style={styles.input} value = {firstName} onChangeText={setFirstName} />
+                    </View>
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>LAST NAME</Text>
+                        <TextInput style={styles.input} value = {lastName} onChangeText={setLastName}/>
+                    </View>
+                    <View style={styles.inputGroup}>
+                        <Text  style={styles.label}>USERNAME</Text>
+                        <TextInput style={styles.input} value = {username} editable = {false}/>
+                    </View>
+                    <View style={styles.inputGroup}>
+                        <Text  style={styles.label}>EMAIL</Text>
+                        <TextInput style={styles.input} value = {email} editable = {false}/>
+                    </View>
+                    <View style={styles.inputGroup}>
+                        <Text  style={styles.label}>DATE OF BIRTH</Text>
+                        <TextInput style={styles.input} value = {birthdate}/>
+                    </View>
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>ADDRESS</Text>
+                        <TextInput style={styles.input} value= {address} />
+                    </View>
+                    <View style = {styles.btn}>
                         <View>
-                            <AntDesign name="left" size={24} color="black" />
+                            <TouchableOpacity style = {styles.saveChanges} onPress={updateUserProfile}>
+                                <Text style = {styles.savetext}>
+                                    Save Changes
+                                </Text>
+                            </TouchableOpacity>
                         </View>
-                    </TouchableOpacity>
-                    <View style = {styles.profileSection}>
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>FIRST NAME</Text>
-                            <TextInput style={styles.input} value = {firstName} onChangeText={setFirstName} />
-                        </View>
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>LAST NAME</Text>
-                            <TextInput style={styles.input} value = {lastName} onChangeText={setLastName}/>
-                        </View>
-                        <View style={styles.inputGroup}>
-                            <Text  style={styles.label}>USERNAME</Text>
-                            <TextInput style={styles.input} value = {username} editable = {false}/>
-                        </View>
-                        <View style={styles.inputGroup}>
-                            <Text  style={styles.label}>EMAIL</Text>
-                            <TextInput style={styles.input} value = {email} editable = {false}/>
-                        </View>
-                        <View style={styles.inputGroup}>
-                            <Text  style={styles.label}>DATE OF BIRTH</Text>
-                            <TextInput style={styles.input} value = {birthdate}/>
-                        </View>
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>ADDRESS</Text>
-                            <TextInput style={styles.input} value= {address} />
-                        </View>
-                        <View style = {styles.btn}>
-                            <View>
-                                <TouchableOpacity style = {styles.saveChanges} onPress={updateUserProfile}>
-                                    <Text style = {styles.savetext}>
-                                        Save Changes
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
-                            <View>
-                                <TouchableOpacity style = {styles.saveChanges}>
-                                    <Text style = {styles.savetext}>
-                                        Delete Account
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>    
-                        </View>
+                        <View>
+                            <TouchableOpacity style = {styles.saveChanges}>
+                                <Text style = {styles.savetext}>
+                                    Delete Account
+                                </Text>
+                            </TouchableOpacity>
+                        </View>    
                     </View>
-                    <View style={styles.imgcontainer}>
-                        <Image source={image ? { uri: image } : require('../../assets/pictures/blank-profile-pic.png')} style={styles.image} />
-                        <TouchableOpacity style={styles.pickImg} onPress={profilePic}>
-                            <Ionicons name="camera" size={25} />
-                        </TouchableOpacity>
-                    </View>
-
-
-                    
                 </View>
-            </SafeAreaView>
-        </LinearGradient>
+                <View style={styles.imgcontainer}>
+                    <Image source={image ? { uri: image } : require('../../assets/pictures/blank-profile-pic.png')} style={styles.image} />
+                    <TouchableOpacity style={styles.pickImg} onPress={profilePic}>
+                        <Ionicons name="camera" size={25} />
+                    </TouchableOpacity>
+                </View>
+
+
+                
+            </View>
+        </SafeAreaView>
 
     );
 }
 
 const styles = StyleSheet.create({
-    gradient:{
-        flex: 1,
-    },
     pickImg:{
         alignSelf: 'center',
         position: 'absolute',
@@ -228,17 +222,17 @@ const styles = StyleSheet.create({
         paddingLeft: 100,
     },
     container: {
-        // flex: 1,
-        // backgroundColor: '#FFFAD6', // 🟢 Add background color to the entire screen
+        flex: 1,
+        backgroundColor: '#B3EBF2', // 🟢 Add background color to the entire screen
     },
     profileSection: {
         height: '100%',    
-        backgroundColor: '#C9FDF2',
-        borderTopLeftRadius: 30,  
-        borderTopRightRadius: 30, 
-        paddingTop: 125,
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 50,  
+        borderTopRightRadius: 50, 
+        paddingTop: 90,
         paddingHorizontal: 25,
-        marginTop: 80,
+        marginTop: 120,
 
     },
     btn:{
@@ -264,7 +258,7 @@ const styles = StyleSheet.create({
     input:{
         // position: 'absolute',
         fontFamily: 'Poppins Light',
-        backgroundColor: '#B3EBF2',
+        backgroundColor: '#FFFFFF',
         marginHorizontal: 20,
         borderColor: '#808080',
         borderWidth: 1/2,
