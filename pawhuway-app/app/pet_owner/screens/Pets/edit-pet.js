@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Platform } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, TouchableOpacity, Alert, Platform, ScrollView } from 'react-native';
 import { supabase } from '../../../../src/lib/supabase';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useRouter } from 'expo-router';
@@ -319,114 +319,120 @@ const EditPet = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <TouchableOpacity onPress={pickImage} style={styles.imageUploadContainer}>
-        {petData.img_path ? (
-          <Image source={{ uri: petData.img_path }} style={styles.image} />
-        ) : (
-          <Image source={require('../../../../assets/pictures/add_image.webp')} style={styles.image} />
-        )}
-      </TouchableOpacity>
-
-      <View style={styles.form}>
-
-        <View key="Name" style={styles.inputContainer}>
-          <Text style={styles.label}>Name:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Name"
-            value={petData.name}
-            onChangeText={(text) => setPetData({ ...petData, name: text })}
-          />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.imageWrapper}>
+          <TouchableOpacity onPress={pickImage} style={styles.imageUploadContainer}>
+            {petData.img_path ? (
+              <Image source={{ uri: petData.img_path }} style={styles.image} />
+            ) : (
+              <Image source={require('../../../../assets/pictures/add_image.webp')} style={styles.image} />
+            )}
+          </TouchableOpacity>
         </View>
-
-        <View key="Age" style={styles.inputContainer}>
-          <Text style={styles.label}>Age:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Age"
-            value={petData.age ? petData.age.toString() : ''}
-            keyboardType="numeric"
-            onChangeText={(text) => setPetData({ ...petData, age: text })}
-          />
-        </View>
-
-        <Text style={styles.label}>Date of Birth:</Text>
-        <TouchableOpacity onPress={() => setShowPicker(true)}>
-          <TextInput
-            style={[styles.input, { marginBottom: 10 }]}
-            value={petData.birthDate ? petData.birthDate : ""}
-            placeholder="Enter Date of Birth"
-            editable={false}
-          />
-        </TouchableOpacity>
-
-        {showPicker && (
-          <DateTimePicker
-            value={dob || new Date()}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
-            onChange={onChange}
-          />
-        )}
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Sex:</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={petData.sex}
-              onValueChange={(itemValue) => setPetData({ ...petData, sex: itemValue })}
-              style={styles.picker}
-            >
-              <Picker.Item label="Enter Sex" value="" style={styles.pickerPlaceholder} />
-              <Picker.Item label="Male" value="Male" style={styles.pickerItem} />
-              <Picker.Item label="Female" value="Female" style={styles.pickerItem} />
-            </Picker>
-          </View>
-        </View>
-
-        <View key="Type" style={styles.inputContainer}>
-          <Text style={styles.label}>Type:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Type"
-            value={petData.type}
-            onChangeText={(text) => setPetData({ ...petData, type: text })}
-          />
-        </View>
-
-        {['Height', 'Weight'].map((field) => (
-          <View key={field} style={styles.inputContainer}>
-            <Text style={styles.label}>{field}:</Text>
+        <View style={styles.form}>
+          <View key="Name" style={styles.inputContainer}>
+            <Text style={styles.label}>Name:</Text>
             <TextInput
               style={styles.input}
-              placeholder={`Enter ${field}`}
-              keyboardType='numeric'
-              value={petData[field.toLowerCase().replace(/ /g, '')]}
-              onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
+              placeholder="Enter Name"
+              value={petData.name}
+              onChangeText={(text) => setPetData({ ...petData, name: text })}
             />
           </View>
-        ))}
 
-        <View style={styles.fileUploadContainer}>
-          <Text style={styles.label}>Medical History: </Text>
+          <View key="Age" style={styles.inputContainer}>
+            <Text style={styles.label}>Age:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Age"
+              value={petData.age ? petData.age.toString() : ''}
+              keyboardType="numeric"
+              onChangeText={(text) => setPetData({ ...petData, age: text })}
+            />
+          </View>
 
-          <TouchableOpacity style={styles.fileButton} onPress={pickFile}>
-            <Text style={styles.fileButtonText}>Attach File</Text>
+          <Text style={styles.label}>Date of Birth:</Text>
+          <TouchableOpacity onPress={() => setShowPicker(true)}>
+            <TextInput
+              style={[styles.input, { marginBottom: 10 }]}
+              value={petData.birthDate ? petData.birthDate : ""}
+              placeholder="Enter Date of Birth"
+              editable={false}
+            />
           </TouchableOpacity>
 
-          {fileName && (
-            <Text style={styles.fileName}>{fileName}</Text>
+          {showPicker && (
+            <DateTimePicker
+              value={dob || new Date()}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+              onChange={onChange}
+            />
           )}
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Sex:</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={petData.sex}
+                onValueChange={(itemValue) => setPetData({ ...petData, sex: itemValue })}
+                style={styles.picker}
+              >
+                <Picker.Item label="Enter Sex" value="" style={styles.pickerPlaceholder} />
+                <Picker.Item label="Male" value="Male" style={styles.pickerItem} />
+                <Picker.Item label="Female" value="Female" style={styles.pickerItem} />
+              </Picker>
+            </View>
+          </View>
+
+          <View key="Type" style={styles.inputContainer}>
+            <Text style={styles.label}>Type:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Type"
+              value={petData.type}
+              onChangeText={(text) => setPetData({ ...petData, type: text })}
+            />
+          </View>
+
+          {['Height', 'Weight'].map((field) => (
+            <View key={field} style={styles.inputContainer}>
+              <Text style={styles.label}>{field}:</Text>
+              <TextInput
+                style={styles.input}
+                placeholder={`Enter ${field}`}
+                keyboardType='numeric'
+                value={petData[field.toLowerCase().replace(/ /g, '')]}
+                onChangeText={(text) => setPetData({ ...petData, [field.toLowerCase().replace(/ /g, '')]: text })}
+              />
+            </View>
+          ))}
+
+          <View style={styles.fileUploadContainer}>
+            <Text style={styles.label}>Medical History: </Text>
+
+            <TouchableOpacity style={styles.fileButton} onPress={pickFile}>
+              <Text style={styles.fileButtonText}>Attach File</Text>
+            </TouchableOpacity>
+
+            {fileName && (
+              <Text style={styles.fileName}>{fileName}</Text>
+            )}
+          </View>
+
+          <TouchableOpacity style={styles.addButton} onPress={updatePet}>
+            <Text style={styles.addButtonText}>Update Pet</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.addButton} onPress={updatePet}>
-          <Text style={styles.addButtonText}>Update Pet</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -435,31 +441,55 @@ const EditPet = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#B3EBF2", // Gradient-like light background from Style 1
+    backgroundColor: "#B3EBF2",
+  },
+  scrollContent: {
     alignItems: "center",
-    padding: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 0,
+    flexGrow: 1,
+  },
+  imageWrapper: {
+    width: "100%",
+    alignItems: "center",
+    zIndex: 2,
+    marginTop: 30,
+    marginBottom: -60, // Pull image up to overlap form
   },
   imageUploadContainer: {
-    marginTop: 20,
     width: 120,
     height: 120,
-    backgroundColor: "#85D1DB", // Soft background for image container from Style 1
+    backgroundColor: "#85D1DB",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 50, // Soften the corners from Style 1
+    borderRadius: 60, // Make it perfectly circular
+    borderWidth: 4,
+    borderColor: "#fff",
+    overflow: "hidden",
+    elevation: 5, // For Android shadow
+    shadowColor: "#000", // For iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   image: {
-    width: 100,
-    height: 100,
+    width: 112,
+    height: 112,
+    borderRadius: 56, // Make image itself circular
     resizeMode: "cover",
   },
   form: {
-    width: "100%",
-    marginTop: -10,
-    backgroundColor: "#C9FDF2", // Lighter background for form from Style 1
-    borderRadius: 30, // Rounded corners for form from Style 1
-    paddingVertical: 20,
+    width: "90%",
+    marginTop: 0,
+    backgroundColor: "#C9FDF2",
+    borderRadius: 30,
+    paddingVertical: 30,
     paddingHorizontal: 20,
+    alignSelf: "center",
+    zIndex: 1,
+    // Add top padding to make space for the overlapping image
+    paddingTop: 70,
+    marginBottom: 30,
   },
   inputContainer: {
     marginBottom: 0,

@@ -11,6 +11,7 @@ import {
   Button,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
 import { supabase } from "../../../src/lib/supabase";
 import { Stack, useRouter } from "expo-router";
@@ -231,96 +232,102 @@ const Profile = () => {
         <Stack.Screen options={{ headerShown: false }} />
         <StatusBar hidden={true} />
 
-        <TouchableOpacity style={styles.backButton} onPress={() => {router.push("/components/profiles-page-v2")}}>
+        <TouchableOpacity style={styles.backButton} onPress={() => {router.push("/components/landing-page-v2")}}>
           <AntDesign name="home" size={24} color="black" />
         </TouchableOpacity>
 
         <View style={styles.container}>
-          <View style={styles.profileSection}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>FIRST NAME</Text>
-              <TextInput
-                style={styles.input}
-                value={firstName}
-                onChangeText={setFirstName}
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 40 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.imgcontainer}>
+              <Image
+                source={
+                  image
+                    ? { uri: image }
+                    : require("../../../assets/pictures/blank-profile-pic.png")
+                }
+                style={styles.image}
               />
+              <TouchableOpacity style={styles.pickImg} onPress={profilePic}>
+                <Ionicons name="camera" size={25} />
+              </TouchableOpacity>
             </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>LAST NAME</Text>
-              <TextInput
-                style={styles.input}
-                value={lastName}
-                onChangeText={setLastName}
-              />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>USERNAME</Text>
-              <TextInput
-                style={styles.input}
-                value={username}
-                editable={false}
-              />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>EMAIL</Text>
-              <TextInput style={styles.input} value={email} editable={false} />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>DATE OF BIRTH</Text>
-              <TextInput
-                style={styles.input}
-                value={birthdate}
-                onChangeText={setBirthDate}
-              />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>ADDRESS</Text>
-              <TextInput
-                style={styles.input}
-                value={address}
-                onChangeText={setAddress}
-              />
-            </View>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>CONTACT NUMBER</Text>
-              <TextInput
-                style={styles.input}
-                value={number}
-                onChangeText={setNumber}
-              />
-            </View>
-            <View style={styles.btn}>
-              <View>
-                <TouchableOpacity
-                  style={styles.saveChanges}
-                  onPress={updateUserProfile}
-                >
-                  <Text style={styles.savetext}>Save Changes</Text>
-                </TouchableOpacity>
+            <View style={styles.profileSection}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>FIRST NAME</Text>
+                <TextInput
+                  style={styles.input}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                />
               </View>
-              <View>
-                <TouchableOpacity
-                  style={styles.saveChanges}
-                  onPress={deleteOwnerProfile}
-                >
-                  <Text style={styles.savetext}>Delete Account</Text>
-                </TouchableOpacity>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>LAST NAME</Text>
+                <TextInput
+                  style={styles.input}
+                  value={lastName}
+                  onChangeText={setLastName}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>USERNAME</Text>
+                <TextInput
+                  style={styles.input}
+                  value={username}
+                  editable={false}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>EMAIL</Text>
+                <TextInput style={styles.input} value={email} editable={false} />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>DATE OF BIRTH</Text>
+                <TextInput
+                  style={styles.input}
+                  value={birthdate}
+                  onChangeText={setBirthDate}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>ADDRESS</Text>
+                <TextInput
+                  style={styles.input}
+                  value={address}
+                  onChangeText={setAddress}
+                />
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>CONTACT NUMBER</Text>
+                <TextInput
+                  style={styles.input}
+                  value={number}
+                  onChangeText={setNumber}
+                />
+              </View>
+              <View style={styles.btn}>
+                <View>
+                  <TouchableOpacity
+                    style={styles.saveChanges}
+                    onPress={updateUserProfile}
+                  >
+                    <Text style={styles.savetext}>Save Changes</Text>
+                  </TouchableOpacity>
+                </View>
+                <View>
+                  <TouchableOpacity
+                    style={styles.saveChanges}
+                    onPress={deleteOwnerProfile}
+                  >
+                    <Text style={styles.savetext}>Delete Account</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-          <View style={styles.imgcontainer}>
-            <Image
-              source={
-                image
-                  ? { uri: image }
-                  : require("../../../assets/pictures/blank-profile-pic.png")
-              }
-              style={styles.image}
-            />
-            <TouchableOpacity style={styles.pickImg} onPress={profilePic}>
-              <Ionicons name="camera" size={25} />
-            </TouchableOpacity>
-          </View>
+          </ScrollView>
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -366,6 +373,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   imgcontainer: {
+    zIndex: 1,
     position: "absolute",
     alignSelf: "center",
   },
