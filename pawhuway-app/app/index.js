@@ -13,7 +13,13 @@ export default function Index() {
   if (!fontsLoaded) {
     return null; // Prevent rendering until fonts are loaded
   };
+<<<<<<< HEAD
 
   // return <Redirect href="/pet_owner/screens/Calendar/Calendar" />;
   return <Redirect href="/starting-page" />;
+=======
+ 
+  return <Redirect href="/pet_owner/screens/Calendar/Calendar" />;
+  // return <Redirect href="/starting-page" />;
+>>>>>>> 92ef54f720b73456388a8310d90903f6af7cbb9d
 }
