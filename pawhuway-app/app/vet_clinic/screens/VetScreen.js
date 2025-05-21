@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList, ScrollView, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList, ActivityIndicator, Dimensions, StatusBar, Modal } from 'react-native';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../src/lib/supabase';
 import Fontisto from '@expo/vector-icons/Fontisto';
+// import Modal from 'react-native-modal';
 
 const capitalizeFirstLetter = (string) =>
     string.charAt(0).toUpperCase() + string.slice(1);
 
+// const deviceWidth = Dimensions.get('window').width;
+// const deviceHeight = Dimensions.get('window').height;
+const statusBarHeight = StatusBar.currentHeight;
+// const totalHeight = statusBarHeight + deviceHeight
 const VetScreen = () => {
     const router = useRouter();
     const [user, setUser] = useState(null)
     const [clinic, setClinic] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [vetList, setVetList] = useState([])
-
+    const [selectedVet, setSelectedVet] = useState(null);
+    // console.log(deviceHeight, statusBarHeight, totalHeight)
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -26,7 +32,7 @@ const VetScreen = () => {
 
                 if (error) throw new Error(error.message);
                 setUser(user);
-                console.log(user.id)
+                // console.log(user.id)
                 const { data: clinicData, error: clinicError } = await supabase
                     .from("vet_clinics")
                     .select("*")
@@ -39,12 +45,19 @@ const VetScreen = () => {
                 //fetch vet from this clinic
                 const { data: vetData, error: vetError } = await supabase
                     .from("clinic_vet_relation")
-                    .select("vet_id, vet_profiles(*)")
+                    .select(`
+                        vet_id,
+                        vet_profiles(
+                        email, user_accounts(*)
+                        )
+                    `)
                     .eq("vet_clinic_id", clinicData.id);
 
                 if (vetError) throw new Error(vetError.message);
                 setVetList(vetData);
-                // console.log("vets", vetData)
+                // console.log("vets", vetData[0])
+                // console.log("vet_profiles", vetData[0].vet_profiles)
+                // console.log("user_accounts", vetData[0].vet_profiles.user_accounts)
 
             } catch (err) {
                 console.error("Fetch error:", err.message);
@@ -59,6 +72,7 @@ const VetScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
+
             <View style={styles.logo_container} >
                 {/* style={styles.logo_container} */}
                 <Image source={require('../../../assets/pictures/paw-logo.png')} style={styles.logo} resizeMode='stretch' alt="logo" />
@@ -81,11 +95,12 @@ const VetScreen = () => {
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 style={styles.vetCard}
-                                onPress={() => router.push(`/vet_clinic/screens/vetDetails?petId=${item.vet_id}`)}
+                                // onPress={() => router.push(`/vet_clinic/screens/vetDetails?petId=${item.vet_id}`)}
+                                onPress={() => setSelectedVet(item)}
                             >
                                 <Fontisto name="doctor" size={75} color="white" />
-                                <Text style={[styles.vetName, { marginTop: 10 }]}>
-                                    {capitalizeFirstLetter(item.vet_profiles.first_name)}
+                                <Text style={[styles.label, { marginTop: 10, color: 'white' }]}>
+                                    {capitalizeFirstLetter(item.vet_profiles.user_accounts.first_name)}
                                 </Text>
                             </TouchableOpacity>
                         )}
@@ -95,6 +110,60 @@ const VetScreen = () => {
 
                 )}
             </View>
+            {selectedVet && <View style={styles.fullScreenOverlay}>
+                <Modal
+                    visible={!!selectedVet}
+                    transparent={true}
+                    onRequestClose={() => setSelectedVet(null)}
+                >
+
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            <TouchableOpacity
+                                style={styles.closeButton}
+                                onPress={() => setSelectedVet(null)}
+                            >
+                                <Text>✕</Text>
+                            </TouchableOpacity>
+
+                            {selectedVet && (
+                                <>
+                                    <Text style={styles.label}>
+                                        Vet Details
+                                    </Text>
+                                    <Fontisto name="doctor" size={75} color="#3C3C4C" />
+                                    <View style={styles.vetDetailsContent}>
+                                        <Text style={styles.label}>
+                                            Name: <Text style={styles.value}>{capitalizeFirstLetter(selectedVet.vet_profiles.user_accounts.first_name)} {capitalizeFirstLetter(selectedVet.vet_profiles.user_accounts.last_name ? selectedVet.vet_profiles.user_accounts.last_name : '')}</Text>
+                                        </Text>
+                                        <Text style={styles.label}>
+                                            Address: <Text style={styles.value}>{selectedVet.vet_profiles.user_accounts.address}</Text>
+                                        </Text>
+                                        <Text style={styles.label}>
+                                            Birthdate: <Text style={styles.value}>{selectedVet.vet_profiles.user_accounts.birth_date}</Text>
+                                        </Text>
+                                        <Text style={styles.label}>
+                                            Email: <Text style={styles.value}>{selectedVet.vet_profiles.user_accounts.email_add}</Text>
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.label}
+                                        onPress={() => {
+                                            setSelectedVet(null)
+                                            router.push(`/vet_clinic/screens/petList?vetId=${selectedVet.vet_id}`)
+
+                                        }}>
+                                        VIEW PETS
+                                    </Text>
+
+                                    {/* Add more details (e.g., specialty, contact) here */}
+                                </>
+                            )}
+                        </View>
+                    </View>
+
+                </Modal>
+            </View>
+            }
         </SafeAreaView >
     )
 }
@@ -143,12 +212,14 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 10,
     },
-    vetName: {
-        color: 'white',
-        fontSize: 28,
+    label: {
+        fontSize: 20,
         fontWeight: "bold",
-        // backgroundColor: 'cyan'
-        // color: "#333",
+        marginBottom: 10,
+    },
+    value: {
+        fontWeight: "normal",
+
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -190,13 +261,13 @@ const styles = StyleSheet.create({
         // backgroundColor: 'red'
     },
 
-    petList: {
+    vetDetailsContent: {
         width: '90%',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         // backgroundColor: 'orange',
-        padding: 10,
-        marginTop: 200
+        // padding: 10,
+        marginVertical: 20
     },
 
     petListText: {
@@ -224,6 +295,45 @@ const styles = StyleSheet.create({
     btn_sign_up: {
         textAlign: 'center',
         fontWeight: 'bold',
+    },
+    fullScreenOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",// Semi-dark backdrop
+        justifyContent: 'center',
+        height: statusBarHeight
+        // zIndex: 100000
+    },
+    modalContainer: {
+        flex: 1,
+        // width: "100%",
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+        width: '95%',
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 20,
+        alignItems: 'center',
+    },
+    modalImage: {
+        width: 100,
+        height: 100,
+        marginBottom: 10,
+    },
+    modalName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    closeButton: {
+        alignSelf: 'flex-end',
+        padding: 5,
     },
 });
 

@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
         // textShadowOffset: { width: 1, height: 1 },
         // textShadowRadius: 1,
     },
-    buttoncontainer:{
+    buttoncontainer: {
         gap: 10,
     },
 
