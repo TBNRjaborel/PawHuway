@@ -19,17 +19,17 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // useEffect(() => {
-  //   const autoLogin = async () => {
-  //     setEmail("fieljrc@gmail.com");
-  //     setPassword("123456");
-  //     if (email && password) {
-  //       signInWithEmail();
-  //     }
-  //   }
+  useEffect(() => {
+    const autoLogin = async () => {
+      setEmail("vet@gmail.com");
+      setPassword("123456");
+      if (email && password) {
+        signInWithEmail();
+      }
+    }
 
-  //   autoLogin();
-  // }, []);
+    autoLogin();
+  }, []);
 
   async function signInWithEmail() {
     const { data, error } = await supabase.auth.signInWithPassword({
