@@ -16,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const PatientDetails = () => {
     const router = useRouter();
-    const { petId } = useLocalSearchParams();
+    const { petId, vetId } = useLocalSearchParams();
 
     const [petData, setPetData] = useState({
         name: '',
@@ -32,10 +32,11 @@ const PatientDetails = () => {
         owner_id: '',
     });
 
-    const deletePet = async (petId) => {
+    const deletePatient = async (petId, vetId) => {
+        console.log(petId, vetId)
         Alert.alert(
             "Confirm Deletion",
-            "Are you sure you want to delete this patient?",
+            "Are you sure you want to delete this pet as your patient?",
             [
                 { text: "Cancel", style: "cancel" },
                 {
@@ -43,33 +44,21 @@ const PatientDetails = () => {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            const deleteFiles = async (bucket) => {
-                                const { data, error } = await supabase.storage.from(bucket).list();
-                                if (error) {
-                                    console.error(`Error fetching files from ${bucket}:`, error);
-                                    return;
-                                }
-                                const filesToDelete = data
-                                    .filter((file) => file.name.startsWith(`${petId}`))
-                                    .map((file) => file.name);
-                                if (filesToDelete.length) {
-                                    const { error: deleteError } = await supabase.storage
-                                        .from(bucket)
-                                        .remove(filesToDelete);
-                                    if (deleteError)
-                                        console.error(`Error deleting from ${bucket}:`, deleteError);
-                                }
-                            };
-                            await Promise.all([
-                                deleteFiles("pet-images"),
-                                deleteFiles("pet-medical-history"),
-                            ]);
-                            const { error } = await supabase.from("pets").delete().eq("id", petId);
-                            if (error) console.error("Error deleting pet:", error);
-                            Alert.alert('Success', 'Pet deleted successfully!');
-                            router.push("vet/vet-dashboard");
+                            const { error } = await supabase
+                                .from('vet_pet_relation')
+                                .delete()
+                                .match({ vet_id: vetId, pet_id: petId });
+
+                            if (error) {
+                                console.error('Error deleting relation:', error.message);
+                                alert('Failed to remove patient.');
+                            } else {
+                                alert('Patient removed successfully!');
+                                router.push("/vet/vet-dashboard")
+                            }
                         } catch (err) {
-                            console.error("Unexpected error deleting pet:", err);
+                            console.error('Unexpected error:', err.message);
+                            alert('An error occurred.');
                         }
                     }
                 }
@@ -194,7 +183,7 @@ const PatientDetails = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.deleteButton}
-                    onPress={() => deletePet(petData.id)}
+                    onPress={() => deletePatient(petData.id, vetId)}
                 >
                     <Text style={styles.deleteButtonText}>Delete</Text>
                 </TouchableOpacity>

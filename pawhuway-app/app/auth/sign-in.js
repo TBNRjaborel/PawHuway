@@ -21,9 +21,9 @@ const SignIn = () => {
 
   useEffect(() => {
     const autoLogin = async () => {
-      setEmail("andeellenes@gmail.com");
-      setPassword("password");
-      if(email && password) {
+      setEmail("vet@gmail.com");
+      setPassword("123456");
+      if (email && password) {
         signInWithEmail();
       }
     }

@@ -43,7 +43,7 @@ const VetClinic = () => {
             const { data: clinicData, error: clinicError } = await supabase
                 .from("vet_clinics")
                 .select("*")
-                .eq("clinic_email", user.email)
+                .eq("id", user.id)
                 .maybeSingle();
 
             if (clinicError) {
@@ -52,11 +52,11 @@ const VetClinic = () => {
             }
 
             setClinic(clinicData);
-
+            // co
         };
 
         fetchClinic();
-        // console.log("hey", clinic.id)
+        console.log("hey", clinic)
     }, []);
 
     const handleDelete = async () => {
