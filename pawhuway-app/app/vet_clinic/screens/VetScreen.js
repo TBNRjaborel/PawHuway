@@ -1,39 +1,101 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList, ScrollView, ActivityIndicator } from 'react-native';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../src/lib/supabase';
-import { Alert } from 'react-native';
+import Fontisto from '@expo/vector-icons/Fontisto';
+
+const capitalizeFirstLetter = (string) =>
+    string.charAt(0).toUpperCase() + string.slice(1);
 
 const VetScreen = () => {
     const router = useRouter();
+    const [user, setUser] = useState(null)
     const [clinic, setClinic] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [vetList, setVetList] = useState([])
 
     useEffect(() => {
-        const getClinic = async () => {
-            const {
-                data: { clinic },
-                error,
-            } = await supabase.auth.getUser();
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const {
+                    data: { user },
+                    error,
+                } = await supabase.auth.getUser();
 
-            if (error) {
-                console.error("Error fetching user:", error.message);
-                return null;
+                if (error) throw new Error(error.message);
+                setUser(user);
+                console.log(user.id)
+                const { data: clinicData, error: clinicError } = await supabase
+                    .from("vet_clinics")
+                    .select("*")
+                    .eq("id", user.id)
+                    .single();
+
+                if (clinicError) throw new Error(clinicError.message);
+                setClinic(clinicData);
+
+                //fetch vet from this clinic
+                const { data: vetData, error: vetError } = await supabase
+                    .from("clinic_vet_relation")
+                    .select("vet_id, vet_profiles(*)")
+                    .eq("vet_clinic_id", clinicData.id);
+
+                if (vetError) throw new Error(vetError.message);
+                setVetList(vetData);
+                // console.log("vets", vetData)
+
+            } catch (err) {
+                console.error("Fetch error:", err.message);
+            } finally {
+                setIsLoading(false); // Done loading
             }
-            //   console.log("user: ", user.email);
-
-            setClinic(clinic);
         };
 
-        getClinic();
+        fetchData();
+        // console.log("vets2", vetList)
     }, []);
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <Text style={styles.title}>Vet Screen</Text>
+            <View style={styles.logo_container} >
+                {/* style={styles.logo_container} */}
+                <Image source={require('../../../assets/pictures/paw-logo.png')} style={styles.logo} resizeMode='stretch' alt="logo" />
+                <Text style={styles.title}>PawHuway</Text>
             </View>
-        </SafeAreaView>
+            <View style={{ alignItems: "center", marginTop: 20 }}>
+                <Text style={styles.title}>Veterinarian List</Text>
+                {isLoading ? (
+                    <View style={{ justifyContent: 'center', alignItems: 'center', height: '80%' }}>
+                        <ActivityIndicator size="large" color="#3C3C4C" />
+                    </View>
+
+                ) : (
+
+                    <FlatList
+                        data={vetList}
+                        numColumns={2} // This will create 2 items per row
+                        columnWrapperStyle={{ justifyContent: "space-between" }} // Adjust spacing
+                        keyExtractor={(item) => item.vet_id} // Make sure each item has a unique id
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={styles.vetCard}
+                                onPress={() => router.push(`/vet_clinic/screens/vetDetails?petId=${item.vet_id}`)}
+                            >
+                                <Fontisto name="doctor" size={75} color="white" />
+                                <Text style={[styles.vetName, { marginTop: 10 }]}>
+                                    {capitalizeFirstLetter(item.vet_profiles.first_name)}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingBottom: 20, width: '90%', marginTop: 20 }} // Optional: Add some bottom padding
+                    />
+
+                )}
+            </View>
+        </SafeAreaView >
     )
 }
 
@@ -65,43 +127,28 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
 
-    petCard: {
-        flexDirection: 'row',
-        backgroundColor: '#3C3C4C',
-        marginHorizontal: 28,
-        marginVertical: 8,
-        padding: 10,
-        borderRadius: 16,
+    vetCard: {
+        width: "48%",
+        height: 175,
+        backgroundColor: "#3C3C4C",
+        padding: 20,
+        marginBottom: 16,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 0
     },
-    petImage: {
+    cardImage: {
         width: 100,
         height: 100,
         borderRadius: 10,
     },
-    petInfo: {
-        color: 'white',
-        flex: 1,
-        marginLeft: 10,
-        padding: 4
-    },
-    petName: {
+    vetName: {
         color: 'white',
         fontSize: 28,
         fontWeight: "bold",
+        // backgroundColor: 'cyan'
         // color: "#333",
-    },
-    petDetails: {
-        color: 'white',
-        fontSize: 12,
-        // fontWeight: "bold",
-        // color: "#666",
-        padding: 2
-    },
-    petType: {
-        fontSize: 12,
-        fontWeight: "bold",
-        color: 'white',
-        padding: 2
     },
     buttonContainer: {
         flexDirection: 'row',
