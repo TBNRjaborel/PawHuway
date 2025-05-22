@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TextInput, Image, Button, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { LinearGradient } from 'expo-linear-gradient';
+
 // import { useEffect } from 'react';
 
 
@@ -18,46 +19,43 @@ const SignIn = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const autoLogin = async () => {
-      setEmail("vet@gmail.com");
-      setPassword("123456");
-      if (email && password) {
-        signInWithEmail();
-      }
-    }
+  // useEffect(() => {
+  //   const autoLogin = async () => {
+  //     setEmail("vet@gmail.com");
+  //     setPassword("123456");
+  //     if (email && password) {
+  //       signInWithEmail();
+  //     }
+  //   }
 
-    autoLogin();
-  }, []);
+  //   autoLogin();
+  // }, []);
 
   async function signInWithEmail() {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      // Login
+      setIsLoading(true)
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError) throw authError;
 
-    if (error) {
-      Alert.alert("Login Failed", error.message);
-      return;
-    }
+      // Check user type
+      const { data: clinic, error: clinicError } = await supabase
+        .from("vet_clinics")
+        .select("id")
+        .eq("clinic_email", email)
+        .maybeSingle();
 
-    // Check if the user is a vet clinic
-    const { data: clinic, error: clinicError } = await supabase
-      .from("vet_clinics")
-      .select("clinic_email")
-      .eq("clinic_email", email)
-      .maybeSingle();
+      if (clinicError) throw clinicError;
 
-    if (clinicError) {
-      Alert.alert("Error", "Unable to verify user type.");
-      return;
-    }
+      // Redirect
+      router.push(clinic ? "/vet_clinic/vet-clinic-dashboard" : "/components/landing-page-v2");
 
-    if (clinic) {
-      router.push("/vet_clinic/vet-clinic-dashboard"); // 👈 route for vet clinics
-    } else {
-      router.push("/components/landing-page-v2"); // 👈 route for regular users
+    } catch (error) {
+      Alert.alert("Error", error.message || "Login failed");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -105,8 +103,16 @@ const SignIn = () => {
 
           <View>
             {/* <Button color = '#F9FE62' title='Log In' width = '80%'/> */}
-            <TouchableOpacity style={styles.btn} onPress={signInWithEmail}>
-              <Text style={styles.btn_txt}>Login</Text>
+            <TouchableOpacity
+              style={styles.btn}
+              onPress={signInWithEmail}
+              disabled={isLoading} // Disable button during loading
+            >
+              {isLoading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.btn_txt}>Login</Text>
+              )}
             </TouchableOpacity>
 
           </View>
