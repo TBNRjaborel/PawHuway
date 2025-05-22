@@ -67,7 +67,7 @@ return (
                     <View style={styles.bubble2} />
                     <View style={styles.bubble3} />
                     <View style={styles.personContainer}>
-                        <Image source={require("../../assets/pictures/person_with_cat.png")}
+                        <Image source={require("../../assets/pictures/16.png")}
                             style={styles.image}
                             resizeMode="contain"
                             overflow = "hidden"
