@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import {
+    SafeAreaView,
+    View,
+    Text,
+    Image,
+    TouchableOpacity,
+    StyleSheet,
+    Alert,
+    ScrollView,
+} from "react-native";
 import { Stack } from 'expo-router';
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { supabase } from '../../../../src/lib/supabase';
-// import QRCodeGenerator from './generate-qr';
 import { Ionicons } from "@expo/vector-icons";
 
 const PatientDetails = () => {
     const router = useRouter();
-    const { petId } = useLocalSearchParams(); // Get petId from URL params
-    // const [qrVisible, setQrVisible] = useState(false);
-    // const [ownerName, setOwnerName] = useState('');
+    const { petId, vetId } = useLocalSearchParams();
 
     const [petData, setPetData] = useState({
         name: '',
@@ -26,56 +32,33 @@ const PatientDetails = () => {
         owner_id: '',
     });
 
-    // const [loading, setLoading] = useState(true);
-
-
-    const deletePet = async (petId) => {
+    const deletePatient = async (petId, vetId) => {
+        console.log(petId, vetId)
         Alert.alert(
             "Confirm Deletion",
-            "Are you sure you want to delete this patient?",
+            "Are you sure you want to delete this pet as your patient?",
             [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
+                { text: "Cancel", style: "cancel" },
                 {
                     text: "Delete",
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            const deleteFiles = async (bucket) => {
-                                const { data, error } = await supabase.storage.from(bucket).list();
-                                if (error) {
-                                    console.error(`Error fetching files from ${bucket}:`, error);
-                                    return;
-                                }
+                            const { error } = await supabase
+                                .from('vet_pet_relation')
+                                .delete()
+                                .match({ vet_id: vetId, pet_id: petId });
 
-                                const filesToDelete = data
-                                    .filter((file) => file.name.startsWith(`${petId}`))
-                                    .map((file) => file.name);
-
-                                if (filesToDelete.length) {
-                                    const { error: deleteError } = await supabase.storage
-                                        .from(bucket)
-                                        .remove(filesToDelete);
-                                    if (deleteError)
-                                        console.error(`Error deleting from ${bucket}:`, deleteError);
-                                }
-                            };
-
-                            await Promise.all([
-                                deleteFiles("pet-images"),
-                                deleteFiles("pet-medical-history"),
-                            ]);
-
-                            const { error } = await supabase.from("pets").delete().eq("id", petId);
-                            if (error) console.error("Error deleting pet:", error);
-                            // else setPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
-
-                            Alert.alert('Success', 'Pet deleted successfully!');
-                            router.push("vet/vet-dashboard");
+                            if (error) {
+                                console.error('Error deleting relation:', error.message);
+                                alert('Failed to remove patient.');
+                            } else {
+                                alert('Patient removed successfully!');
+                                router.push("/vet/vet-dashboard")
+                            }
                         } catch (err) {
-                            console.error("Unexpected error deleting pet:", err);
+                            console.error('Unexpected error:', err.message);
+                            alert('An error occurred.');
                         }
                     }
                 }
@@ -85,26 +68,17 @@ const PatientDetails = () => {
 
     async function fetchOwnerInfo(email) {
         if (!email) return null;
-
         const { data: userData, error } = await supabase
             .from('user_accounts')
             .select('first_name, last_name, address')
             .eq('email_add', email)
             .single();
-
         if (error) {
             Alert.alert('Error', 'Failed to fetch owner info.');
             return null;
         }
-
         return userData;
     }
-
-
-    // const handleGenerateQR = (pet) => {
-    //     setQrValue(JSON.stringify(pet)); // Encode pet data in QR code
-    //     setQrVisible(true);
-    // };
 
     useEffect(() => {
         async function fetchPetDetails() {
@@ -127,7 +101,6 @@ const PatientDetails = () => {
             }
 
             const { publicUrl } = supabase.storage.from('pet-images').getPublicUrl(`${petId}.jpg`);
-
             const email = data?.pet_owner?.email;
             const ownerInfo = await fetchOwnerInfo(email);
 
@@ -137,16 +110,12 @@ const PatientDetails = () => {
                 imageUrl: publicUrl || null,
                 ownerInfo: ownerInfo,
             });
-
-            setDob(data.birthDate ? new Date(data.birthDate) : null);
-            setLoading(false);
         }
-
         fetchPetDetails();
     }, []);
 
     if (!petData.name) {
-        return <Text style={styles.errorText}>Pet not found</Text>;
+        return;
     }
 
     return (
@@ -161,47 +130,64 @@ const PatientDetails = () => {
                 <View />
             </View>
 
-            <Image source={{ uri: petData.img_path || "../../../assets/pictures/paw-logo.png" }} style={styles.petImage} />
-            <View style={styles.detailsContainer}>
-                <Text style={styles.label}>Name: <Text style={styles.value}>{petData.name}</Text></Text>
-                {(petData?.ownerInfo?.first_name || petData?.ownerInfo?.last_name) && (
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
+                <Image
+                    source={{
+                        uri: petData.img_path || "../../../assets/pictures/paw-logo.png",
+                    }}
+                    style={styles.petImage}
+                />
+                <View style={styles.detailsContainer}>
                     <Text style={styles.label}>
-                        Owner:{" "}
-                        <Text style={styles.value}>
-                            {`${petData.ownerInfo.first_name || ""} ${petData.ownerInfo.last_name || ""}`.trim()}
+                        Name: <Text style={styles.value}>{petData.name}</Text>
+                    </Text>
+                    {(petData?.ownerInfo?.first_name || petData?.ownerInfo?.last_name) && (
+                        <Text style={styles.label}>
+                            Owner:{" "}
+                            <Text style={styles.value}>
+                                {`${petData.ownerInfo.first_name || ""} ${petData.ownerInfo.last_name || ""}`.trim()}
+                            </Text>
                         </Text>
-                    </Text>
-                )}
-
-                {petData?.ownerInfo?.address && (
+                    )}
+                    {petData?.ownerInfo?.address && (
+                        <Text style={styles.label}>
+                            Address:{" "}
+                            <Text style={styles.value}>{petData.ownerInfo.address}</Text>
+                        </Text>
+                    )}
                     <Text style={styles.label}>
-                        Address:{" "}
-                        <Text style={styles.value}>{petData.ownerInfo.address}</Text>
+                        Age: <Text style={styles.value}>{petData.age} years</Text>
                     </Text>
-                )}
-                <Text style={styles.label}>Age: <Text style={styles.value}>{petData.age} years</Text></Text>
-                <Text style={styles.label}>Birthdate: <Text style={styles.value}>{petData.birthDate || "N/A"}</Text></Text>
-                <Text style={styles.label}>Sex: <Text style={styles.value}>{petData.sex}</Text></Text>
-                <Text style={styles.label}>Type: <Text style={styles.value}>{petData.type}</Text></Text>
-                <Text style={styles.label}>Height: <Text style={styles.value}>{petData.height} cm</Text></Text>
-                <Text style={styles.label}>Weight: <Text style={styles.value}>{petData.weight} kg</Text></Text>
-            </View>
+                    <Text style={styles.label}>
+                        Birthdate: <Text style={styles.value}>{petData.birthDate || "N/A"}</Text>
+                    </Text>
+                    <Text style={styles.label}>
+                        Sex: <Text style={styles.value}>{petData.sex}</Text>
+                    </Text>
+                    <Text style={styles.label}>
+                        Type: <Text style={styles.value}>{petData.type}</Text>
+                    </Text>
+                    <Text style={styles.label}>
+                        Height: <Text style={styles.value}>{petData.height} cm</Text>
+                    </Text>
+                    <Text style={styles.label}>
+                        Weight: <Text style={styles.value}>{petData.weight} kg</Text>
+                    </Text>
+                </View>
 
-
-
-            <TouchableOpacity style={styles.editButton}>
-                <Text style={styles.buttonText}>Medical History</Text>
-            </TouchableOpacity>
-            {/* <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/pet_owner/screens/Pets/pet-tasks?petId=${petData.id}`)}>
-                <Text style={styles.buttonText}>Tasks</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.editButton} onPress={() => router.push(`/pet_owner/screens/Pets/edit-pet?petId=${petData.id}`)}>
-                <Text style={styles.buttonText}>Edit</Text>
-            </TouchableOpacity> */}
-            <TouchableOpacity style={styles.deleteButton} onPress={() => deletePet(petData.id)}>
-                <Text style={styles.deleteButtonText}>Delete</Text>
-            </TouchableOpacity>
-
+                <TouchableOpacity style={styles.editButton}>
+                    <Text style={styles.buttonText}>Medical History</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => deletePatient(petData.id, vetId)}
+                >
+                    <Text style={styles.deleteButtonText}>Delete</Text>
+                </TouchableOpacity>
+            </ScrollView>
         </SafeAreaView>
     );
 };
@@ -209,9 +195,12 @@ const PatientDetails = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: "#B3EBF2",
+    },
+    scrollContent: {
         alignItems: "center",
-        padding: 20,
-        backgroundColor: '#B3EBF2',
+        paddingBottom: 40,
+        paddingHorizontal: 20,
     },
     header: {
         flexDirection: "row",
@@ -219,70 +208,59 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "90%",
         paddingVertical: 10,
+        alignSelf: "center",
     },
     headerTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     detailsContainer: {
         width: "100%",
         padding: 15,
         borderRadius: 10,
         marginTop: 10,
-        marginLeft: 32
+        backgroundColor: "#fff",
     },
     petImage: {
         width: 150,
         height: 150,
         borderRadius: 75,
         marginBottom: 12,
+        marginTop: 10,
     },
     label: {
         fontSize: 20,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginBottom: 10,
     },
     value: {
-        fontWeight: "normal"
+        fontWeight: "normal",
     },
     editButton: {
-        width: '90%',
-        backgroundColor: '#3C3C4C',
+        width: "100%",
+        backgroundColor: "#3C3C4C",
         padding: 15,
         borderRadius: 5,
-        alignItems: 'center',
+        alignItems: "center",
         marginTop: 20,
     },
     deleteButton: {
-        width: '90%',
-        backgroundColor: 'black',
+        width: "100%",
+        backgroundColor: "black",
         padding: 15,
         borderRadius: 5,
-        alignItems: 'center',
+        alignItems: "center",
         marginTop: 20,
     },
     deleteButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-    },
-    qrButton: {
-        backgroundColor: '#FFD166',
-        padding: 15,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginTop: 20,
+        fontSize: 16,
+        color: "white",
+        fontWeight: "bold",
     },
     buttonText: {
-        color: 'white',
+        color: "white",
         fontWeight: "bold",
         fontSize: 16,
-    },
-    loader: {
-        marginTop: 50,
-    },
-    errorText: {
-        fontSize: 18,
-        color: "red",
     },
 });
 
