@@ -22,31 +22,10 @@ import { FlatList } from "react-native";
 const PetDashboard = () => {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
+  const [user, setUser] = useState(null);
   const [image, setImage] = useState();
-  const userName = "Jennifer";
-
-  // Sample pet data
-  const pets = [
-    {
-      id: "1",
-      name: "Morphy",
-      age: "2 Years 3 Months",
-      gender: "female",
-      //   illustration: <CorgiInTent />,
-    },
-    {
-      id: "2",
-      name: "Kitten",
-      age: "3 Years 6 Months",
-      gender: "male",
-      //   illustration: <CatWithPlant />,
-    },
-    {
-      id: "3",
-      name: "Doggo",
-      age: "1 Year 8 Months",
-    },
-  ];
+  const [owner, setOwner] = useState(null);
+  const [pets, setPets] = useState([]);
 
   // Category data
   const categories = [
@@ -66,31 +45,75 @@ const PetDashboard = () => {
   const profile = () => {
     router.push("/pet_owner/screens/Profile");
   };
-  const fetchUserProfile = async () => {
-    const { data: user, error } = await supabase.auth.getUser();
-
-    if (error) {
-      console.error("Error fetching user:", error);
-      return;
-    }
-    const userEmail = user?.user?.email;
-    // console.log("User ID:", userId);
-    const { data, error: profileError } = await supabase
-      .from("user_accounts")
-      .select("*")
-      .eq("email_add", userEmail)
-      .maybeSingle();
-
-    if (profileError) console.error("Error fetching user:", profileError);
-    else {
-      console.log("nigana");
-      setFirstName(data.first_name);
-      setImage(data.profile_picture || null);
-    }
-  };
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      const { data: user, error } = await supabase.auth.getUser();
+
+      if (error) {
+        console.error("Error fetching user:", error);
+        return;
+      }
+      const userEmail = user?.user?.email;
+      // console.log("User ID:", userId);
+      const { data, error: profileError } = await supabase
+        .from("user_accounts")
+        .select("*")
+        .eq("email_add", userEmail)
+        .maybeSingle();
+
+      if (profileError) console.error("Error fetching user:", profileError);
+      else {
+        console.log("nigana");
+        setFirstName(data.first_name);
+        setImage(data.profile_picture || null);
+      }
+    };
     fetchUserProfile();
   }, []);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error) {
+        console.error("Error fetching user:", error.message);
+        return null;
+      } else setUser(user);
+
+      const { data: petOwner, error: ownerError } = await supabase
+        .from("pet_owners")
+        .select("*")
+        .eq("email", user.email)
+        .single();
+
+      if (ownerError) {
+        console.error("Error fetching pet owner:", ownerError.message);
+        return;
+      } else setOwner(petOwner);
+    };
+    getUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchPets = async () => {
+      const { data, error } = await supabase
+        .from("pets")
+        .select("id, name, age, type, owner_id, img_path, file_path")
+        .eq("owner_id", owner.id);
+
+      if (error) {
+        console.error("Error fetching pet owner:", error.message);
+        return;
+      } else {
+        console.log("success");
+        setPets(data);
+      }
+    };
+    fetchPets();
+  }, [user, owner]);
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -120,7 +143,17 @@ const PetDashboard = () => {
         {/* Categories */}
         <View style={styles.categoriesContainer}>
           {categories.map((category) => (
-            <TouchableOpacity key={category.id} style={styles.categoryButton}>
+            <TouchableOpacity
+              key={category.id}
+              style={styles.categoryButton}
+              onPress={() => {
+                if (category.name === "Calendar") {
+                  router.push("/pet_owner/screens/Calendar/Calendar");
+                } else if (category.name === "Search Clinic") {
+                  router.push("/pet_owner/screens/SearchClinic");
+                }
+              }}
+            >
               <View
                 style={[
                   styles.categoryIcon,
@@ -151,7 +184,7 @@ const PetDashboard = () => {
                 <Ionicons
                   name="time-outline"
                   size={14}
-                  color="#fff"
+                  color="black"
                   style={styles.timeIcon}
                 />
                 <Text style={styles.appointmentTimeText}>
@@ -167,7 +200,9 @@ const PetDashboard = () => {
 
         {/* Filter Section */}
         <View>
-          <Text>Category</Text>
+          <Text style={{ fontFamily: "Poppins Light", fontSize: 20 }}>
+            Category
+          </Text>
           <View style={styles.filterContainer}>
             {filter.map((type) => (
               <TouchableOpacity key={type.id} style={styles.filterButton}>
@@ -181,14 +216,17 @@ const PetDashboard = () => {
         {/* My Pets Section */}
         <View style={styles.petsHeader}>
           <Text style={styles.petsTitle}>My Pets</Text>
-          <TouchableOpacity style={styles.addPetButton}>
+          <TouchableOpacity
+            style={styles.addPetButton}
+            onPress={() => {
+              router.push("/pet_owner/screens/Pets/add-pet");
+            }}
+          >
             <Ionicons name="add" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
 
         {/* Pet Cards */}
-        {/* <Carousel
-            /> */}
         <FlatList
           data={pets}
           keyExtractor={(item) => item.id}
@@ -196,19 +234,19 @@ const PetDashboard = () => {
           ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
-            <View style={styles.petCard}>
-              <Text style={styles.petName}>{item.name}</Text>
-              <Text style={styles.petAge}>{item.age}</Text>
-              {item.gender && (
-                <View style={styles.genderIcon}>
-                  <Ionicons
-                    name={item.gender === "female" ? "female" : "male"}
-                    size={16}
-                    color="#8B80F9"
-                  />
-                </View>
-              )}
-            </View>
+            <TouchableOpacity
+              onPress={() => {
+                router.push(
+                  `/pet_owner/screens/Pets/pet-details?petId=${item.id}`
+                );
+              }}
+            >
+              <View style={styles.petCard}>
+                <Text style={styles.petName}>{item.name}</Text>
+                <Text style={styles.petType}>{item.type}</Text>
+                <Text style={styles.petAge}>Age: {item.age}</Text>
+              </View>
+            </TouchableOpacity>
           )}
         />
       </View>
@@ -232,7 +270,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 15,
   },
   locationContainer: {
     flexDirection: "row",
@@ -259,19 +297,21 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   greetingTitle: {
+    fontFamily: "Kanit Medium",
     fontSize: 24,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     color: "#333",
     marginBottom: 5,
   },
   greetingSubtitle: {
+    fontFamily: "Poppins Light",
     fontSize: 16,
     color: "#888",
   },
   categoriesContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 25,
+    marginBottom: 20,
   },
   categoryButton: {
     alignItems: "center",
@@ -286,14 +326,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryText: {
+    fontFamily: "Poppins Light",
     fontSize: 12,
     color: "#333",
   },
   appointmentCard: {
-    backgroundColor: "#8B80F9",
+    backgroundColor: "#B3EBF2",
     borderRadius: 16,
     padding: 16,
-    marginBottom: 25,
+    marginBottom: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -307,7 +348,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "#3C3C4C",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -316,9 +357,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   appointmentTitle: {
+    fontFamily: "Poppins Light",
     fontSize: 16,
     fontWeight: "bold",
-    color: "#fff",
+    color: "Black",
     marginBottom: 6,
   },
   appointmentTime: {
@@ -329,8 +371,9 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   appointmentTimeText: {
+    fontFamily: "Poppins Light",
     fontSize: 12,
-    color: "#fff",
+    color: "black",
     opacity: 0.9,
   },
   appointmentImageContainer: {
@@ -344,15 +387,15 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   petsTitle: {
+    fontFamily: "Poppins Light",
     fontSize: 20,
-    fontWeight: "bold",
     color: "#333",
   },
   addPetButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#F9A880",
+    backgroundColor: "#3C3C4C",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -376,26 +419,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   petName: {
+    fontFamily: "Poppins Light",
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 4,
+    color: "black",
+  },
+  petType: {
+    fontFamily: "Poppins Light",
+    fontSize: 14,
+    color: "black",
   },
   petAge: {
+    fontFamily: "Poppins Light",
     fontSize: 12,
-    color: "#888",
+    color: "black",
   },
-  genderIcon: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+
   filterContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -403,7 +441,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   filterButton: {
-    backgroundColor: "#B3EBF2",
+    backgroundColor: "#3C3C4C",
     borderRadius: 20,
     padding: 10,
   },
