@@ -163,7 +163,7 @@ export default function Calendar() {
                                         height: 18,
                                         marginTop: 2,
                                         marginRight: 10,
-                                        marginLeft: 142,
+                                        marginLeft: '50%',
                                         tintColor: '#3C3C4C',
                                         transform: [{ scaleX: -1 }],
                                     }}
@@ -200,7 +200,7 @@ export default function Calendar() {
                                         height: 18,
                                         marginTop: 2,
                                         marginRight: 10,
-                                        marginLeft: 160,
+                                        marginLeft: '56%',
                                         tintColor: '#3C3C4C',
                                         transform: [{ scaleX: -1 }],
                                     }}
@@ -237,7 +237,7 @@ export default function Calendar() {
                                         height: 18,
                                         marginTop: 2,
                                         marginRight: 10,
-                                        marginLeft: 112,
+                                        marginLeft: '43%',
                                         tintColor: '#3C3C4C',
                                         transform: [{ scaleX: -1 }],
                                     }}
