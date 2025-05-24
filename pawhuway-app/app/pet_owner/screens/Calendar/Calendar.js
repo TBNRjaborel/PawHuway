@@ -107,17 +107,6 @@ export default function Calendar() {
         fetchNotifications();
     }, []);
 
-    const groupByDate = (events) => {
-        return events.reduce((acc, event) => {
-            const dateKey = new Date(event.date).toDateString(); // Normalize and group by readable date
-            if (!acc[dateKey]) {
-            acc[dateKey] = [];
-            }
-            acc[dateKey].push(event);
-            return acc;
-        }, {});
-    };
-
     return (
         <ScrollView style={styles.mainScreen}>
             <Stack.Screen options={{ headerShown: false }} />
