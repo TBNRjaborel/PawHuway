@@ -31,7 +31,6 @@ const getTypeStyle = (type) => {
   }
 };
 
-
 const AgendaItem = React.memo(({ item, onPress }) => {
   const timeTagColor = getTimeColor(item.startTime);
   const typeStyle = getTypeStyle(item.type);
@@ -54,13 +53,14 @@ const AgendaItem = React.memo(({ item, onPress }) => {
   );
 });
 
-
 const ExpandableCalendarScreen = () => {
   const [agendaData, setAgendaData] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [markedDates, setMarkedDates] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showDelete, setShowDelete] = useState(false);
+
   const router = useRouter();
 
   const formatTime = (timeStr) => {
@@ -76,6 +76,15 @@ const ExpandableCalendarScreen = () => {
     setSelectedEvent(item);
     setModalVisible(true);
   };
+
+  const handleDeleteEvent = () => {
+  // Replace with your deletion logic (e.g., API call or state update)
+  console.log('Deleting event with ID:', selectedEvent.id);
+
+  // Optionally navigate away or refresh
+  // e.g., router.back() or update list of events
+};
+
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -203,24 +212,27 @@ const ExpandableCalendarScreen = () => {
                   </TouchableOpacity>
                 </View>
                 <View style={styles.optionsButton}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      router.push({
-                        pathname: '/pet_owner/screens/Calendar/edit-event',
-                        params: { eventId: selectedEvent.id },
-                      });
-                    }}
-                  >
+                  <TouchableOpacity onPress={() => setShowDelete(!showDelete)}>
                     <Image
                       source={require('../../../../assets/pictures/options.png')}
                       style={{ width: 24, height: 24 }}
                     />
                   </TouchableOpacity>
+                  {showDelete && (
+                    <TouchableOpacity
+                      onPress={handleDeleteEvent}
+                      style={{ marginLeft: 12, backgroundColor: 'red', padding: 8, borderRadius: 5 }}
+                    >
+                      <Text style={{ color: 'white' }}>Delete</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
-                <Text style={styles.titleText}>{selectedEvent.title}</Text>
-                <Text style={styles.descriptionText}>{selectedEvent.description}</Text>
-                <Text style={styles.timeText}>{selectedEvent.startTime} - {selectedEvent.endTime}</Text>
-                <Text style={styles.typeText}>{selectedEvent.type}</Text>
+                <View style={{ gap: 4, alignItems: 'center'}}>
+                  <Text style={styles.titleText}>{selectedEvent.title}</Text>
+                  <Text style={styles.descriptionText}>{selectedEvent.description}</Text>
+                  <Text style={styles.timeText}>{selectedEvent.startTime} - {selectedEvent.endTime}</Text>
+                  <Text style={styles.typeText}>{selectedEvent.type}</Text>
+                </View>
                 <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
                   <Text style={{ color: '#fff' }}>Close</Text>
                 </TouchableOpacity>
