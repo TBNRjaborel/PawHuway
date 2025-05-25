@@ -33,15 +33,28 @@ const AddEvent = () => {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
+
+    const {
+      data: { user },
+      error: userError
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      Alert.alert('Error', 'Unable to get user session.');
+      return;
+    }
+
+    const email = user.email;
   
     const { data, error } = await supabase.from('events').insert([
       {
-        date: date, 
+        date: date,
         title: eventData.title,
         type: eventData.type,
         description: eventData.description,
         startTime: eventData.startTime,
         endTime: eventData.endTime,
+        email: email,
       },
     ]).select();
   
@@ -251,16 +264,16 @@ const styles = StyleSheet.create({
   },
   pickerPlaceholder: {
     fontSize: 14,
-    color: 'gray', // Gray color for "Select Sex"
+    color: 'gray',
   },
   pickerItem: {
-    fontSize: 14, // Smaller text size for items
+    fontSize: 14, 
   },
   fileName: {
-    marginLeft: 10, // Add space between button and filename
+    marginLeft: 10,
     fontSize: 14,
     color: 'gray',
-    flexShrink: 1, // Prevents text from overflowing
+    flexShrink: 1,
   },
 });
 

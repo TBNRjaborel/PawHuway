@@ -70,7 +70,6 @@ export default function Calendar() {
         open.value = open.value === 1 ? 0 : 1;
     };
 
-    // Helper: strip time for accurate date comparison
     const normalizeDate = (date) => {
         const d = new Date(date);
         return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -87,7 +86,6 @@ export default function Calendar() {
     const sortedToday = [...todayTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
     const sortedComing = [...comingTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Fetch from Supabase
     React.useEffect(() => {
         const fetchNotifications = async () => {
             setLoading(true);
