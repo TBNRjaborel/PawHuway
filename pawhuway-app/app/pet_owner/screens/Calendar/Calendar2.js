@@ -77,14 +77,27 @@ const ExpandableCalendarScreen = () => {
     setModalVisible(true);
   };
 
-  const handleDeleteEvent = () => {
-  // Replace with your deletion logic (e.g., API call or state update)
-  console.log('Deleting event with ID:', selectedEvent.id);
+  const handleDeleteEvent = async () => {
+    if (!selectedEvent?.id) return;
 
-  // Optionally navigate away or refresh
-  // e.g., router.back() or update list of events
-};
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', selectedEvent.id);
 
+      if (error) {
+        console.error('Error deleting event:', error.message);
+      } else {
+        console.log('Event deleted successfully.');
+        setAgendaData((prev) =>
+          prev.filter((item) => item.id !== selectedEvent.id)
+        );
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -218,13 +231,16 @@ const ExpandableCalendarScreen = () => {
                       style={{ width: 24, height: 24 }}
                     />
                   </TouchableOpacity>
+
                   {showDelete && (
-                    <TouchableOpacity
-                      onPress={handleDeleteEvent}
-                      style={{ marginLeft: 12, backgroundColor: 'red', padding: 8, borderRadius: 5 }}
-                    >
-                      <Text style={{ color: 'white' }}>Delete</Text>
-                    </TouchableOpacity>
+                    <View style={styles.deleteButtonContainer}>
+                      <TouchableOpacity
+                        onPress={handleDeleteEvent}
+                        style={styles.deleteButton}
+                      >
+                        <Text style={{ color: 'white' }}>Delete Event</Text>
+                      </TouchableOpacity>
+                    </View>
                   )}
                 </View>
                 <View style={{ gap: 4, alignItems: 'center'}}>
@@ -368,6 +384,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 14,
     left: 8,
+  },
+  // optionsButton: {
+  //   position: 'relative', // So the delete button can be absolutely positioned inside
+  // },
+  deleteButtonContainer: {
+    // position: 'absolute',
+    top: -50,
+    left: 26
+  },
+  deleteButton: {
+    backgroundColor: 'red',
+    padding: 8,
+    borderRadius: 5,
   },
 });
 
