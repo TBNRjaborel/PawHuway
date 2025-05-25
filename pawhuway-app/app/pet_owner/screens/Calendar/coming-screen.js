@@ -45,7 +45,7 @@ function RneTab({ onCountUpdate }) {
     const now = new Date();
     const comingTasks = notifications.filter(task => new Date(task.date) > now);
     const sortedComing = [...comingTasks].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
     const groupedComing = groupNotificationsByDate(sortedComing);
 

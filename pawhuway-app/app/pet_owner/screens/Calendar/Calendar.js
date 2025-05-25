@@ -70,7 +70,6 @@ export default function Calendar() {
         open.value = open.value === 1 ? 0 : 1;
     };
 
-    // Helper: strip time for accurate date comparison
     const normalizeDate = (date) => {
         const d = new Date(date);
         return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -87,7 +86,6 @@ export default function Calendar() {
     const sortedToday = [...todayTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
     const sortedComing = [...comingTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Fetch from Supabase
     React.useEffect(() => {
         const fetchNotifications = async () => {
             setLoading(true);
@@ -106,17 +104,6 @@ export default function Calendar() {
 
         fetchNotifications();
     }, []);
-
-    const groupByDate = (events) => {
-        return events.reduce((acc, event) => {
-            const dateKey = new Date(event.date).toDateString(); // Normalize and group by readable date
-            if (!acc[dateKey]) {
-            acc[dateKey] = [];
-            }
-            acc[dateKey].push(event);
-            return acc;
-        }, {});
-    };
 
     return (
         <ScrollView style={styles.mainScreen}>
@@ -163,7 +150,7 @@ export default function Calendar() {
                                         height: 18,
                                         marginTop: 2,
                                         marginRight: 10,
-                                        marginLeft: 142,
+                                        marginLeft: '50%',
                                         tintColor: '#3C3C4C',
                                         transform: [{ scaleX: -1 }],
                                     }}
@@ -200,7 +187,7 @@ export default function Calendar() {
                                         height: 18,
                                         marginTop: 2,
                                         marginRight: 10,
-                                        marginLeft: 160,
+                                        marginLeft: '56%',
                                         tintColor: '#3C3C4C',
                                         transform: [{ scaleX: -1 }],
                                     }}
@@ -237,7 +224,7 @@ export default function Calendar() {
                                         height: 18,
                                         marginTop: 2,
                                         marginRight: 10,
-                                        marginLeft: 112,
+                                        marginLeft: '43%',
                                         tintColor: '#3C3C4C',
                                         transform: [{ scaleX: -1 }],
                                     }}
