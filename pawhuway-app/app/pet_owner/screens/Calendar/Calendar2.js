@@ -16,18 +16,42 @@ const getTimeColor = (timeStr) => {
   else return '#D1C4E9';
 };
 
+const getTypeStyle = (type) => {
+  switch (type) {
+    case 'Exercise':
+      return { backgroundColor: '#FFCDD2', color: '#B71C1C' }; // red-ish
+    case 'Hygiene':
+      return { backgroundColor: '#C8E6C9', color: '#1B5E20' }; // green-ish
+    case 'Nutrition':
+      return { backgroundColor: '#FFF9C4', color: '#F57F17' }; // yellow-ish
+    case 'Medication':
+      return { backgroundColor: '#D1C4E9', color: '#4A148C' }; // purple-ish
+    default:
+      return { backgroundColor: '#CFD8DC', color: '#37474F' }; // gray-ish
+  }
+};
+
+
 const AgendaItem = React.memo(({ item }) => {
   const timeTagColor = getTimeColor(item.startTime);
+  const typeStyle = getTypeStyle(item.type);
+
   return (
     <View style={styles.item}>
-      <View style={[styles.timeContainer, { backgroundColor: timeTagColor }]}>
-        <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={[styles.timeContainer, { backgroundColor: timeTagColor }]}>
+          <Text style={styles.timeText}>{item.startTime} - {item.endTime}</Text>
+        </View>
+        <View style={[styles.typeTag, { backgroundColor: typeStyle.backgroundColor }]}>
+          <Text style={[styles.typeText, { color: typeStyle.color }]}>{item.type}</Text>
+        </View>
       </View>
       <Text style={styles.titleText}>{item.title}</Text>
       <Text style={styles.descriptionText}>{item.description}</Text>
     </View>
   );
 });
+
 
 const ExpandableCalendarScreen = () => {
   const [agendaData, setAgendaData] = useState([]);
@@ -48,7 +72,7 @@ const ExpandableCalendarScreen = () => {
     const fetchEvents = async () => {
         const { data, error } = await supabase
             .from('events')
-            .select('id, title, description, date, startTime, endTime');
+            .select('id, title, description, date, startTime, endTime, type');
 
         if (error) {
             console.error('Error fetching events:', error);
@@ -64,7 +88,8 @@ const ExpandableCalendarScreen = () => {
                 description: item.description,
                 startTime: formatTime(item.startTime),
                 endTime: formatTime(item.endTime),
-                rawStartTime: item.startTime // keep raw startTime for sorting
+                rawStartTime: item.startTime,
+                type: item.type,
             });
             return acc;
         }, {});
@@ -138,68 +163,76 @@ const ExpandableCalendarScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#B3EBF2',
-    // marginBottom: 50
-  },
-  item: {
-    backgroundColor: 'white',
-    gap: 6,
-    borderRadius: 8,
-    padding: 20,
-    marginHorizontal: 10,
-    marginTop: 10,
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  titleText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  timeContainer: {
-    borderRadius: 16,
-    paddingVertical: 4,
-    paddingHorizontal: 14,
-    marginBottom: 5,
-    alignSelf: 'flex-start',
-  },
-  timeText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  descriptionText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '400',
-  },
-  section: {
-    backgroundColor: '#B3EBF2',
-    padding: 4,
-    // marginTop: 4,
-    // marginBottom: 4,
-  },
-  addEventButton: {
-    position: 'absolute',
-    bottom: 40,
-    right: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#3C3C4C',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#B3EBF2',
+    },
+    item: {
+        backgroundColor: 'white',
+        gap: 6,
+        borderRadius: 8,
+        padding: 20,
+        marginHorizontal: 10,
+        marginTop: 10,
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+    },
+    titleText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    timeContainer: {
+        borderRadius: 16,
+        paddingVertical: 4,
+        paddingHorizontal: 14,
+        marginBottom: 5,
+        alignSelf: 'flex-start',
+    },
+    timeText: {
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    descriptionText: {
+        fontSize: 14,
+        color: '#666',
+        fontWeight: '400',
+    },
+    section: {
+        backgroundColor: '#B3EBF2',
+        padding: 4,
+    },
+    addEventButton: {
+        position: 'absolute',
+        bottom: 40,
+        right: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#3C3C4C',
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 3,
+    },
+    typeTag: {
+        paddingVertical: 4,
+        paddingHorizontal: 10,
+        borderRadius: 12,
+        alignSelf: 'flex-end',
+    },
+    typeText: {
+        fontSize: 14,
+        fontWeight: '600',
+        textTransform: 'capitalize',
+    },
 });
 
 export default React.memo(ExpandableCalendarScreen);
