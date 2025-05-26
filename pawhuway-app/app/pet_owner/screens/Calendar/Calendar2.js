@@ -154,11 +154,11 @@ const ExpandableCalendarScreen = () => {
     <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.returnButton}>
-          <Image
-            source={require('../../../../assets/pictures/return.png')}
-            style={styles.returnIcon}
-          />
-          <TouchableOpacity onPress={() => router.push('/pet_owner/screens/Calendar/Calendar')}>
+          <TouchableOpacity onPress={() => router.push('/pet_owner/screens/Calendar/Calendar')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image
+              source={require('../../../../assets/pictures/return.png')}
+              style={styles.returnIcon}
+            />
             <Text style={styles.returnText}>Return</Text>
           </TouchableOpacity>
         </View>

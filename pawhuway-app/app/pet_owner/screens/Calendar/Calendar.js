@@ -109,16 +109,21 @@ export default function Calendar() {
         <ScrollView style={styles.mainScreen}>
             <Stack.Screen options={{ headerShown: false }} />
             <StatusBar hidden={true} />
-            <View style={{ marginTop: 20, marginLeft: 20 }}>
-                <Text style={{ fontSize: 22, fontWeight: 'bold', }}>Events</Text>
+            <View style={styles.topIcons}>
+                <TouchableOpacity onPress={() => router.push('/pet_owner/dashboard-v2')}>
+                    <Image
+                        source={require('../../../../assets/pictures/home.png')}
+                        style={{ height: 50, width: 50, tintColor: '#3C3C4C' }}
+                    />
+                </TouchableOpacity>
+                <Text style={{ fontSize: 25, fontFamily: 'Poppins Light', fontWeight: 'bold', }}>Events</Text>
+                <TouchableOpacity onPress={() => router.push('/pet_owner/screens/Calendar/Calendar2')}>
+                    <Image
+                        source={require('../../../../assets/pictures/calendar.png')}
+                        style={{ height: 30, width: 30, tintColor: '#3C3C4C', marginTop: 4, marginRight: 10 }}
+                    />
+                </TouchableOpacity>
             </View>
-            <TouchableOpacity style={{ marginTop: 14, marginRight: 20, alignItems: 'flex-end' }} onPress={() => console.log('Pressed View Calendar')}>
-                <Button 
-                    title="View Calendar"
-                    color="#3C3C4C"
-                    onPress={() => router.push('/pet_owner/screens/Calendar/Calendar2')}
-                />
-            </TouchableOpacity>
             <View>
                 <View style={{ alignItems: 'center' }}>
                     <Card style={styles.profileCard}>
@@ -141,7 +146,7 @@ export default function Calendar() {
                                 />
                                 <View>
                                     <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Coming</Text>
-                                    <Text style={{ fontSize: 12 }}>{sortedComing.length} tasks incoming</Text>
+                                    <Text style={{ fontSize: 12 }}>{sortedComing.length} activities incoming</Text>
                                 </View>
                                 <Image
                                     source={require('../../../../assets/pictures/back-btn.png')}
@@ -150,7 +155,7 @@ export default function Calendar() {
                                         height: 18,
                                         marginTop: 2,
                                         marginRight: 10,
-                                        marginLeft: '50%',
+                                        marginLeft: '44%',
                                         tintColor: '#3C3C4C',
                                         transform: [{ scaleX: -1 }],
                                     }}
@@ -178,7 +183,7 @@ export default function Calendar() {
                                 />
                                 <View>
                                     <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Today</Text>
-                                    <Text style={{ fontSize: 12 }}>{sortedToday.length} tasks today</Text>
+                                    <Text style={{ fontSize: 12 }}>{sortedToday.length} activities today</Text>
                                 </View>
                                 <Image
                                     source={require('../../../../assets/pictures/back-btn.png')}
@@ -187,7 +192,7 @@ export default function Calendar() {
                                         height: 18,
                                         marginTop: 2,
                                         marginRight: 10,
-                                        marginLeft: '56%',
+                                        marginLeft: '50%',
                                         tintColor: '#3C3C4C',
                                         transform: [{ scaleX: -1 }],
                                     }}
@@ -215,7 +220,7 @@ export default function Calendar() {
                                 />
                                 <View>
                                     <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Backlogs</Text>
-                                    <Text style={{ fontSize: 12 }}>{sortedBacklogs.length} tasks not addressed</Text>
+                                    <Text style={{ fontSize: 12 }}>{sortedBacklogs.length} activities not addressed</Text>
                                 </View>
                                 <Image
                                     source={require('../../../../assets/pictures/back-btn.png')}
@@ -224,7 +229,7 @@ export default function Calendar() {
                                         height: 18,
                                         marginTop: 2,
                                         marginRight: 10,
-                                        marginLeft: '43%',
+                                        marginLeft: '36.5%',
                                         tintColor: '#3C3C4C',
                                         transform: [{ scaleX: -1 }],
                                     }}
@@ -234,15 +239,7 @@ export default function Calendar() {
                     </Card>
                 </View>
             </View>
-            {/* Toggle Accordion */}
-            <TouchableOpacity onPress={toggleAccordion} style={{ margin: 20, backgroundColor: '#3C3C4C', padding: 10, borderRadius: 10 }}>
-                <Text style={{ color: 'white', textAlign: 'center' }}>
-                    Toggle Accordion
-                </Text>
-            </TouchableOpacity>
-
-            {/* Accordion Content */}
-            <Parent open={open} />
+            
         </ScrollView>
     );
 }
@@ -257,6 +254,13 @@ const styles = StyleSheet.create({
         height: 20,
         marginLeft: 20,
         marginTop: 20,
+    },
+    topIcons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 10,
+        marginHorizontal: 10,
     },
     divider: {
         height: 1,
