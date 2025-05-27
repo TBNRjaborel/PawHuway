@@ -68,6 +68,15 @@ function RneTab({ onCountUpdate }) {
         fetchNotifications();
     }, []);
 
+    const formatTime = (timeStr) => {
+        if (!timeStr) return '';
+        const [hourStr, minute] = timeStr.split(':');
+        const hour = parseInt(hourStr, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minute} ${ampm}`;
+    };
+
     const pastTasks = notifications.filter(task => {
         const taskDate = new Date(task.date);
         const taskDay = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
@@ -103,7 +112,7 @@ function RneTab({ onCountUpdate }) {
                                     <Text style={{
                                         fontSize: 18,
                                         fontWeight: 'bold',
-                                        color: '#BF5528',
+                                        color: 'black',
                                         marginBottom: 8
                                     }}>
                                         {dateLabel}
@@ -114,7 +123,7 @@ function RneTab({ onCountUpdate }) {
                                                 <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{notif.title}</Text>
                                                 <Text style={{ color: '#555' }}>{notif.description}</Text>
                                                 <Text style={{ color: '#555' }}>
-                                                    {new Date(notif.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                                                    {formatTime(notif.startTime)} - {formatTime(notif.endTime)}
                                                 </Text>
                                             </Card.Content>
                                         </Card>

@@ -1,63 +1,11 @@
-import { Text, View, ScrollView, StyleSheet, TouchableOpacity, Button, Image, Pressable } from 'react-native';
+import { Text, View, ScrollView, StyleSheet, TouchableOpacity, Image, Pressable, Dimensions } from 'react-native';
 import React, { Component, useEffect, useState } from 'react';
-import Animated, {
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { useSharedValue, } from 'react-native-reanimated';
+import { SearchBar } from 'react-native-elements';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Card } from 'react-native-paper';
 import { supabase } from '../../../../src/lib/supabase';
-
-
-function AccordionItem({
-  isExpanded,
-  children,
-  viewKey,
-  style,
-  duration = 500,
-}) {
-  const height = useSharedValue(0);
-
-  const derivedHeight = useDerivedValue(() =>
-    withTiming(height.value * Number(isExpanded.value), {
-      duration,
-    })
-  );
-  const bodyStyle = useAnimatedStyle(() => ({
-    height: derivedHeight.value,
-  }));
-
-  return (
-    <Animated.View
-      key={`accordionItem_${viewKey}`}
-      style={[styles.animatedView, bodyStyle, style]}>
-      <View
-        onLayout={(e) => {
-          height.value = e.nativeEvent.layout.height;
-        }}
-        style={styles.wrapper}>
-        {children}
-      </View>
-    </Animated.View>
-  );
-}
-
-function Item() {
-  return <View style={styles.box} />;
-}
-
-function Parent({ open }) {
-  return (
-    <View style={styles.parent}>
-      <AccordionItem isExpanded={open} viewKey="Accordion">
-        <Item />
-      </AccordionItem>
-    </View>
-  );
-}
 
 export default function Calendar() {
     const router = useRouter();
@@ -65,10 +13,7 @@ export default function Calendar() {
     const [notifications, setNotifications] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const open = useSharedValue(0); // 0 = collapsed, 1 = expanded
-
-    const toggleAccordion = () => {
-        open.value = open.value === 1 ? 0 : 1;
-    };
+    const [search, setSearch] = useState('');
 
     const normalizeDate = (date) => {
         const d = new Date(date);
@@ -86,6 +31,16 @@ export default function Calendar() {
     const sortedToday = [...todayTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
     const sortedComing = [...comingTasks].sort((a, b) => new Date(a.date) - new Date(b.date));
 
+    const screenWidth = Dimensions.get('window').width;
+
+    const cardData = [
+        { title: 'Exercise', subtitle: 'Keep your pet active and healthy', cover: require('../../../../assets/pictures/pet-exercise.jpg') },
+        { title: 'Hygiene', subtitle: 'Have consistent grooming and cleanliness habits', cover: require('../../../../assets/pictures/pet-hygiene.jpg') },
+        { title: 'Nutrition', subtitle: "Plan, portion, or customize your pet's feeding routine", cover: require('../../../../assets/pictures/pet-nutrition.jpg') },
+        { title: 'Medication', subtitle: 'Track doses and treatments', cover: require('../../../../assets/pictures/pet-medication.jpg') },
+        { title: 'Other', subtitle: 'Additional care and miscellaneous', cover: require('../../../../assets/pictures/pet-other.jpg') },
+    ];
+
     React.useEffect(() => {
         const fetchNotifications = async () => {
             setLoading(true);
@@ -98,6 +53,7 @@ export default function Calendar() {
                 console.error('Error fetching notifications:', error.message);
             } else {
                 setNotifications(data);
+                // console.log('Fetched notifications:', notifications);
             }
             setLoading(false);
         };
@@ -239,7 +195,66 @@ export default function Calendar() {
                     </Card>
                 </View>
             </View>
-            
+            <View style={{ marginHorizontal: 12, marginVertical: 10, }}>
+                <SearchBar
+                    placeholder="Search activities..."
+                    onChangeText={setSearch}
+                    value={search}
+                    platform="default"
+                    containerStyle={{
+                        backgroundColor: 'transparent',
+                        borderBottomColor: 'transparent',
+                        borderTopColor: 'transparent',
+                    }}
+                    inputContainerStyle={{
+                        backgroundColor: '#fff',
+                        borderColor: '#fff',
+                        borderWidth: 3,
+                        borderRadius: 10,
+                    }}
+                    inputStyle={{
+                        fontSize: 16,
+                        fontFamily: 'Poppins Light',
+                    }}
+                />
+            </View>
+            <View style={styles.appointmentContainer}>
+                <Card style={styles.appointmentCard}>
+                    <Card.Cover
+                        source={require('../../../../assets/pictures/appointment.jpg')}
+                        style={styles.appointmentCover}
+                    />
+                    <Card.Title
+                        title='Appointments'
+                        subtitle='View bookings and vet appointments'
+                        titleStyle={{ textAlign: 'center', fontFamily: 'Poppins Light', fontSize: 18, fontWeight: 'bold' }}
+                        subtitleStyle={{ textAlign: 'center', fontFamily: 'Poppins Light', fontSize: 14, color: '#3C3C4C' }}
+                        subtitleNumberOfLines={0}
+                    />
+                </Card>
+            </View>
+            <View style={styles.activityLabel}>
+                <Text style={{ fontFamily: 'Poppins Light', fontWeight: 'bold', fontSize: 22 }}>Featured</Text>
+            </View>
+            <View style={styles.container} >
+            {cardData.map((event, index) => (
+                <View key={index} style={styles.cardWrapper}>
+                <Card style={styles.card}>
+                    <Card.Cover
+                        source={event.cover}
+                        style={styles.cover}
+                    />
+                    <Card.Title
+                        title={event.title}
+                        subtitle={event.subtitle}
+                        titleStyle={{ textAlign: 'center', fontFamily: 'Poppins Light', fontSize: 18, fontWeight: 'bold' }}
+                        subtitleStyle={{ textAlign: 'center', fontFamily: 'Poppins Light', fontSize: 14, color: '#3C3C4C' }}
+                        subtitleNumberOfLines={0}
+                    />
+                </Card>
+                </View>
+            ))}
+            </View>
         </ScrollView>
     );
 }
@@ -276,26 +291,47 @@ const styles = StyleSheet.create({
         borderColor: '#D9D9D9',
         backgroundColor: 'white', 
     },
-    animatedView: {
-        width: '100%',
-        overflow: 'hidden',
+    activityLabel: {
+        marginLeft: 20,
+        marginBottom: 10
     },
-    box: {
-        height: 120,
-        width: 120,
-        color: '#f8f9ff',
-        backgroundColor: '#b58df1',
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
+    appointmentContainer: {
+        marginHorizontal: 20,
+        marginTop: 4,
+        marginBottom: 16,
+
     },
-    parent: {
-        width: 200,
+    appointmentCard: {
+        minHeight: 1,
     },
-    wrapper: {
-        width: '100%',
-        position: 'absolute',
-        display: 'flex',
-        alignItems: 'center',
+    appointmentCover: {
+        height: 200,
+        width: '94%',
+        marginTop: 10,
+        marginBottom: 10,
+        alignSelf: 'center',
+        borderRadius: 8,
+    },
+    container: {
+        flexDirection: 'row',
+        marginHorizontal: 10,
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        padding: 10,
+    },
+    cardWrapper: {
+        width: '48%', 
+        marginBottom: 10,
+    },
+    card: {
+        minHeight: 220,
+    },
+    cover: {
+        height: 100,
+        width: '90%',
+        marginTop: 10,
+        marginBottom: 10,
+        alignSelf: 'center',
+        borderRadius: 8,
     },
 })
