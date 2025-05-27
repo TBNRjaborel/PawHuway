@@ -6,38 +6,6 @@ import { Button, Card } from 'react-native-paper'
 import { supabase } from '../../../../src/lib/supabase';
 import { Stack } from 'expo-router';
 
-function formatDateHeader(dateStr) {
-    const date = new Date(dateStr);
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
-
-    const isSameDay = (d1, d2) =>
-        d1.getFullYear() === d2.getFullYear() &&
-        d1.getMonth() === d2.getMonth() &&
-        d1.getDate() === d2.getDate();
-
-    if (isSameDay(date, today)) return "Today";
-    if (isSameDay(date, yesterday)) return "Yesterday";
-
-    return date.toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
-}
-
-function groupNotificationsByDate(notifications) {
-    return notifications.reduce((acc, notif) => {
-        const sectionTitle = formatDateHeader(notif.date);
-        if (!acc[sectionTitle]) {
-            acc[sectionTitle] = [];
-        }
-        acc[sectionTitle].push(notif);
-        return acc;
-    }, {});
-}
-
 function RneTab({ onCountUpdate }) {
     const [index, setIndex] = React.useState(0);
     const [notifications, setNotifications] = React.useState([]);
@@ -59,6 +27,15 @@ function RneTab({ onCountUpdate }) {
         setLoading(false);
     };
 
+    const formatTime = (timeStr) => {
+        if (!timeStr) return '';
+        const [hourStr, minute] = timeStr.split(':');
+        const hour = parseInt(hourStr, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minute} ${ampm}`;
+    };
+
     const todayTasks = notifications.filter(task => {
         const taskDate = new Date(task.date);
         return (
@@ -68,12 +45,11 @@ function RneTab({ onCountUpdate }) {
         );
     });
 
-    // Sort by date descending
-    const sortedToday = [...todayTasks].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-
-    const groupedToday = groupNotificationsByDate(sortedToday);
+    const sortedToday = [...todayTasks].sort((a, b) => {
+        const aTime = new Date(`${a.date}T${a.startTime}`);
+        const bTime = new Date(`${b.date}T${b.startTime}`);
+        return aTime - bTime;
+    });
 
     React.useEffect(() => {
         onCountUpdate(sortedToday.length);
@@ -95,27 +71,23 @@ function RneTab({ onCountUpdate }) {
                                 No upcoming tasks.
                             </Text>
                         ) : (
-                            Object.entries(groupedToday).map(([dateLabel, items]) => (
-                                <View key={dateLabel} style={{ marginBottom: 20 }}>
-                                    <Text style={{ 
-                                        fontSize: 18, 
-                                        fontWeight: 'bold', 
-                                        color: '#BF5528', 
-                                        marginBottom: 8 
+                            sortedToday.map(notif => (
+                                <View key={notif.id} style={{ marginBottom: 20 }}>
+                                    <Text style={{
+                                        fontSize: 18,
+                                        fontWeight: 'bold',
+                                        // color: '#008000',
+                                        marginBottom: 6,
+                                        // textAlign: 'center'
                                     }}>
-                                        {dateLabel}
+                                    {formatTime(notif.startTime)} - {formatTime(notif.endTime)}
                                     </Text>
-                                    {items.map(notif => (
-                                        <Card key={notif.id} style={{ marginBottom: 10, backgroundColor: 'white' }}>
-                                            <Card.Content>
-                                                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{notif.title}</Text>
-                                                <Text style={{ color: '#555' }}>{notif.description}</Text>
-                                                <Text style={{ color: '#555' }}>
-                                                    {new Date(notif.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                                                </Text>
-                                            </Card.Content>
-                                        </Card>
-                                    ))}
+                                    <Card style={{ backgroundColor: 'white', marginTop: 8 }}>
+                                        <Card.Content>
+                                            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{notif.title}</Text>
+                                            <Text style={{ color: '#555' }}>{notif.description}</Text>
+                                        </Card.Content>
+                                    </Card>
                                 </View>
                             ))
                         )}

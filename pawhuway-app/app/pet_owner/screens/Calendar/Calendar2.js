@@ -344,15 +344,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   returnIcon: {
-    width: 20,
-    height: 20,
+    width: 30,
+    height: 30,
     marginRight: 8,
     tintColor: '#3C3C4C',
   },
   returnText: {
-    fontSize: 16,
+    fontSize: 20,
     color: '#3C3C4C',
-    fontWeight: '600',
+    fontWeight: 'bold',
+    fontFamily: 'Poppins Light'
   },
   modalOverlay: {
     flex: 1,
