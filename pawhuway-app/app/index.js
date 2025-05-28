@@ -14,6 +14,6 @@ export default function Index() {
     return null; // Prevent rendering until fonts are loaded
   }
 
-  return <Redirect href="/pet_owner/screens/Pets/pet-details" />;
-  // return <Redirect href="/vet/screens/add_patients" />;
+
+  return <Redirect href="/starting-page" />;
 }

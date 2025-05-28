@@ -16,8 +16,6 @@ const AddEvent = () => {
     description: '',
     startTime: '',
     endTime: '',
-    clinic: '',
-    veterinarian: '',
   });
 
   const [showPicker, setShowPicker] = useState(false);
@@ -28,57 +26,35 @@ const AddEvent = () => {
     setShowPicker(false);
   };
 
-  const [veterinarians, setVeterinarians] = useState([]); 
-  const [clinics, setClinics] = useState([]);
-
-  useEffect(() => {
-    async function fetchVeterinarians() {
-      const { data, error } = await supabase.from('vet_profiles').select('id, first_name, last_name'); // Adjust columns as needed
-      if (error) {
-        console.error('Error fetching veterinarians:', error.message);
-        Alert.alert('Error', 'Failed to fetch veterinarians.');
-      } else {
-        setVeterinarians(data || []); 
-      }
-    }
-
-    fetchVeterinarians();
-  }, []);
-
-  useEffect(() => {
-    async function fetchClinics() {
-      const { data, error } = await supabase.from('vet_clinics').select('id, clinic_name');
-      if (error) {
-        console.error('Error fetching clinics:', error.message);
-        Alert.alert('Error', 'Failed to fetch clinics.');
-      } else {
-        setClinics(data || []); 
-      }
-    }
-  
-    fetchClinics();
-  }, []);
-
   async function CreateEvent() {
     console.log("eventData:", eventData);
   
-    // Validate required fields
-    if (!eventData.title || !eventData.type || !eventData.description || !eventData.startTime || !eventData.endTime || !eventData.clinic || !eventData.veterinarian) {
+    if (!eventData.title || !eventData.type || !eventData.description || !eventData.startTime || !eventData.endTime) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
+
+    const {
+      data: { user },
+      error: userError
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      Alert.alert('Error', 'Unable to get user session.');
+      return;
+    }
+
+    const email = user.email;
   
-    // Insert event into the database
     const { data, error } = await supabase.from('events').insert([
       {
-        date: date, 
+        date: date,
         title: eventData.title,
         type: eventData.type,
         description: eventData.description,
         startTime: eventData.startTime,
         endTime: eventData.endTime,
-        clinic: eventData.clinic,
-        veterinarian: eventData.veterinarian,
+        email: email,
       },
     ]).select();
   
@@ -121,8 +97,11 @@ const AddEvent = () => {
               style={styles.picker}
             >
               <Picker.Item label="Enter Type" value="" style={styles.pickerPlaceholder} />
-              <Picker.Item label="Grooming" value="Grooming" style={styles.pickerItem} />
-              <Picker.Item label="Operation" value="Operation" style={styles.pickerItem} />
+              <Picker.Item label="Exercise" value="Exercise" style={styles.pickerItem} />
+              <Picker.Item label="Hygiene" value="Hygiene" style={styles.pickerItem} />
+              <Picker.Item label="Nutrition" value="Nutrition" style={styles.pickerItem} />
+              <Picker.Item label="Medication" value="Medication" style={styles.pickerItem} />
+              <Picker.Item label="Other" value="Other" style={styles.pickerItem} />
             </Picker>
           </View>
         </View>
@@ -179,48 +158,6 @@ const AddEvent = () => {
             }}
           />
         )}
-
-        <View key="Clinic" style={styles.inputContainer}>
-          <Text style={styles.label}>Clinic:</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={eventData.clinic}
-              onValueChange={(itemValue) => setEventData({ ...eventData, clinic: itemValue })}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select Clinic" value="" style={styles.pickerPlaceholder} />
-              {clinics.map((clinic) => (
-                <Picker.Item
-                  key={clinic.id}
-                  label={clinic.clinic_name} 
-                  value={clinic.id} 
-                  style={styles.pickerItem}
-                />
-              ))}
-            </Picker>
-          </View>
-        </View>
-
-        <View key="Veterinarian" style={styles.inputContainer}>
-          <Text style={styles.label}>Veterinarian:</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={eventData.veterinarian}
-              onValueChange={(itemValue) => setEventData({ ...eventData, veterinarian: itemValue })}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select Veterinarian" value="" style={styles.pickerPlaceholder} />
-                {veterinarians.map((vet) => (
-                  <Picker.Item
-                    key={vet.id}
-                    label={`${vet.first_name} ${vet.last_name}`} 
-                    value={vet.id} 
-                    style={styles.pickerItem}
-                  />
-                ))}
-            </Picker>
-          </View>
-        </View>
 
         <TouchableOpacity style={styles.addButton} onPress={CreateEvent}>
           <Text style={styles.addButtonText}>Add Event</Text>
@@ -291,7 +228,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   addButton: {
-    backgroundColor: '#FFD166',
+    backgroundColor: '#FFECB3',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
@@ -327,16 +264,16 @@ const styles = StyleSheet.create({
   },
   pickerPlaceholder: {
     fontSize: 14,
-    color: 'gray', // Gray color for "Select Sex"
+    color: 'gray',
   },
   pickerItem: {
-    fontSize: 14, // Smaller text size for items
+    fontSize: 14, 
   },
   fileName: {
-    marginLeft: 10, // Add space between button and filename
+    marginLeft: 10,
     fontSize: 14,
     color: 'gray',
-    flexShrink: 1, // Prevents text from overflowing
+    flexShrink: 1,
   },
 });
 

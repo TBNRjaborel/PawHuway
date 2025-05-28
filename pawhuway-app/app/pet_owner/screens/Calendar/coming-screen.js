@@ -43,9 +43,17 @@ function RneTab({ onCountUpdate }) {
     const [notifications, setNotifications] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const now = new Date();
-    const comingTasks = notifications.filter(task => new Date(task.date) > now);
+    now.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+
+    const comingTasks = notifications.filter(task => {
+        const taskDate = new Date(task.date);
+        taskDate.setHours(0, 0, 0, 0); // Normalize to midnight
+        return taskDate >= tomorrow;
+    });
     const sortedComing = [...comingTasks].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
     const groupedComing = groupNotificationsByDate(sortedComing);
 
@@ -73,6 +81,15 @@ function RneTab({ onCountUpdate }) {
         fetchNotifications();
     }, []);
 
+    const formatTime = (timeStr) => {
+        if (!timeStr) return '';
+        const [hourStr, minute] = timeStr.split(':');
+        const hour = parseInt(hourStr, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minute} ${ampm}`;
+    };
+
     return (
         <View style={{ height: '100%', marginTop: 20 }}>
             <TabView value={index} onChange={setIndex} animationType="spring">
@@ -87,7 +104,7 @@ function RneTab({ onCountUpdate }) {
                                         <Text style={{ 
                                             fontSize: 18, 
                                             fontWeight: 'bold', 
-                                            color: '#BF5528', 
+                                            color: 'black', 
                                             marginBottom: 8 
                                         }}>
                                             {dateLabel}
@@ -98,7 +115,7 @@ function RneTab({ onCountUpdate }) {
                                                     <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{notif.title}</Text>
                                                     <Text style={{ color: '#555' }}>{notif.description}</Text>
                                                     <Text style={{ color: '#555' }}>
-                                                        {new Date(notif.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                                                        {formatTime(notif.startTime)} - {formatTime(notif.endTime)}
                                                     </Text>
                                                 </Card.Content>
                                             </Card>
