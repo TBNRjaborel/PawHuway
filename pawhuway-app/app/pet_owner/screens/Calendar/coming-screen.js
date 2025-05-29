@@ -87,7 +87,7 @@ function RneTab({ onCountUpdate }) {
                 } else {
                     setNotifications(data);
                     setLoading(false);
-                    console.log('Dataaa: ', data);
+                    // console.log('Dataaa: ', data);
                 }
             } catch (err) {
                 console.error('Unexpected error:', err);

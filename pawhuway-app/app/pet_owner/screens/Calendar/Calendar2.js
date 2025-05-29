@@ -96,7 +96,7 @@ const ExpandableCalendarScreen = () => {
               ...section, 
               data: section.data.filter((event) => event.id !== selectedEvent.id)
             }))
-            .filter((section) => section.data.length > 0) // Optional: remove empty dates
+            .filter((section) => section.data.length > 0) 
         );
         setModalVisible(false);
         setSelectedEvent(null);

@@ -107,8 +107,8 @@ export default function Calendar() {
                                     }}
                                 />
                                 <View>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Coming</Text>
-                                    <Text style={{ fontSize: 12 }}>{sortedComing.length} activities incoming</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', fontFamily: 'Poppins Light' }}>Coming</Text>
+                                    <Text style={{ fontSize: 12, fontFamily: 'Poppins Light' }}>{sortedComing.length} activities incoming</Text>
                                 </View>
                                 <Image
                                     source={require('../../../../assets/pictures/back-btn.png')}
@@ -144,8 +144,8 @@ export default function Calendar() {
                                     }}
                                 />
                                 <View>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Today</Text>
-                                    <Text style={{ fontSize: 12 }}>{sortedToday.length} activities today</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', fontFamily: 'Poppins Light'}}>Today</Text>
+                                    <Text style={{ fontSize: 12, fontFamily: 'Poppins Light' }}>{sortedToday.length} activities today</Text>
                                 </View>
                                 <Image
                                     source={require('../../../../assets/pictures/back-btn.png')}
@@ -181,8 +181,8 @@ export default function Calendar() {
                                     }}
                                 />
                                 <View>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Backlogs</Text>
-                                    <Text style={{ fontSize: 12 }}>{sortedBacklogs.length} activities not addressed</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', fontFamily: 'Poppins Light' }}>Backlogs</Text>
+                                    <Text style={{ fontSize: 12, fontFamily: 'Poppins Light' }}>{sortedBacklogs.length} activities not addressed</Text>
                                 </View>
                                 <Image
                                     source={require('../../../../assets/pictures/back-btn.png')}

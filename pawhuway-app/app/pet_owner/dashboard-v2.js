@@ -150,7 +150,7 @@ const PetDashboard = () => {
                 if (category.name === "Calendar") {
                   router.push("/pet_owner/screens/Calendar/Calendar");
                 } else if (category.name === "Search Clinic") {
-                  router.push("/pet_owner/screens/SearchClinic");
+                  router.push("/pet_owner/screens/Search/searchClinic");
                 }
               }}
             >
