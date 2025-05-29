@@ -56,7 +56,7 @@ const VetClinic = () => {
         };
 
         fetchClinic();
-        console.log("hey", clinic)
+        // console.log("hey", clinic)
     }, []);
 
     const handleDelete = async () => {

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList, ActivityIndicator, Dimensions, StatusBar, Modal } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, Image, TouchableOpacity, FlatList, ActivityIndicator, ScrollView, StatusBar, Modal, ScrollViewComponent, Alert } from 'react-native';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../src/lib/supabase';
 import Fontisto from '@expo/vector-icons/Fontisto';
+import { Ionicons } from '@expo/vector-icons';
+// import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
 // import Modal from 'react-native-modal';
 
 const capitalizeFirstLetter = (string) =>
@@ -69,6 +71,45 @@ const VetScreen = () => {
         fetchData();
         // console.log("vets2", vetList)
     }, []);
+
+    const handleRemoveVet = async (vetId) => {
+        Alert.alert(
+            "Remove Veterinarian",
+            "Are you sure you want to remove this veterinarian from your clinic?",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            const { error } = await supabase
+                                .from("clinic_vet_relation")
+                                .delete()
+                                .eq("vet_id", vetId)
+                                .eq("vet_clinic_id", clinic.id);
+
+                            if (error) throw new Error(error.message);
+
+                            // Remove the vet from the local state
+                            setVetList(vetList.filter(vet => vet.vet_id !== vetId));
+                            setSelectedVet(null); // Close the modal after removal
+                        } catch (err) {
+                            console.error("Error removing vet:", err.message);
+                        } finally {
+                            router.replace('/vet_clinic/vet-clinic-dashboard');
+                        }
+                    },
+                },
+            ],
+            { cancelable: false }
+        );
+
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
@@ -78,36 +119,29 @@ const VetScreen = () => {
                 <Image source={require('../../../assets/pictures/paw-logo.png')} style={styles.logo} resizeMode='stretch' alt="logo" />
                 <Text style={styles.title}>PawHuway</Text>
             </View>
-            <View style={{ alignItems: "center", marginTop: 20 }}>
-                <Text style={styles.title}>Veterinarian List</Text>
+            <View style={{ alignItems: vetList.length > 1 ? "center" : "flex-start", marginTop: 20, width: vetList.length > 1 ? '100%' : '94%' }}>
+                <Text style={[styles.title, { alignSelf: 'center' }]}>Veterinarian List</Text>
                 {isLoading ? (
-                    <View style={{ justifyContent: 'center', alignItems: 'center', height: '80%' }}>
+                    <View style={{ alignSelf: "center", justifyContent: 'center', alignItems: 'center', height: '80%' }}>
                         <ActivityIndicator size="large" color="#3C3C4C" />
                     </View>
 
                 ) : (
-
-                    <FlatList
-                        data={vetList}
-                        numColumns={2} // This will create 2 items per row
-                        columnWrapperStyle={{ justifyContent: "space-between" }} // Adjust spacing
-                        keyExtractor={(item) => item.vet_id} // Make sure each item has a unique id
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                style={styles.vetCard}
-                                // onPress={() => router.push(`/vet_clinic/screens/vetDetails?petId=${item.vet_id}`)}
-                                onPress={() => setSelectedVet(item)}
-                            >
-                                <Fontisto name="doctor" size={75} color="white" />
-                                <Text style={[styles.label, { marginTop: 10, color: 'white' }]}>
-                                    {capitalizeFirstLetter(item.vet_profiles.user_accounts.first_name)}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingBottom: 20, width: '90%', marginTop: 20 }} // Optional: Add some bottom padding
-                    />
-
+                    <ScrollView contentContainerStyle={styles.scrollContainer}>
+                        {vetList.map((item, index) => (
+                            <View key={item.vet_id || index} style={styles.cardWrapper}>
+                                <TouchableOpacity
+                                    style={styles.vetCard}
+                                    onPress={() => setSelectedVet(item)}
+                                >
+                                    <Fontisto name="doctor" size={75} color="white" />
+                                    <Text style={[styles.label, { marginTop: 10, color: 'white' }]}>
+                                        {capitalizeFirstLetter(item.vet_profiles.user_accounts.first_name)}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                    </ScrollView>
                 )}
             </View>
             {selectedVet && <View style={styles.fullScreenOverlay}>
@@ -119,12 +153,17 @@ const VetScreen = () => {
 
                     <View style={styles.modalContainer}>
                         <View style={styles.modalContent}>
-                            <TouchableOpacity
-                                style={styles.closeButton}
-                                onPress={() => setSelectedVet(null)}
-                            >
-                                <Text>✕</Text>
-                            </TouchableOpacity>
+                            <View style={styles.modalHeader}>
+                                {/* Remove */}
+                                <TouchableOpacity onPress={() => handleRemoveVet(selectedVet.vet_id)}>
+                                    <Ionicons name="trash-outline" size={24} color="grey" />
+                                </TouchableOpacity>
+
+                                {/* Close */}
+                                <TouchableOpacity onPress={() => setSelectedVet(null)}>
+                                    <Text style={styles.closeText}>✕</Text>
+                                </TouchableOpacity>
+                            </View>
 
                             {selectedVet && (
                                 <>
@@ -164,6 +203,9 @@ const VetScreen = () => {
                 </Modal>
             </View>
             }
+            <TouchableOpacity style={styles.addButton} onPress={() => router.push('/vet_clinic/screens/add_vet')}>
+                <Ionicons name="add" size={24} color="white" />
+            </TouchableOpacity>
         </SafeAreaView >
     )
 }
@@ -172,6 +214,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#B3EBF2',
+        alignItems: 'center',
     },
 
     logo_container: {
@@ -193,11 +236,11 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginLeft: 0,
-        marginTop: 5,
+        marginVertical: 5,
     },
 
     vetCard: {
-        width: "48%",
+        // width: "50%",
         height: 175,
         backgroundColor: "#3C3C4C",
         padding: 20,
@@ -206,6 +249,11 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         gap: 0
+    },
+
+    cardWrapper: {
+        width: '45%',
+        // marginBottom: 10,
     },
     cardImage: {
         width: 100,
@@ -238,7 +286,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 20,
         right: 20,
-        backgroundColor: '#FFD166',
+        backgroundColor: '#3C3C4C',
         width: 50,
         height: 50,
         borderRadius: 25,
@@ -334,6 +382,26 @@ const styles = StyleSheet.create({
     closeButton: {
         alignSelf: 'flex-end',
         padding: 5,
+    },
+    scrollContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'flex-start',
+        gap: 16,
+        width: '100%',
+        marginTop: 20,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '95%',
+        // marginBottom: 10,
+    },
+    closeText: {
+        fontSize: 20,
+        color: '#333',
+        padding: 4,
     },
 });
 
