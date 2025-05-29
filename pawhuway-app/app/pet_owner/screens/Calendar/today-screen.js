@@ -12,20 +12,40 @@ function RneTab({ onCountUpdate }) {
     const [loading, setLoading] = React.useState(true);
     const now = new Date();
 
-    const fetchNotifications = async () => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('events') 
-            .select('*')
-            .order('date', { ascending: false });
+    React.useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                setLoading(true);
+                const { data: { user } } = await supabase.auth.getUser();
+                const userEmail = user?.email;
 
-        if (error) {
-            console.error('Error fetching notifications:', error);
-        } else {
-            setNotifications(data);
-        }
-        setLoading(false);
-    };
+                if (!userEmail) {
+                    console.error('No user email found.');
+                    setLoading(false);
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from('events')
+                    .select('id, email, title, description, date, startTime, endTime, type')
+                    .eq('email', userEmail);
+
+                if (error) {
+                    console.error('Error fetching events:', error);
+                    setLoading(false);
+                    return;
+                } else {
+                    setNotifications(data);
+                    setLoading(false);
+                    console.log('Dataaa: ', data);
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+            }
+        };
+
+        fetchNotifications();
+    }, []); 
 
     const formatTime = (timeStr) => {
         if (!timeStr) return '';
@@ -54,10 +74,6 @@ function RneTab({ onCountUpdate }) {
     React.useEffect(() => {
         onCountUpdate(sortedToday.length);
     }, [sortedToday.length]);
-
-    React.useEffect(() => {
-        fetchNotifications();
-    }, []);
 
     return (
         <View style={{ height: '100%', marginTop: 20 }}>

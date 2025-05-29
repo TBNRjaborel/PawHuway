@@ -46,27 +46,41 @@ function RneTab({ onCountUpdate }) {
     
     const now = new Date();
 
-    const fetchNotifications = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('events')
-                .select('*')
-                .order('date', { ascending: false });
-
-            if (error) throw error;
-
-            setNotifications(data || []);
-        } catch (err) {
-            console.error('Error fetching notifications:', err.message);
-            setError('Failed to load notifications.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     React.useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                setLoading(true);
+                const { data: { user } } = await supabase.auth.getUser();
+                const userEmail = user?.email;
+
+                if (!userEmail) {
+                    console.error('No user email found.');
+                    setLoading(false);
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from('events')
+                    .select('id, email, title, description, date, startTime, endTime, type')
+                    .eq('email', userEmail);
+
+                if (error) {
+                    console.error('Error fetching events:', error);
+                    setLoading(false);
+                    return;
+                } else {
+                    setNotifications(data);
+                    setLoading(false);
+                    console.log('Dataaa: ', data);
+                }
+            } catch (err) {
+                console.error('Unexpected error:', err);
+            }
+        };
+
         fetchNotifications();
-    }, []);
+    }, []); 
+
 
     const formatTime = (timeStr) => {
         if (!timeStr) return '';
@@ -83,6 +97,8 @@ function RneTab({ onCountUpdate }) {
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         return taskDay < today;
     });
+
+    console.log('past tasks: ', pastTasks)
 
     // Sort by date descending
     const sortedPast = [...pastTasks].sort(

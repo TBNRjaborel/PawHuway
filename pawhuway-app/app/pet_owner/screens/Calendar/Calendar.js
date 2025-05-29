@@ -9,10 +9,8 @@ import { supabase } from '../../../../src/lib/supabase';
 
 export default function Calendar() {
     const router = useRouter();
-    const [index, setIndex] = React.useState(0);
     const [notifications, setNotifications] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
-    const open = useSharedValue(0); // 0 = collapsed, 1 = expanded
+    const open = useSharedValue(0); 
     const [search, setSearch] = useState('');
 
     const normalizeDate = (date) => {
@@ -43,19 +41,27 @@ export default function Calendar() {
 
     React.useEffect(() => {
         const fetchNotifications = async () => {
-            setLoading(true);
+            const { data: { user } } = await supabase.auth.getUser();
+            const userEmail = user?.email;
+
+            if (!userEmail) {
+                console.error('No user email found.');
+                return;
+            }
+    
             const { data, error } = await supabase
                 .from('events')
-                .select('*')
-                .order('date', { ascending: false });
-
+                .select('id, email, title, description, date, startTime, endTime, type')
+                .eq('email', userEmail);
+    
             if (error) {
-                console.error('Error fetching notifications:', error.message);
-            } else {
-                setNotifications(data);
-                // console.log('Fetched notifications:', notifications);
+                console.error('Error fetching events:', error);
+                return;
             }
-            setLoading(false);
+            else {
+                setNotifications(data)
+                console.log('Dataaa: ', data)
+            }
         };
 
         fetchNotifications();

@@ -67,7 +67,7 @@ const profiles = () => {
         }
         }
 
-        router.push("/pet_owner/dashboard");
+        router.push("/pet_owner/dashboard-v2");
     } catch (error) {
         console.error("Unexpected error:", error);
         return;
