@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, Pressable, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Tab, TabView } from '@rneui/themed';
+import { TabView } from '@rneui/themed';
 import { supabase } from '../../../../src/lib/supabase';
-import { Button, Card } from 'react-native-paper'
+import { Card } from 'react-native-paper'
 import { Stack } from 'expo-router';
 
 function formatDateHeader(dateStr) {

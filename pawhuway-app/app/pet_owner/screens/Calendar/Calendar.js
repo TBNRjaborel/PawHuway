@@ -1,7 +1,6 @@
 import { Text, View, ScrollView, StyleSheet, TouchableOpacity, Image, Pressable, Dimensions } from 'react-native';
-import React, { Component, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSharedValue, } from 'react-native-reanimated';
-import { SearchBar } from 'react-native-elements';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Card } from 'react-native-paper';
@@ -202,7 +201,7 @@ export default function Calendar() {
                 </View>
             </View>
             <View style={{ marginHorizontal: 12, marginVertical: 10, }}>
-                <SearchBar
+                {/* <SearchBar
                     placeholder="Search activities..."
                     onChangeText={setSearch}
                     value={search}
@@ -222,7 +221,7 @@ export default function Calendar() {
                         fontSize: 16,
                         fontFamily: 'Poppins Light',
                     }}
-                />
+                /> */}
             </View>
             <View style={styles.appointmentContainer}>
                 <Card style={styles.appointmentCard}>

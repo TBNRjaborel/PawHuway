@@ -63,6 +63,11 @@ const ExpandableCalendarScreen = () => {
 
   const router = useRouter();
 
+  const today = new Date();
+  const minDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+  const maxDate = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+
+
   const formatTime = (timeStr) => {
     if (!timeStr) return '';
     const [hourStr, minute] = timeStr.split(':');
@@ -185,6 +190,8 @@ const ExpandableCalendarScreen = () => {
             date={new Date().toISOString().split('T')[0]}
             showTodayButton
             disabledOpacity={0.6}
+            // minDate={minDate}
+            // maxDate={maxDate}
         >
             <ExpandableCalendar
             initialPosition="closed"
@@ -192,6 +199,8 @@ const ExpandableCalendarScreen = () => {
             onDayPress={(day) => {
                 setSelectedDate(new Date(day.dateString));
             }}
+            // minDate={minDate}
+            // maxDate={maxDate}
             />
             <AgendaList
             sections={agendaData}
