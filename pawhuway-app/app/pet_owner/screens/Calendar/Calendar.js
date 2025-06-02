@@ -1,7 +1,6 @@
 import { Text, View, ScrollView, StyleSheet, TouchableOpacity, Image, Pressable, Dimensions } from 'react-native';
-import React, { Component, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSharedValue, } from 'react-native-reanimated';
-import { SearchBar } from 'react-native-elements';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Card } from 'react-native-paper';
@@ -9,10 +8,8 @@ import { supabase } from '../../../../src/lib/supabase';
 
 export default function Calendar() {
     const router = useRouter();
-    const [index, setIndex] = React.useState(0);
     const [notifications, setNotifications] = React.useState([]);
-    const [loading, setLoading] = React.useState(true);
-    const open = useSharedValue(0); // 0 = collapsed, 1 = expanded
+    const open = useSharedValue(0); 
     const [search, setSearch] = useState('');
 
     const normalizeDate = (date) => {
@@ -43,19 +40,27 @@ export default function Calendar() {
 
     React.useEffect(() => {
         const fetchNotifications = async () => {
-            setLoading(true);
+            const { data: { user } } = await supabase.auth.getUser();
+            const userEmail = user?.email;
+
+            if (!userEmail) {
+                console.error('No user email found.');
+                return;
+            }
+    
             const { data, error } = await supabase
                 .from('events')
-                .select('*')
-                .order('date', { ascending: false });
-
+                .select('id, email, title, description, date, startTime, endTime, type')
+                .eq('email', userEmail);
+    
             if (error) {
-                console.error('Error fetching notifications:', error.message);
-            } else {
-                setNotifications(data);
-                // console.log('Fetched notifications:', notifications);
+                console.error('Error fetching events:', error);
+                return;
             }
-            setLoading(false);
+            else {
+                setNotifications(data)
+                console.log('Dataaa: ', data)
+            }
         };
 
         fetchNotifications();
@@ -101,8 +106,8 @@ export default function Calendar() {
                                     }}
                                 />
                                 <View>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Coming</Text>
-                                    <Text style={{ fontSize: 12 }}>{sortedComing.length} activities incoming</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', fontFamily: 'Poppins Light' }}>Coming</Text>
+                                    <Text style={{ fontSize: 12, fontFamily: 'Poppins Light' }}>{sortedComing.length} activities incoming</Text>
                                 </View>
                                 <Image
                                     source={require('../../../../assets/pictures/back-btn.png')}
@@ -138,8 +143,8 @@ export default function Calendar() {
                                     }}
                                 />
                                 <View>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Today</Text>
-                                    <Text style={{ fontSize: 12 }}>{sortedToday.length} activities today</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', fontFamily: 'Poppins Light'}}>Today</Text>
+                                    <Text style={{ fontSize: 12, fontFamily: 'Poppins Light' }}>{sortedToday.length} activities today</Text>
                                 </View>
                                 <Image
                                     source={require('../../../../assets/pictures/back-btn.png')}
@@ -175,8 +180,8 @@ export default function Calendar() {
                                     }}
                                 />
                                 <View>
-                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>Backlogs</Text>
-                                    <Text style={{ fontSize: 12 }}>{sortedBacklogs.length} activities not addressed</Text>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', fontFamily: 'Poppins Light' }}>Backlogs</Text>
+                                    <Text style={{ fontSize: 12, fontFamily: 'Poppins Light' }}>{sortedBacklogs.length} activities not addressed</Text>
                                 </View>
                                 <Image
                                     source={require('../../../../assets/pictures/back-btn.png')}
@@ -196,7 +201,7 @@ export default function Calendar() {
                 </View>
             </View>
             <View style={{ marginHorizontal: 12, marginVertical: 10, }}>
-                <SearchBar
+                {/* <SearchBar
                     placeholder="Search activities..."
                     onChangeText={setSearch}
                     value={search}
@@ -216,7 +221,7 @@ export default function Calendar() {
                         fontSize: 16,
                         fontFamily: 'Poppins Light',
                     }}
-                />
+                /> */}
             </View>
             <View style={styles.appointmentContainer}>
                 <Card style={styles.appointmentCard}>
