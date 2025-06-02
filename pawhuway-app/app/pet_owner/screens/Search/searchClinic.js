@@ -1,28 +1,25 @@
 import { Text, View, ScrollView, StyleSheet, TouchableOpacity, Image, Pressable, Dimensions } from 'react-native';
-import React, { Component, useEffect, useState } from 'react';
-import { useSharedValue, } from 'react-native-reanimated';
+import React, { useState } from 'react';
 import { SearchBar } from 'react-native-elements';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Card } from 'react-native-paper';
-import DatePicker from 'react-native-date-picker';
-import { supabase } from '../../../../src/lib/supabase';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function SearchClinic() {
     const [search, setSearch] = useState('');
     const today = new Date();
-    const [checkInDate, setCheckInDate] = useState(new Date());
-    const [checkOutDate, setCheckOutDate] = useState(new Date());
-    const [openCheckIn, setOpenCheckIn] = useState(false);
-    const [openCheckOut, setOpenCheckOut] = useState(false);
+    const [checkInDate, setCheckInDate] = useState(today);
+    const [checkOutDate, setCheckOutDate] = useState(today);
+    const [showCheckIn, setShowCheckIn] = useState(false);
+    const [showCheckOut, setShowCheckOut] = useState(false);
 
     const minDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
     const maxDate = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate());
 
     return (
         <View style={styles.container}>
-            <Stack.Screen options={{ headerShown: false }} />  
-            <View style={styles.searchContainer}>                                                                                                                                                                                                                                                                                         
+            <Stack.Screen options={{ headerShown: false }} />
+            <View style={styles.searchContainer}>
                 <View style={styles.search}>
                     <View style={styles.location}>
                         <Text style={{ fontFamily: 'Poppins Light' }}>Location</Text>
@@ -50,55 +47,56 @@ export default function SearchClinic() {
                             }}
                         />
                     </View>
+
                     <View style={styles.datePickers}>
                         <View>
                             <Text style={{ fontFamily: 'Poppins Light' }}>Check-in</Text>
-                            <Pressable onPress={() => setOpenCheckIn(true)}>
-                            <Text style={{ fontFamily: 'Poppins Light', color: 'blue' }}>
-                                {checkInDate.toDateString()}
-                            </Text>
+                            <Pressable onPress={() => setShowCheckIn(true)}>
+                                <Text style={{ fontFamily: 'Poppins Light', color: 'blue' }}>
+                                    {checkInDate.toDateString()}
+                                </Text>
                             </Pressable>
-                            <DatePicker
-                                modal
-                                open={openCheckIn}
-                                date={checkInDate}
-                                onConfirm={(date) => {
-                                    setOpenCheckIn(false);
-                                    setCheckInDate(date);
-                                }}
-                                onCancel={() => setOpenCheckIn(false)}
-                                minimumDate={minDate}
-                                maximumDate={maxDate}
-                                mode="date"
-                            />
+                            {showCheckIn && (
+                                <DateTimePicker
+                                    value={checkInDate}
+                                    mode="date"
+                                    display="default"
+                                    minimumDate={minDate}
+                                    maximumDate={maxDate}
+                                    onChange={(event, selectedDate) => {
+                                        setShowCheckIn(false);
+                                        if (selectedDate) setCheckInDate(selectedDate);
+                                    }}
+                                />
+                            )}
                         </View>
 
                         <View>
                             <Text style={{ fontFamily: 'Poppins Light' }}>Check-out</Text>
-                            <Pressable onPress={() => setOpenCheckOut(true)}>
-                            <Text style={{ fontFamily: 'Poppins Light', color: 'blue' }}>
-                                {checkOutDate.toDateString()}
-                            </Text>
+                            <Pressable onPress={() => setShowCheckOut(true)}>
+                                <Text style={{ fontFamily: 'Poppins Light', color: 'blue' }}>
+                                    {checkOutDate.toDateString()}
+                                </Text>
                             </Pressable>
-                            <DatePicker
-                                modal
-                                open={openCheckOut}
-                                date={checkOutDate}
-                                onConfirm={(date) => {
-                                    setOpenCheckOut(false);
-                                    setCheckOutDate(date);
-                                }}
-                                onCancel={() => setOpenCheckOut(false)}
-                                minimumDate={minDate}
-                                maximumDate={maxDate}
-                                mode="date"
-                            />
+                            {showCheckOut && (
+                                <DateTimePicker
+                                    value={checkOutDate}
+                                    mode="date"
+                                    display="default"
+                                    minimumDate={minDate}
+                                    maximumDate={maxDate}
+                                    onChange={(event, selectedDate) => {
+                                        setShowCheckOut(false);
+                                        if (selectedDate) setCheckOutDate(selectedDate);
+                                    }}
+                                />
+                            )}
                         </View>
                     </View>
                 </View>
-            </View>  
+            </View>
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -119,10 +117,10 @@ const styles = StyleSheet.create({
         marginHorizontal: '3%',
         marginTop: '3%',
         marginBottom: '2%'
-    },  
+    },
     datePickers: {
         flexDirection: 'row',
         marginHorizontal: '3%',
-        gap: '33%'
+        gap: 20
     },
-})
+});
