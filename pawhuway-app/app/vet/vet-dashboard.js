@@ -78,7 +78,11 @@ const PetDashboard = () => {
       <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.homeText}>Home</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/components/landing-page-v2")}
+          >
+            <Text style={styles.homeText}>Home</Text>
+          </TouchableOpacity>
 
           <View style={styles.locationContainer}>
             <Text style={styles.locationText}>PawHuway</Text>
