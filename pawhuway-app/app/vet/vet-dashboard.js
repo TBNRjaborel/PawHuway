@@ -1,58 +1,411 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from 'expo-status-bar';
-import { Stack } from 'expo-router';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  StatusBar,
+} from "react-native";
+import {
+  Ionicons,
+  FontAwesome5,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
+import Svg, { Path, Circle, Rect, G } from "react-native-svg";
+import { Stack, useRouter } from "expo-router";
+import { supabase } from "../../src/lib/supabase";
+import { FlatList } from "react-native";
 
-// Screens
-import Patients from './screens/Patients/Patients';
-import ScanQR from './screens/Scan-qr';
-import Calendar from './screens/Calendar';
-import Profile from './screens/Profile';
+const PetDashboard = () => {
+  const router = useRouter();
+  const [firstName, setFirstName] = useState("");
+  const [user, setUser] = useState(null);
+  const [image, setImage] = useState();
+  const [owner, setOwner] = useState(null);
+  const [pets, setPets] = useState([]);
 
-const Tab = createBottomTabNavigator();
+  // Category data
+  const categories = [
+    { id: "1", name: "Calendar", color: "#3C3C4C" },
+    { id: "2", name: "QR Code", color: "#3C3C4C" },
+    // { id: '3', name: 'Search Clinic', icon: 'cut', color: '#F90' },
+  ];
 
-const Dashboard = () => {
-    return (
-        <SafeAreaView style={styles.container}>
-            <Stack.Screen options={{ headerShown: false }} />
-            <StatusBar hidden={true} />
-            <Tab.Navigator
-                initialRouteName="Patients"
-                screenOptions={({ route }) => ({
-                    tabBarIcon: ({ focused, color, size }) => {
-                        let iconName;
+  const filter = [
+    { id: "1", type: "Dog", color: "#3C3C4C", icon: "🐶" },
+    { id: "2", type: "Cat", color: "#3C3C4C", icon: "🐱" },
+    { id: "3", type: "Rodent", color: "#3C3C4C", icon: "🐹" },
+    { id: "4", type: "Bird", color: "#3C3C4C", icon: "🐦" },
+    { id: "5", type: "Reptile", color: "#3C3C4C", icon: "🐍" },
+    { id: "6", type: "Fish", color: "#3C3C4C", icon: "🐠" },
+  ];
+  const profile = () => {
+    router.push("/vet/screens/Profile");
+  };
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const { data: user, error } = await supabase.auth.getUser();
 
-                        if (route.name === 'Patients') {
-                            iconName = focused ? 'paw' : 'paw-outline';
-                        } else if (route.name === 'Scan QR') {
-                            iconName = focused ? 'scan' : 'scan-outline';
-                        } else if (route.name === 'Calendar') {
-                            iconName = focused ? 'calendar' : 'calendar-outline';
-                        } else if (route.name === 'Profile') {
-                            iconName = focused ? 'person' : 'person-outline';
-                        }
+      if (error) {
+        console.error("Error fetching user:", error);
+        return;
+      }
+      const userEmail = user?.user?.email;
+      // console.log("User ID:", userId);
+      const { data, error: profileError } = await supabase
+        .from("user_accounts")
+        .select("*")
+        .eq("email_add", userEmail)
+        .maybeSingle();
 
-                        return <Ionicons name={iconName} size={size} color={color} />;
-                    },
-                    tabBarActiveTintColor: '#85D1DB',
-                    tabBarInactiveTintColor: '#3C3C4C',
-                    headerShown: false,
-                })}>
-                <Tab.Screen name="Patients" component={Patients} />
-                <Tab.Screen name="Scan QR" component={ScanQR} />
-                <Tab.Screen name="Calendar" component={Calendar} />
-                <Tab.Screen name="Profile" component={Profile} />
-            </Tab.Navigator>
-        </SafeAreaView>
-    );
+      if (profileError) console.error("Error fetching user:", profileError);
+      else {
+        console.log("nigana");
+        setFirstName(data.first_name);
+        setImage(data.profile_picture || null);
+      }
+    };
+    fetchUserProfile();
+  }, []);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar hidden={true} />
+      <View style={styles.content}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.homeText}>Home</Text>
+
+          <View style={styles.locationContainer}>
+            <Text style={styles.locationText}>PawHuway</Text>
+          </View>
+
+          <TouchableOpacity style={styles.profileButton} onPress={profile}>
+            <Image source={{ uri: image }} style={styles.profileImage} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Greeting */}
+        <View style={styles.greeting}>
+          <Text style={styles.greetingTitle}>Hi {firstName},</Text>
+          <Text style={styles.greetingSubtitle}>
+            Time to find the best care for your patients!
+          </Text>
+        </View>
+
+        {/* Categories */}
+        <View style={styles.categoriesContainer}>
+          {categories.map((category) => (
+            <TouchableOpacity
+              key={category.id}
+              style={styles.categoryButton}
+              onPress={() => {
+                if (category.name === "Calendar") {
+                  router.push("/vet/screens/Calendar");
+                } else if (category.name === "QR Code") {
+                  router.push("/vet/screens/Scan-qr");
+                }
+              }}
+            >
+              <View
+                style={[
+                  styles.categoryIcon,
+                  { backgroundColor: category.color },
+                ]}
+              >
+                {category.name === "Calendar" && (
+                  <Ionicons name="calendar" size={30} color="#fff" />
+                )}
+                {category.name === "QR Code" && (
+                  <Ionicons
+                    name="scan-outline"
+                    size={30}
+                    color="#fff"
+                  ></Ionicons>
+                )}
+              </View>
+              <Text style={styles.categoryText}>{category.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Upcoming Appointment */}
+        <View style={styles.appointmentCard}>
+          <View style={styles.appointmentContent}>
+            <View style={styles.appointmentIcon}>
+              <Ionicons name="link" size={20} color="#fff" />
+            </View>
+            <View style={styles.appointmentDetails}>
+              <Text style={styles.appointmentTitle}>Health Checkup</Text>
+              <View style={styles.appointmentTime}>
+                <Ionicons
+                  name="time-outline"
+                  size={14}
+                  color="black"
+                  style={styles.timeIcon}
+                />
+                <Text style={styles.appointmentTimeText}>
+                  09:00 AM • 14 July, 2020
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.appointmentImageContainer}>
+            {/* <CatIllustration /> */}
+          </View>
+        </View>
+
+        {/* Filter Section */}
+        <View>
+          <Text style={{ fontFamily: "Poppins Light", fontSize: 20 }}>
+            Category
+          </Text>
+          <View style={styles.filterContainer}>
+            {filter.map((type) => (
+              <TouchableOpacity key={type.id} style={styles.filterButton}>
+                <View>
+                  <Text style={{ fontSize: 24 }}>{type.icon}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        {/* My Pets Section */}
+        <View style={styles.petsHeader}>
+          <Text style={styles.petsTitle}>Patients</Text>
+          <TouchableOpacity
+            style={styles.addPetButton}
+            onPress={() => {
+              router.push("/vet/screens/add_patients");
+            }}
+          >
+            <Ionicons name="add" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Pet Cards */}
+        <FlatList
+          data={pets}
+          keyExtractor={(item) => item.id}
+          horizontal={true} // or true if you want horizontal scrolling
+          ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => {
+                router.push(
+                  `/pet_owner/screens/Pets/pet-details?petId=${item.id}`
+                );
+              }}
+            >
+              <View style={styles.petCard}>
+                <Text style={styles.petName}>{item.name}</Text>
+                <Text style={styles.petType}>{item.type}</Text>
+                <Text style={styles.petAge}>Age: {item.age}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1, // Ensures full-screen layout
-    }
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  content: {
+    padding: 20,
+    backgroundColor: "#FFFFFF",
+  },
+  homeText: {
+    fontFamily: "Poppins Light",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  locationText: {
+    fontFamily: "Poppins Light",
+    fontSize: 20,
+    color: "#333",
+    marginLeft: 4,
+  },
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: "hidden",
+    backgroundColor: "#f0f0f0",
+  },
+  profileImage: {
+    width: "100%",
+    height: "100%",
+  },
+  greeting: {
+    marginBottom: 25,
+  },
+  greetingTitle: {
+    fontFamily: "Kanit Medium",
+    fontSize: 24,
+    // fontWeight: "bold",
+    color: "#333",
+    marginBottom: 5,
+  },
+  greetingSubtitle: {
+    fontFamily: "Poppins Light",
+    fontSize: 16,
+    color: "#888",
+  },
+  categoriesContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  categoryButton: {
+    alignItems: "center",
+    width: "48%",
+  },
+  categoryIcon: {
+    width: "100%",
+    height: 75,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  categoryText: {
+    fontFamily: "Poppins Light",
+    fontSize: 12,
+    color: "#333",
+  },
+  appointmentCard: {
+    backgroundColor: "#B3EBF2",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  appointmentContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 3,
+  },
+  appointmentIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#3C3C4C",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  appointmentDetails: {
+    flex: 1,
+  },
+  appointmentTitle: {
+    fontFamily: "Poppins Light",
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "Black",
+    marginBottom: 6,
+  },
+  appointmentTime: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  timeIcon: {
+    marginRight: 4,
+  },
+  appointmentTimeText: {
+    fontFamily: "Poppins Light",
+    fontSize: 12,
+    color: "black",
+    opacity: 0.9,
+  },
+  appointmentImageContainer: {
+    flex: 1,
+    alignItems: "flex-end",
+  },
+  petsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  petsTitle: {
+    fontFamily: "Poppins Light",
+    fontSize: 20,
+    color: "#333",
+  },
+  addPetButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#3C3C4C",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  petsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  petCard: {
+    backgroundColor: "#B3EBF2",
+    borderRadius: 16,
+    padding: 16,
+    width: 300,
+    height: 300,
+    alignItems: "center",
+  },
+  petImageContainer: {
+    width: 120,
+    height: 120,
+    marginBottom: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  petName: {
+    fontFamily: "Poppins Light",
+    fontSize: 18,
+    color: "black",
+  },
+  petType: {
+    fontFamily: "Poppins Light",
+    fontSize: 14,
+    color: "black",
+  },
+  petAge: {
+    fontFamily: "Poppins Light",
+    fontSize: 12,
+    color: "black",
+  },
+
+  filterContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 25,
+    marginTop: 10,
+  },
+  filterButton: {
+    backgroundColor: "#3C3C4C",
+    borderRadius: 20,
+    padding: 10,
+  },
 });
 
-export default Dashboard;
+export default PetDashboard;
