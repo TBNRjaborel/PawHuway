@@ -28,6 +28,12 @@ const generateHourlySlots = (openTime, closeTime) => {
     return slots;
 };
 
+const addOneHour = (timeString) => {
+    let [hours, minutes] = timeString.split(':').map(Number);
+    hours = (hours + 1) % 24;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
+
 const clinicDetails = () => {
     const router = useRouter();
     const { clinicId } = useLocalSearchParams()
@@ -39,6 +45,8 @@ const clinicDetails = () => {
     const [selectedPet, setSelectedPet] = useState('');
     const [pets, setPets] = useState([]);
     const [userEmail, setUserEmail] = useState('');
+    const [submitLoading, setSubmitLoading] = useState(false);
+
     useEffect(() => {
 
         const fetchClinicDetails = async () => {
@@ -115,6 +123,9 @@ const clinicDetails = () => {
             alert("Please select a date, time, and pet before booking.");
             return;
         }
+        const startTime = `${selectedTime}:00`;
+        const endTime = `${addOneHour(selectedTime)}:00`;
+        setSubmitLoading(true);
         try {
             if (!userEmail) {
                 return
@@ -125,14 +136,37 @@ const clinicDetails = () => {
                     title: selectedPet.name + "'s Appointment ",
                     type: "appointment",
                     description: `Appointment for ${selectedPet.name} at ${clinic.clinic_name}`,
-                    startTime: selectedTime + ':00',
-                    endTime: selectedTime + ':59',
-                    email: email,
+                    startTime: startTime,
+                    endTime: endTime,
+                    email: userEmail,
                     pet_id: selectedPet.id, // Use the selected pet's ID
                 },
             ]).select();
+
+            const event = data[0];
+            // console.log("Event created:", event.id);
+
+            const { data: appointmentData, error: appointmentError } = await supabase
+                .from('appointment_requests')
+                .insert([
+                    {
+                        clinic_id: clinicId,
+                        pet_id: selectedPet.id, // Use the selected pet's ID
+                        event_id: event.id, // Use the newly created event's ID
+                    },
+
+                ]).select();
+            if (appointmentError) {
+                console.error("Error creating appointment request:", appointmentError.message);
+            }
+
+            // console.log("Appointment request created:", appointmentData);
         } catch (error) {
             console.error("Error booking appointment:", error.message);
+        } finally {
+            setSubmitLoading(false);
+            alert("Appointment booked successfully!");
+            router.back();
         }
         // console.log("Selected date and time:", selectedDate, selectedTime);
     }
@@ -276,7 +310,7 @@ const clinicDetails = () => {
                 <TouchableOpacity
                     style={[
                         {
-                            backgroundColor: (!selectedDate || !selectedTime) ? "gray" : '#3C3C4C',
+                            backgroundColor: (!selectedDate || !selectedTime || !selectedPet) ? "gray" : '#3C3C4C',
                             padding: 15,
                             borderRadius: 15,
                             width: '90%',
@@ -284,14 +318,19 @@ const clinicDetails = () => {
                         }
                     ]}
                     onPress={handleBookAppointment}
-                    disabled={!selectedDate || !selectedTime}
+                    disabled={!selectedDate || !selectedTime || !selectedPet}
                 >
-                    <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'Poppins' }}>
-                        Book Appointment
-                    </Text>
+                    {
+                        submitLoading ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'Poppins' }} >
+                                Book Appointment
+                            </Text>
+                        )}
                 </TouchableOpacity>
-            </View>
-        </SafeAreaView>
+            </View >
+        </SafeAreaView >
     )
 }
 
