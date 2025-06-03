@@ -390,7 +390,7 @@ const AddPet = () => {
 
           <TouchableOpacity
             style={styles.cancelButton}
-            onPress={() => router.push("/pet_owner/dashboard")}
+            onPress={() => router.push("/pet_owner/dashboard-v2")}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
