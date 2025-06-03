@@ -246,7 +246,7 @@ const AddPet = () => {
 
     Alert.alert("Success", "Pet added successfully!");
     setSaving(false);
-    router.push("pet_owner/dashboard");
+    router.push("pet_owner/dashboard-v2");
   }
 
   return (

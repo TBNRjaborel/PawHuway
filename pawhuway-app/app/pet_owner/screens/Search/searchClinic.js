@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     searchContainer: {
-        backgroundColor: 'yellow',
+        backgroundColor: '#B3EBF2',
         margin: '6%',
         borderRadius: 20
     },
