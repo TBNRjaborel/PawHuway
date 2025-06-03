@@ -63,6 +63,11 @@ const ExpandableCalendarScreen = () => {
 
   const router = useRouter();
 
+  const today = new Date();
+  const minDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+  const maxDate = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+
+
   const formatTime = (timeStr) => {
     if (!timeStr) return '';
     const [hourStr, minute] = timeStr.split(':');
@@ -91,8 +96,15 @@ const ExpandableCalendarScreen = () => {
       } else {
         console.log('Event deleted successfully.');
         setAgendaData((prev) =>
-          prev.filter((item) => item.id !== selectedEvent.id)
+          prev
+            .map((section) => ({
+              ...section, 
+              data: section.data.filter((event) => event.id !== selectedEvent.id)
+            }))
+            .filter((section) => section.data.length > 0) 
         );
+        setModalVisible(false);
+        setSelectedEvent(null);
       }
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -101,49 +113,61 @@ const ExpandableCalendarScreen = () => {
 
   useEffect(() => {
     const fetchEvents = async () => {
-        const { data, error } = await supabase
-            .from('events')
-            .select('id, title, description, date, startTime, endTime, type');
+      const { data: { user } } = await supabase.auth.getUser();
+      const userEmail = user?.email;
 
-        if (error) {
-            console.error('Error fetching events:', error);
-            return;
-        }
+      if (!userEmail) {
+        console.error('No user email found.');
+        return;
+      }
 
-        const grouped = data.reduce((acc, item) => {
-            const date = item.date;
-            if (!acc[date]) acc[date] = [];
-            acc[date].push({
-                id: item.id.toString(),
-                title: item.title,
-                description: item.description,
-                startTime: formatTime(item.startTime),
-                endTime: formatTime(item.endTime),
-                rawStartTime: item.startTime,
-                type: item.type,
-            });
-            return acc;
-        }, {});
-        
-        Object.keys(grouped).forEach(date => {
-            grouped[date].sort((a, b) => a.rawStartTime.localeCompare(b.rawStartTime));
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, email, title, description, date, startTime, endTime, type')
+        .eq('email', userEmail);
+
+      if (error) {
+        console.error('Error fetching events:', error);
+        return;
+      }
+      else {
+        console.log('Activities: ', data)
+      }
+
+      const grouped = data.reduce((acc, item) => {
+        const date = item.date;
+        if (!acc[date]) acc[date] = [];
+        acc[date].push({
+          id: item.id.toString(),
+          title: item.title,
+          description: item.description,
+          startTime: formatTime(item.startTime),
+          endTime: formatTime(item.endTime),
+          rawStartTime: item.startTime,
+          type: item.type,
         });
+        return acc;
+      }, {});
 
-        const marked = {};
-        Object.keys(grouped).forEach(date => {
-            marked[date] = { marked: true, dotColor: '#00C853' };
-        });
-        setMarkedDates(marked);
+      Object.keys(grouped).forEach(date => {
+        grouped[date].sort((a, b) => a.rawStartTime.localeCompare(b.rawStartTime));
+      });
 
-        const transformed = Object.keys(grouped).sort().map(date => ({
-            title: date,
-            data: grouped[date]
-        }));
-        setAgendaData(transformed);
-        };
+      const marked = {};
+      Object.keys(grouped).forEach(date => {
+        marked[date] = { marked: true, dotColor: '#00C853' };
+      });
+      setMarkedDates(marked);
 
-        fetchEvents();
-    }, []);
+      const transformed = Object.keys(grouped).sort().map(date => ({
+        title: date,
+        data: grouped[date]
+      }));
+      setAgendaData(transformed);
+    };
+
+      fetchEvents();
+  }, []);
 
     const renderItem = useCallback(({ item }) => (
       <AgendaItem item={item} onPress={handleItemPress} />
@@ -166,6 +190,8 @@ const ExpandableCalendarScreen = () => {
             date={new Date().toISOString().split('T')[0]}
             showTodayButton
             disabledOpacity={0.6}
+            // minDate={minDate}
+            // maxDate={maxDate}
         >
             <ExpandableCalendar
             initialPosition="closed"
@@ -173,6 +199,8 @@ const ExpandableCalendarScreen = () => {
             onDayPress={(day) => {
                 setSelectedDate(new Date(day.dateString));
             }}
+            // minDate={minDate}
+            // maxDate={maxDate}
             />
             <AgendaList
             sections={agendaData}

@@ -78,8 +78,8 @@ const addPatient = () => {
 
             const vetId = vetData.id;
 
-            console.log("VET ID:", vetId);
-            console.log("PET ID:", selectedPet);
+            // console.log("VET ID:", vetId);
+            // console.log("PET ID:", selectedPet);
 
             // 3. Insert vet-pet relation
             const { data, error } = await supabase

@@ -11,9 +11,9 @@ import {
 } from "react-native";
 import {
   Ionicons,
-  FontAwesome5,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Svg, { Path, Circle, Rect, G } from "react-native-svg";
 import { Stack, useRouter } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
@@ -150,7 +150,7 @@ const PetDashboard = () => {
                 if (category.name === "Calendar") {
                   router.push("/pet_owner/screens/Calendar/Calendar");
                 } else if (category.name === "Search Clinic") {
-                  router.push("/pet_owner/screens/SearchClinic");
+                  router.push("/pet_owner/screens/Search/searchClinic");
                 }
               }}
             >
@@ -164,7 +164,7 @@ const PetDashboard = () => {
                   <Ionicons name="calendar" size={30} color="#fff" />
                 )}
                 {category.name === "Search Clinic" && (
-                  <FontAwesome5 name="Search" size={30} color="#fff" />
+                  <FontAwesome5 name="search" size={30} color="#fff" />
                 )}
               </View>
               <Text style={styles.categoryText}>{category.name}</Text>
