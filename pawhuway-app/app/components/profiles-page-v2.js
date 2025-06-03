@@ -202,9 +202,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#B3EBF2",
   },
   Pages: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    // backgroundColor: 'white',
+    // backgroundColor: "white",
   },
   pets: {
     width: 350,
