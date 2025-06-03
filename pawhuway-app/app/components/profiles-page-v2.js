@@ -103,6 +103,24 @@ const profiles = () => {
         return;
       }
 
+      if (!existingVet) {
+        Alert.alert(
+          "No Profile Found",
+          "No vet profile exists for your account. Would you like to create one?",
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Create Profile",
+              onPress: () => router.push("/vet/create-vet-profile"),
+            },
+          ]
+        );
+        return;
+      }
+
       router.push("/vet/vet-dashboard");
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -202,9 +220,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#B3EBF2",
   },
   Pages: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    // backgroundColor: 'white',
+    // backgroundColor: "white",
   },
   pets: {
     width: 350,

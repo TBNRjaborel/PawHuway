@@ -246,7 +246,7 @@ const AddPet = () => {
 
     Alert.alert("Success", "Pet added successfully!");
     setSaving(false);
-    router.push("pet_owner/dashboard");
+    router.push("pet_owner/dashboard-v2");
   }
 
   return (
@@ -258,7 +258,10 @@ const AddPet = () => {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.imageWrapper}>
-          <TouchableOpacity onPress={pickImage} style={styles.imageUploadContainer}>
+          <TouchableOpacity
+            onPress={pickImage}
+            style={styles.imageUploadContainer}
+          >
             {petData.image ? (
               <Image source={{ uri: petData.image.uri }} style={styles.image} />
             ) : (
@@ -380,12 +383,14 @@ const AddPet = () => {
           </View>
 
           <TouchableOpacity style={styles.addButton} onPress={CreatePet}>
-            <Text style={styles.addButtonText} disabled={saving}>Add Pet</Text>
+            <Text style={styles.addButtonText} disabled={saving}>
+              Add Pet
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.cancelButton}
-            onPress={() => router.push("/pet_owner/dashboard")}
+            onPress={() => router.push("/pet_owner/dashboard-v2")}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
