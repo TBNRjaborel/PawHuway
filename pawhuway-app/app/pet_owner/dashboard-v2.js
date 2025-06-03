@@ -9,11 +9,8 @@ import {
   Image,
   StatusBar,
 } from "react-native";
-import {
-  Ionicons,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Svg, { Path, Circle, Rect, G } from "react-native-svg";
 import { Stack, useRouter } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
@@ -121,7 +118,11 @@ const PetDashboard = () => {
       <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.homeText}>Home</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/components/landing-page-v2")}
+          >
+            <Text style={styles.homeText}>Home</Text>
+          </TouchableOpacity>
 
           <View style={styles.locationContainer}>
             <Text style={styles.locationText}>PawHuway</Text>
