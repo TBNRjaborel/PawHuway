@@ -15,6 +15,10 @@ export default function Index() {
   }
 
 
-  return <Redirect href="/starting-page" />;
+  // return <Redirect href="/starting-page" />;
+  // return <Redirect href="/components/landing-page-v2" />;
   // return <Redirect href="/pet_owner/dashboard-v2/" />;
-}
+
+
+  return <Redirect href="/starting-page" />;
+

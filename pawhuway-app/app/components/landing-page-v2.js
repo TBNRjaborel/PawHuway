@@ -36,7 +36,7 @@ const LandingPageV2 = () => {
             return;
         }
         const userEmail = user?.user?.email;
-        // console.log("User ID:", userId);
+        console.log("User Email:", userEmail);
         const { data, error: profileError } = await supabase
             .from('user_accounts')
             .select('*')
