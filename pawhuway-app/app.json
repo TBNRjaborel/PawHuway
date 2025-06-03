@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "pawhuway-app",
-    "slug": "pawhuway-app",
+    "slug": "pawhuway",
     "scheme": "mypetapp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -27,7 +27,14 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
-    ]
+      "expo-secure-store",
+      "expo-router"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4eac49bc-738d-4ceb-8ff0-ce1aa0b737ac"
+      }
+    },
+    "owner": "tbnrjaborel"
   }
 }
