@@ -12,13 +12,15 @@ const AddEvent = () => {
   const { date } = params;
   const [eventData, setEventData] = useState({
     title: '',
-    type: '',
+    event_type: 'task',
     description: '',
     startTime: '',
     endTime: '',
+    pet_id: '',
   });
-
   const [showPicker, setShowPicker] = useState(false);
+  const [pets, setPets] = useState([]);
+
   const onChange = (event, selectedDate) => {
     if (selectedDate) {
       setDob(selectedDate);
@@ -26,10 +28,58 @@ const AddEvent = () => {
     setShowPicker(false);
   };
 
+  useEffect(() => {
+    const fetchPets = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error("Error fetching user:", error.message);
+          return;
+        }
+        console.log("User email:", user.email);
+
+        const { data: petOwner, error: ownerError } = await supabase
+          .from("pet_owners")
+          .select("*")
+          .eq("email", user.email)
+          .single();
+
+        const owner = petOwner || {};
+
+        // Fetch the user's pets
+        const { data: pets, error: petsError } = await supabase
+          .from('pets')
+          .select('id, name')
+          .eq('owner_id', owner.id);
+
+        if (petsError) {
+          console.error("Error fetching pets:", petsError.message);
+          return;
+        }
+
+        setPets(pets);
+        console.log("Fetched pets:", pets);
+      } catch (error) {
+        console.error("Error fetching pets:", error);
+        Alert.alert('Error', 'Failed to fetch pets.');
+      }
+    }
+    fetchPets();
+  }, [])
+
+  const handlePetSelection = (itemValue) => {
+    console.log("Selected pet:", itemValue);
+    if (itemValue) {
+      setEventData({ ...eventData, pet_id: itemValue.id });
+    } else {
+      setEventData({ ...eventData, pet_id: '' });
+    }
+  }
+
   async function CreateEvent() {
     console.log("eventData:", eventData);
-  
-    if (!eventData.title || !eventData.type || !eventData.description || !eventData.startTime || !eventData.endTime) {
+
+    if (!eventData.title || !eventData.event_type || !eventData.description || !eventData.startTime || !eventData.endTime || !eventData.pet_id) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
@@ -45,24 +95,25 @@ const AddEvent = () => {
     }
 
     const email = user.email;
-  
+
     const { data, error } = await supabase.from('events').insert([
       {
         date: date,
         title: eventData.title,
-        type: eventData.type,
+        type: eventData.event_type,
         description: eventData.description,
         startTime: eventData.startTime,
         endTime: eventData.endTime,
         email: email,
+        pet_id: eventData.pet_id, // Use the selected pet's ID
       },
     ]).select();
-  
+
     if (error) {
       Alert.alert('Error', error.message);
       return;
     }
-  
+
     if (data && data.length > 0) {
       Alert.alert('Success', 'Event added successfully!');
       router.push({
@@ -88,20 +139,20 @@ const AddEvent = () => {
           />
         </View>
 
-        <View key="Type" style={styles.inputContainer}>
-          <Text style={styles.label}>Type:</Text>
+        <View key="EventType" style={styles.inputContainer}>
+          <Text style={styles.label}>Select Pet:</Text>
           <View style={styles.pickerContainer}>
             <Picker
-              selectedValue={eventData.type}
-              onValueChange={(itemValue) => setEventData({ ...eventData, type: itemValue })}
+              selectedValue={eventData.pet_id}
+              mode="dropdown"
+              prompt="Select a pet"
+              onValueChange={(itemValue) => handlePetSelection(itemValue)}
               style={styles.picker}
             >
-              <Picker.Item label="Enter Type" value="" style={styles.pickerPlaceholder} />
-              <Picker.Item label="Exercise" value="Exercise" style={styles.pickerItem} />
-              <Picker.Item label="Hygiene" value="Hygiene" style={styles.pickerItem} />
-              <Picker.Item label="Nutrition" value="Nutrition" style={styles.pickerItem} />
-              <Picker.Item label="Medication" value="Medication" style={styles.pickerItem} />
-              <Picker.Item label="Other" value="Other" style={styles.pickerItem} />
+              <Picker.Item label="Select pet" value="" style={styles.pickerPlaceholder} />
+              {pets.map((pet) => (
+                <Picker.Item key={pet.id} label={pet.name} value={pet} style={styles.pickerItem} />
+              ))}
             </Picker>
           </View>
         </View>
@@ -267,7 +318,7 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   pickerItem: {
-    fontSize: 14, 
+    fontSize: 14,
   },
   fileName: {
     marginLeft: 10,

@@ -21,17 +21,17 @@ const SignIn = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // useEffect(() => {
-  //   const autoLogin = async () => {
-  //     setEmail("vet@gmail.com");
-  //     setPassword("123456");
-  //     if (email && password) {
-  //       signInWithEmail();
-  //     }
-  //   }
+  useEffect(() => {
+    const autoLogin = async () => {
+      setEmail("fieljrc@gmail.com");
+      setPassword("123456");
+      if (email && password) {
+        signInWithEmail();
+      }
+    }
 
-  //   autoLogin();
-  // }, []);
+    autoLogin();
+  }, []);
 
   async function signInWithEmail() {
     try {
