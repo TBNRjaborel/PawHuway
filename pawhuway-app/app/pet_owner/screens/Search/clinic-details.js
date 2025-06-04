@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, FlatList } from 'react-native'
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, FlatList, Alert } from 'react-native'
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect } from 'react'
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -157,6 +157,7 @@ const clinicDetails = () => {
                         preferred_time: selectedTime,
                         status: 'pending', // Default status
                         desc: `Appointment for ${selectedPet.name} at ${clinic.clinic_name} on ${selectedDate} at ${selectedTime}`,
+
                     },
 
                 ]).select();
@@ -169,8 +170,12 @@ const clinicDetails = () => {
             console.error("Error booking appointment:", error.message);
         } finally {
             setSubmitLoading(false);
-            alert("Appointment booked successfully!");
-            router.back();
+            Alert.alert(
+                "Appointment Request Sent",
+                `Your appointment request for ${selectedPet.name} at ${clinic.clinic_name} on ${selectedDate} at ${selectedTime} has been sent.`,
+                [{ text: "OK", onPress: () => router.back() }]
+            );
+            // router.back();
         }
         // console.log("Selected date and time:", selectedDate, selectedTime);
     }
@@ -329,7 +334,7 @@ const clinicDetails = () => {
                             <ActivityIndicator size="small" color="#fff" />
                         ) : (
                             <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'Poppins' }} >
-                                Book Appointment
+                                Request Appointment
                             </Text>
                         )}
                 </TouchableOpacity>

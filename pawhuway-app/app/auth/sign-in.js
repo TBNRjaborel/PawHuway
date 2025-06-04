@@ -30,10 +30,6 @@ const SignIn = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-
-  // useEffect(() => {s
-
-
   async function signInWithEmail() {
     try {
       // Login
