@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 50, 
         paddingTop: 90,
         paddingHorizontal: 25,
-        marginTop: 120,
+        marginTop: 150,
 
     },
     btn:{

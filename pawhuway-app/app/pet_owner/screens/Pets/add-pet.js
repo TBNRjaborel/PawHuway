@@ -19,6 +19,8 @@ import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
+import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
+import { decode } from 'base64-arraybuffer';
 
 const AddPet = () => {
   const router = useRouter();
@@ -118,22 +120,39 @@ const AddPet = () => {
   };
 
   const pickFile = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: "application/pdf",
-      copyToCacheDirectory: true,
-    });
-
-    if (!result.canceled) {
-      const file = result.assets[0];
-
-      if (file.mimeType !== "application/pdf") {
-        Alert.alert("Invalid Format", "Please select a PDF file.");
-        return;
+      console.log("Opening file picker...");
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf",
+        copyToCacheDirectory: true,
+      });
+  
+      console.log("File picker result:", result);
+  
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        const fileUri = file.uri;
+        console.log("Picked file URI:", fileUri);
+  
+        if (file.mimeType !== "application/pdf") {
+          console.log("Invalid file type:", file.mimeType);
+          Alert.alert("Invalid Format", "Please select a PDF file.");
+          return;
+        }
+  
+        const base64 = await FileSystem.readAsStringAsync(fileUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        console.log("Read file as base64, length:", base64.length);
+  
+        const arrayBuffer = decode(base64);
+        console.log("Decoded base64 to arrayBuffer, byteLength:", arrayBuffer.byteLength);
+  
+        // Store the file object for later reading/upload
+        setPetData({ ...petData, medfile: file });
+      } else {
+        console.log("File picking cancelled or failed.");
       }
-
-      setPetData({ ...petData, medfile: file });
-    }
-  };
+    };
 
   async function CreatePet() {
     setSaving(true);
@@ -211,37 +230,46 @@ const AddPet = () => {
       }
     }
 
-    if (petData.medfile) {
+    console.log(petData.medfile, "medfile");
+
+    if (petData.medfile && petData.medfile.uri) {
+      console.log("Uploading medical PDF...");
       const medFileName = `${petId}-${petData.name}-${new Date()
         .toLocaleDateString("en-US", {
           year: "numeric",
           month: "2-digit",
           day: "2-digit",
         })
-        .replace(/\//g, "-")}`;
+        .replace(/\//g, "-")}.pdf`;
 
-      const { error: fileError } = await supabase.storage
-        .from("pet-medical-history")
-        .upload(medFileName, {
-          uri: petData.medfile.uri,
-          type: petData.medfile.mimeType,
-          name: medFileName,
+      // Read the file as arrayBuffer before uploading
+      try {
+        const fileUri = petData.medfile.uri;
+        // petData.medfile is now always a file object
+        const base64 = await FileSystem.readAsStringAsync(fileUri, {
+          encoding: FileSystem.EncodingType.Base64,
         });
+        const arrayBuffer = decode(base64);
+        const { error } = await supabase
+          .storage
+          .from('pet-medical-history') // use your correct bucket name
+          .upload(medFileName, arrayBuffer, {
+            contentType: 'application/pdf',
+            upsert: false,
+          });
 
-      if (fileError) throw fileError;
+        console.log("PDF upload response:", error ? error : "Success");
 
-      const { data: urlData } = supabase.storage
-        .from("pet-medical-history")
-        .getPublicUrl(medFileName);
-
-      const { error: updateError } = await supabase
-        .from("pets")
-        .update({
-          file_path: urlData.publicUrl,
-        })
-        .eq("id", petId);
-
-      if (updateError) throw updateError;
+        if (error) {
+          console.error("Error uploading medical file:", error);
+          Alert.alert("Error", "Failed to upload medical file.");
+          return;
+        }
+      } catch (err) {
+        console.error("Error reading or uploading PDF:", err);
+        Alert.alert("Error", "Failed to process medical file.");
+        return;
+      }
     }
 
     Alert.alert("Success", "Pet added successfully!");
@@ -265,10 +293,8 @@ const AddPet = () => {
             {petData.image ? (
               <Image source={{ uri: petData.image.uri }} style={styles.image} />
             ) : (
-              <Image
-                source={require("../../../../assets/pictures/add_image.webp")}
-                style={styles.imageAdd}
-              />
+              <SimpleLineIcons
+                              name="plus"  size={70} color="white"/>
             )}
           </TouchableOpacity>
         </View>
@@ -464,7 +490,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 18,
-    fontWeight: "bold",
     fontFamily: "Kanit Medium",
   },
   input: {
@@ -475,7 +500,6 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     marginBottom: 10,
-    fontFamily: "Poppins Light",
   },
   pickerContainer: {
     backgroundColor: "#FFFFFF",
@@ -488,12 +512,10 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: "100%",
-    fontFamily: "Poppins Light",
     fontSize: 14,
   },
   pickerPlaceholder: {
     fontSize: 14,
-    fontFamily: "Poppins Light",
     color: "gray",
   },
   pickerItem: {
@@ -512,7 +534,7 @@ const styles = StyleSheet.create({
   },
   fileButtonText: {
     color: "white",
-    fontWeight: "bold",
+    fontFamily: "Kanit Medium",
   },
   addButton: {
     backgroundColor: "#B3EBF2",
@@ -523,7 +545,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   addButtonText: {
-    fontWeight: "bold",
+    fontFamily: "Kanit Medium",
     fontSize: 18,
   },
   cancelButton: {
@@ -535,8 +557,8 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   cancelButtonText: {
+    fontFamily: "Kanit Medium",
     color: "white",
-    fontWeight: "bold",
     fontSize: 18,
   },
   fileName: {

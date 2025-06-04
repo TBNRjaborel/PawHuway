@@ -389,6 +389,7 @@ const PetDetails = () => {
 
     fetchPetDetails();
   }, []);
+
   const deletePet = async (petId) => {
     Alert.alert(
       "Confirm Deletion",
@@ -441,7 +442,7 @@ const PetDetails = () => {
               // else setPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
 
               Alert.alert("Success", "Pet deleted successfully!");
-              router.push("pet_owner/dashboard");
+              router.push("pet_owner/dashboard-v2");
             } catch (err) {
               console.error("Unexpected error deleting pet:", err);
             }

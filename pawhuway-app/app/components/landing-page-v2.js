@@ -234,6 +234,7 @@ const styles = StyleSheet.create({
     goalTitle: {
         fontSize: 14,
         fontWeight: '500',
+        fontFamily: 'Kanit Medium',
         // color: '#FFFFFF',
         textAlign: 'center',
     },
