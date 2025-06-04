@@ -157,11 +157,12 @@ const VetClinicDashboard = () => {
         <View style={styles.content}>
           {/*Header*/}
           <View style={styles.header}>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => router.push("/components/landing-page-v2")}
             >
               <Text style={styles.homeText}>Home</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+            {/* <View /> */}
 
             <View style={styles.locationContainer}>
               <Text style={styles.locationText}>PawHuway</Text>
@@ -198,7 +199,7 @@ const VetClinicDashboard = () => {
                     color: "white",
                   }}
                 >
-                  Calendaryo
+                  Calendar
                 </Text>
               </View>
             </TouchableOpacity>
@@ -217,6 +218,7 @@ const VetClinicDashboard = () => {
                   flexWrap: "wrap",
                   fontFamily: "Poppins Light",
                   fontSize: 18,
+                  color: "#3C3C4C",
                 }}
               >
                 {description || "No description available"}
@@ -226,8 +228,9 @@ const VetClinicDashboard = () => {
           <View style={{ marginTop: 40 }}>
             <Text
               style={{
-                fontFamily: "Poppins Light",
+                fontFamily: "Poppins",
                 fontSize: 18,
+                color: "#3C3C4C",
               }}
             >
               Veterinarians

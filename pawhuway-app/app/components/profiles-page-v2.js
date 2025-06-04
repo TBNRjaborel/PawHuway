@@ -181,7 +181,7 @@ const profiles = () => {
             </TouchableOpacity>
           </View>
         </View>
-        <View key="3" style={styles.Pages}>
+        {/* <View key="3" style={styles.Pages}>
           <View style={styles.closeIconContainer}>
             <TouchableOpacity onPress={exit}>
               <Icon name="close" size={30} color="black" />
@@ -200,10 +200,10 @@ const profiles = () => {
               <Text style={styles.PetOwner}>I represent a Vet Clinic</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </View> */}
       </PagerView>
       <View style={styles.dotsContainer}>
-        {[0, 1, 2].map((index) => (
+        {[0, 1].map((index) => (
           <View
             key={index}
             style={[styles.dot, currentPage === index && styles.activeDot]}
