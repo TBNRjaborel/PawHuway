@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, ScrollView, FlatList, Modal, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../../src/lib/supabase';
-import { Stack } from 'expo-router';
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { Stack, useRouter } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
-import { Picker } from '@react-native-picker/picker';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const CalendarScreen = () => {
     const [appointments, setAppointments] = useState([]);
+    const [open, setOpen] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState('pending');
     const [loading, setLoading] = useState(true);
     const [markedDates, setMarkedDates] = useState({});
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchAppointments = async () => {
@@ -28,34 +31,33 @@ const CalendarScreen = () => {
                 setAppointments(data);
 
                 // Collect all appointment dates
-                const appointmentDates = data.map(app => app.date); // assuming 'YYYY-MM-DD' format
+                const appointmentDates = data.map(app => app.date);
 
                 // Get a range of dates or specific month to show free slots too
                 const marks = {};
 
-appointments.forEach(({ date, status }) => {
-  let bgColor;
-  let textColor = 'white';
+                data.forEach(({ date, status }) => {
+                    let bgColor;
+                    let textColor = 'white';
 
-  if (status === 'pending') bgColor = 'orange';
-  else if (status === 'accepted') bgColor = 'green';
-  else if (status === 'declined') bgColor = 'red';
-  else bgColor = 'gray'; // fallback color if needed
+                    if (status === 'pending') bgColor = 'orange';
+                    else if (status === 'accepted') bgColor = 'green';
+                    else if (status === 'declined') bgColor = 'red';
+                    else bgColor = 'gray'; // fallback color if needed
 
-  marks[date] = {
-    customStyles: {
-      container: {
-        backgroundColor: bgColor,
-        borderRadius: 5,
-      },
-      text: {
-        color: textColor,
-        fontWeight: 'bold',
-      },
-    },
-  };
-});
-
+                    marks[date] = {
+                        customStyles: {
+                        container: {
+                            backgroundColor: bgColor,
+                            borderRadius: 5,
+                        },
+                        text: {
+                            color: textColor,
+                            fontWeight: 'bold',
+                        },
+                        },
+                    };
+                });
 
                 // Optionally mark remaining dates as gray
                 const today = new Date();
@@ -104,7 +106,7 @@ appointments.forEach(({ date, status }) => {
         arrowColor: "#1FB2A6",
         monthTextColor: "#1E1E1E",
         textDayFontFamily: "Poppins Light",
-        textMonthFontFamily: "Kanit Medium",
+        textMonthFontFamily: "Poppins Light",
         textDayHeaderFontFamily: "Poppins Light",
         textDayFontSize: 16,
         textMonthFontSize: 20,
@@ -191,8 +193,14 @@ appointments.forEach(({ date, status }) => {
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
+            
             <View style={styles.top}>
-                <Text style={styles.header}>Calendar</Text>
+                {/* <Text style={styles.header}>Calendar</Text> */}
+                <TouchableOpacity style={styles.backButton}
+                    onPress={() => { router.push("/vet/vet-dashboard") }}
+                >
+                    <AntDesign name="home" size={24} color="black" />
+                </TouchableOpacity>
                 <Calendar
                     style={styles.calendar}
                     theme={calendarTheme}
@@ -204,38 +212,40 @@ appointments.forEach(({ date, status }) => {
                     onDayPress={handleDateSelect}
                 />
                 <View style={styles.statusPicker}>
-                    <Picker
-                        selectedValue={selectedStatus}
-                        onValueChange={(value) => setSelectedStatus(value)}
+                    <DropDownPicker
+                        open={open}
+                        value={selectedStatus}
+                        items={[
+                            { label: "Pending", value: "pending" },
+                            { label: "Accepted", value: "accepted" },
+                            { label: "Declined", value: "declined" },
+                        ]}
+                        setOpen={setOpen}
+                        setValue={setSelectedStatus}
+                        setItems={() => {}} // If you're not dynamically changing items
                         style={styles.picker}
-                        dropdownIconColor="#333"
-                    >
-                        <Picker.Item label="Pending" value="pending" />
-                        <Picker.Item label="Accepted" value="accepted" />
-                        <Picker.Item label="Declined" value="declined" />
-                    </Picker>
-                    {selectedStatus === 'pending' && (
-                        <Text style={styles.statusText}>Showing pending requests...</Text>
-                    )}
-                    {selectedStatus === 'accepted' && (
-                        <Text style={styles.statusText}>Showing accepted requests...</Text>
-                    )}
-                    {selectedStatus === 'declined' && (
-                        <Text style={styles.statusText}>Showing declined requests...</Text>
-                    )}
+                        dropDownDirection="AUTO"
+                        placeholder="Select status"
+                    />
                 </View>
-                <View style={styles.bottomHalf}>
-                    <Text style={styles.header}>Appointment Requests</Text>
-                    {loading ? (
-                        <Text style={styles.loadingText}>Loading...</Text>
-                    ) : (
-                        <FlatList
-                            data={appointments.filter(app => app.status === selectedStatus)}
-                            keyExtractor={(item) => item.id.toString()}
-                            renderItem={renderAppointment}
-                        />
-                    )}
-                </View>
+                <Text style={styles.header}>
+                    {selectedStatus === 'pending'
+                        ? 'Appointment Requests'
+                        : selectedStatus === 'accepted'
+                        ? 'Accepted Appointments'
+                        : selectedStatus === 'declined'
+                        ? 'Declined Appointments'
+                        : 'No Appointments'}
+                </Text>
+                {loading ? (
+                    <Text style={styles.loadingText}>Loading...</Text>
+                ) : (
+                    <FlatList
+                        data={appointments.filter(app => app.status === selectedStatus)}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderAppointment}
+                    />
+                )}
             </View>
             {selectedAppointment && (
                 <Modal
@@ -282,6 +292,20 @@ appointments.forEach(({ date, status }) => {
 };
 
 const styles = StyleSheet.create({
+    backButton: {
+        position: "absolute",
+        top: 10,
+        // left: 10,
+        zIndex: 10,
+        backgroundColor: "#FFFFFF",
+        padding: 10,
+        borderRadius: 50,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+    },
     container: {
         flex: 1,
         backgroundColor: "#B3EBF2",
@@ -289,30 +313,32 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     top: {
-        flex: 1,
-        backgroundColor: "#C9FDF2",
-        borderRadius: 30,
-        padding: 10,
+        // flex: 1,
+        // backgroundColor: "#C9FDF2",
+        // borderRadius: 30,
+        // padding: 10,
         marginBottom: 10,
-        width: "100%",
+        // width: "100%",
     },
     bottomHalf: {
         flex: 1,
         backgroundColor: "#C9FDF2",
         borderRadius: 30,
-        padding: 20,
+        // padding: 20,
         marginTop: 10,
+        marginBottom: 10,
         width: "100%",
     },
     header: {
         fontSize: 24,
         fontWeight: "bold",
-        fontFamily: "Kanit Medium",
+        fontFamily: "Poppins Light",
         marginBottom: 20,
         color: "#1E1E1E",
-        textAlign: "center",
+        // textAlign: "center",
     },
     calendar: {
+        marginTop: 80,
         borderRadius: 20,
         overflow: 'hidden',
         backgroundColor: "#ffffff",
@@ -334,7 +360,8 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF",
         padding: 15,
         borderRadius: 10,
-        marginBottom: 10,
+        // marginBottom: 10,
+        marginVertical: 12,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -375,7 +402,7 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontWeight: "bold",
-        fontFamily: "Kanit Medium",
+        fontFamily: "Poppins Light",
         marginBottom: 20,
         color: "#1E1E1E",
     },
@@ -423,17 +450,16 @@ const styles = StyleSheet.create({
         borderWidth: 2,
     },
     statusPicker: {
-        marginVertical: 16,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        backgroundColor: '#f9f9f9',
+        marginVertical: 20,
+        zIndex: 1000,
+        // backgroundColor: 'yellow'
     },
     picker: {
-        width: '100%',
-        color: '#333',  // text color
+        width: 120, 
+        alignSelf: 'flex-end',
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
     },
     statusText: {
         marginTop: 12,
