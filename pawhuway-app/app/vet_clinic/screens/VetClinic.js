@@ -17,6 +17,8 @@ import { Stack, useRouter } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 // import * as DocumentPicker from "expo-document-picker";
 
 const VetClinic = () => {
@@ -142,6 +144,21 @@ const VetClinic = () => {
             { cancelable: false }
         );
     };
+
+    const handleLogout = async () => {
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error("Error signing out:", error.message);
+                Alert.alert("Error", "Failed to sign out. Please try again.");
+            } else {
+                router.push("/starting-page");
+            }
+        } catch (error) {
+            console.error("Unexpected error during sign out:", error);
+            Alert.alert("Error", "An unexpected error occurred during sign out.");
+        }
+    }
     return (
         <LinearGradient
             colors={["#B3EBF2", "#85D1DB", "#C9FDF2", "#B6F2D1"]}
@@ -152,9 +169,9 @@ const VetClinic = () => {
                 <StatusBar hidden={true} />
 
                 <TouchableOpacity style={styles.backButton}
-                // onPress={() => { router.push("/components/profiles-page") }}
+                    onPress={handleLogout}
                 >
-                    <AntDesign name="home" size={24} color="black" />
+                    <MaterialIcons name="logout" size={24} color="#3C3C4C" />
                 </TouchableOpacity>
                 <View style={styles.imgcontainer}>
                     <Image
@@ -229,7 +246,7 @@ const styles = StyleSheet.create({
     backButton: {
         position: "absolute",
         top: 40,
-        left: 20,
+        right: 20,
         zIndex: 10,
         backgroundColor: "#FFFFFF",
         padding: 10,

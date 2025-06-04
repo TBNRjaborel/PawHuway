@@ -20,6 +20,7 @@ import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
+import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -362,10 +363,8 @@ const EditPet = () => {
             {petData.img_path ? (
               <Image source={{ uri: petData.img_path }} style={styles.image} />
             ) : (
-              <Image
-                source={require("../../../../assets/pictures/add_image.webp")}
-                style={styles.image}
-              />
+              <SimpleLineIcons
+                name="plus"  size={70} color="white"/>
             )}
           </TouchableOpacity>
         </View>
@@ -496,7 +495,7 @@ const EditPet = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#B3EBF2",
+    backgroundColor: "white",
   },
   scrollContent: {
     alignItems: "center",
@@ -536,7 +535,7 @@ const styles = StyleSheet.create({
   form: {
     width: "90%",
     marginTop: 0,
-    backgroundColor: "#C9FDF2",
+    backgroundColor: "#B3EBF2",
     borderRadius: 30,
     paddingVertical: 30,
     paddingHorizontal: 20,
@@ -550,9 +549,8 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   label: {
-    fontSize: 18, // Larger font size for label from Style 1
-    fontWeight: "bold",
-    fontFamily: "Kanit Medium", // Font style from Style 1
+    fontFamily: "Kanit Medium",
+    fontSize: 18, 
   },
   input: {
     backgroundColor: "#FFFFFF",
@@ -579,11 +577,12 @@ const styles = StyleSheet.create({
     fontSize: 14, // Adjusted font size to match Style 2's picker
   },
   pickerPlaceholder: {
-    fontSize: 14,
     fontFamily: "Poppins Light", // Font style from Style 1
+    fontSize: 14,
     color: "gray", // Gray color for "Select Sex"
   },
   pickerItem: {
+    fontFamily: "Poppins Light",
     fontSize: 14, // Adjusted to match Style 2's item font size
   },
   fileUploadContainer: {
@@ -598,11 +597,11 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   fileButtonText: {
+    fontFamily: "Kanit Medium",
     color: "white",
-    fontWeight: "bold",
   },
   addButton: {
-    backgroundColor: "#B3EBF2", // Accent yellow from Style 1
+    backgroundColor: "white", // Accent yellow from Style 1
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 10,
@@ -610,7 +609,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   addButtonText: {
-    fontWeight: "bold",
+    fontFamily: "Kanit Medium",
     fontSize: 18, // Larger font size from Style 1
   },
   cancelButton: {
@@ -622,8 +621,8 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   cancelButtonText: {
+    fontFamily: "Kanit Medium",
     color: "white",
-    fontWeight: "bold",
     fontSize: 18, // Adjusted font size for button text from Style 1
   },
   fileName: {
