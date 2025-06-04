@@ -247,9 +247,9 @@ const PetDashboard = () => {
         </View>
 
         {/* Pet Cards */}
-        {pets.length > 0 ? (
+        {patients.length > 0 ? (
           <FlatList
-            data={pets}
+            data={patients}
             keyExtractor={(item) => item.id}
             horizontal={true} // or true if you want horizontal scrolling
             ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
@@ -263,9 +263,24 @@ const PetDashboard = () => {
                 }}
               >
                 <View style={styles.petCard}>
+
                   <Text style={styles.petName}>{item.name}</Text>
                   <Text style={styles.petType}>{item.type}</Text>
                   <Text style={styles.petAge}>Age: {item.age}</Text>
+                  <View style={styles.petImageContainer}>
+                    {item.img_path ? (
+                      <Image
+                        fill
+                        height={200}
+                        width={200}
+                        source={{ uri: item.img_path }}
+                        style={{ borderRadius: 10 }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Ionicons name="paw" size={80} color="#ccc" style={{ marginBottom: 10 }} />
+                    )}
+                  </View>
                 </View>
               </TouchableOpacity>
             )}

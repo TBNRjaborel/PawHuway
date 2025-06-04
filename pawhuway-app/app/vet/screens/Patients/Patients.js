@@ -139,7 +139,7 @@ const Patients = () => {
             style={styles.petCard}
             onPress={() =>
               router.push(
-                `/pet_owner/screens/Pets/pet-details?petId=${item.id}`
+                `/vet/screens/Patients/patient-details?petId=${item.id}`
               )
             }
           >

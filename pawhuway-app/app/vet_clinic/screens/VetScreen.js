@@ -192,7 +192,7 @@ const VetScreen = () => {
                                             router.push(`/vet_clinic/screens/petList?vetId=${selectedVet.vet_id}`)
 
                                         }}>
-                                        VIEW PETS
+                                        VIEW PATIENTS
                                     </Text>
 
                                     {/* Add more details (e.g., specialty, contact) here */}

@@ -19,16 +19,16 @@ const CalendarScreen = () => {
         const fetchAppointments = async () => {
             try {
                 const { data: { user }, userError } = await supabase.auth.getUser();
-                    if (userError) {
-                        console.error("Error fetching user:", userError.message);
-                        return;
-                    }
+                if (userError) {
+                    console.error("Error fetching user:", userError.message);
+                    return;
+                }
                 // console.log("current user: ", user.id)
 
 
                 const { data, error } = await supabase
-                .from('appointment_requests')
-                .select(`
+                    .from('appointment_requests')
+                    .select(`
                     id, clinic_id, pet_id, preferred_date, preferred_time, desc, status,
                     pets(
                         name,
@@ -40,11 +40,11 @@ const CalendarScreen = () => {
                         )
                     )
                 `)
-                .eq('vet_id', user.id)
+                    .eq('vet_id', user.id)
 
                 if (error) {
-                console.error('Error fetching appointments:', error);
-                return;
+                    console.error('Error fetching appointments:', error);
+                    return;
                 }
 
                 setAppointments(data);
@@ -81,23 +81,23 @@ const CalendarScreen = () => {
                 // Optionally mark remaining dates as gray
                 const today = new Date();
                 for (let i = 0; i < 30; i++) {
-                const date = new Date(today);
-                date.setDate(today.getDate() + i);
-                const dateStr = date.toISOString().split('T')[0];
+                    const date = new Date(today);
+                    date.setDate(today.getDate() + i);
+                    const dateStr = date.toISOString().split('T')[0];
 
-                if (!marks[dateStr]) {
-                    marks[dateStr] = {
-                    customStyles: {
-                        container: {
-                        backgroundColor: '#e0e0e0',
-                        borderRadius: 5,
-                        },
-                        text: {
-                        color: 'black',
-                        },
-                    },
-                    };
-                }
+                    if (!marks[dateStr]) {
+                        marks[dateStr] = {
+                            customStyles: {
+                                container: {
+                                    backgroundColor: '#e0e0e0',
+                                    borderRadius: 5,
+                                },
+                                text: {
+                                    color: 'black',
+                                },
+                            },
+                        };
+                    }
                 }
 
                 setMarkedDates(marks);
@@ -164,7 +164,7 @@ const CalendarScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
-            
+
             <View style={styles.top}>
                 <TouchableOpacity style={styles.backButton}
                     onPress={() => { router.push("/vet/vet-dashboard") }}
@@ -194,6 +194,7 @@ const CalendarScreen = () => {
                             data={appointments.filter(app => app.status === 'accepted')}
                             keyExtractor={(item) => item.id.toString()}
                             renderItem={renderAppointment}
+                            scrollEnabled={true}
                         />
                     )}
                 </View>
@@ -273,6 +274,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     appointmentList: {
+        flex: 1,
         backgroundColor: 'white',
         marginVertical: 24,
         borderRadius: 20,

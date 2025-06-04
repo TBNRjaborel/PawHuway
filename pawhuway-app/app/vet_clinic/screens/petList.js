@@ -77,11 +77,12 @@ const petList = () => {
                             data={Patient}
                             numColumns={2}
                             columnWrapperStyle={{ justifyContent: "space-between" }}
+                            // contentContainerStyle={}
                             keyExtractor={(item) => item.pet_id.toString()}
                             renderItem={({ item }) => (
                                 // {console.log("here", item.pet_id)}
                                 <View
-                                    style={styles.petCard}
+                                    style={[styles.petCard, { width: Patient.length > 1 ? "48%" : "auto" }]}
                                 >
                                     {item.img_path ? (
                                         <Image source={{ uri: item.img_path }} style={styles.petImage} onError={() => console.log("Error loading image")} />
@@ -143,8 +144,8 @@ const styles = StyleSheet.create({
     },
 
     petCard: {
-        width: "48%",
-        height: 175,
+        // width: Patient.length > 1 ? "48%" : "auto",
+        height: 200,
         backgroundColor: "#3C3C4C",
         padding: 20,
         marginBottom: 16,
