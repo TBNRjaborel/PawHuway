@@ -15,3 +15,4 @@ export default function Index() {
   }
 
   return <Redirect href="/starting-page" />;
+}

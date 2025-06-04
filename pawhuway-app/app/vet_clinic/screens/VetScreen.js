@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { supabase } from '../../../src/lib/supabase';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import { Ionicons } from '@expo/vector-icons';
+
 // import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
 // import Modal from 'react-native-modal';
 
@@ -43,7 +44,7 @@ const VetScreen = () => {
 
                 if (clinicError) throw new Error(clinicError.message);
                 setClinic(clinicData);
-
+                console.log("clinic", clinicData.id);
                 //fetch vet from this clinic
                 const { data: vetData, error: vetError } = await supabase
                     .from("clinic_vet_relation")

@@ -9,6 +9,7 @@ import {
     Platform,
     TouchableOpacity,
     Alert,
+    ActivityIndicator
 } from "react-native";
 import Entypo from '@expo/vector-icons/Entypo';
 import { supabase } from "../../../src/lib/supabase";
@@ -21,14 +22,15 @@ import { ProgressSteps, ProgressStep } from 'react-native-progress-steps';
 
 const VetClinicOnboarding = () => {
     const router = useRouter();
-    const [clinicData, setclinicData] = useState({ clinicName: '', address: '', openTime: '', closeTime: '', contactNumber: '', email: '' });
-    const [businessData, setbusinessData] = useState({ businessRegistrationNumber: '', veterinaryLicenseNumber: '', businessPermit: null, veterinaryLicense: null });
+    const [clinicData, setclinicData] = useState({ clinicName: '', address: '', openTime: '', closeTime: '', contactNumber: '', email: '', description: '' });
+    const [businessData, setbusinessData] = useState({ businessRegistrationNumber: '', businessPermit: null });
     const [ownerData, setownerData] = useState({ ownerName: '', position: '', contactNumber: '', id: null });
     const [showOpenPicker, setShowOpenPicker] = useState(false);
     const [showClosePicker, setShowClosePicker] = useState(false);
     const [openTime, setOpenTime] = useState(null);
     const [closeTime, setCloseTime] = useState(null);
     const [emailError, setEmailError] = useState("")
+    const [isLoading, setIsLoading] = useState(false);
 
     async function checkEmailExists(email) {
         try {
@@ -75,12 +77,12 @@ const VetClinicOnboarding = () => {
         if (
             !clinicData.clinicName ||
             !clinicData.address ||
+            !clinicData.email ||
+            !clinicData.description ||
             !clinicData.openTime ||
             !clinicData.contactNumber ||
             !businessData.businessRegistrationNumber ||
-            !businessData.veterinaryLicenseNumber ||
             !businessData.businessPermit ||
-            !businessData.veterinaryLicense ||
             !ownerData.ownerName ||
             !ownerData.position ||
             !ownerData.contactNumber ||
@@ -98,6 +100,7 @@ const VetClinicOnboarding = () => {
             }
         }
 
+        setIsLoading(true);
         try {
             const formattedOpenTime = openTime ? openTime.toISOString().split('T')[1].split('Z')[0] : null;
             const formattedCloseTime = closeTime ? closeTime.toISOString().split('T')[1].split('Z')[0] : null;
@@ -108,12 +111,12 @@ const VetClinicOnboarding = () => {
                     {
                         clinic_name: clinicData.clinicName,
                         clinic_address: clinicData.address,
+                        description: clinicData.description,
                         open_time: formattedOpenTime,
                         close_time: formattedCloseTime,
                         clinic_contact_number: clinicData.contactNumber,
                         clinic_email: clinicData.email,
                         business_registration_number: businessData.businessRegistrationNumber,
-                        veterinary_license_number: businessData.veterinaryLicenseNumber,
                         owner_name: ownerData.ownerName,
                         position: ownerData.position,
                         owner_contact_number: ownerData.contactNumber,
@@ -151,25 +154,6 @@ const VetClinicOnboarding = () => {
                 }
             }
 
-            // Upload Veterinary License
-            if (businessData.veterinaryLicense) {
-                try {
-                    const fileName = `${clinic_id}/veterinary_license_${businessData.veterinaryLicense.name}`;
-                    const { data: veterinaryLicenseData, error: veterinaryLicenseError } = await supabase.storage
-                        .from('clinic-documents')
-                        .upload(fileName, {
-                            uri: businessData.veterinaryLicense.uri,
-                            name: businessData.veterinaryLicense.name,
-                            type: businessData.veterinaryLicense.mimeType,
-                        });
-
-                } catch (error) {
-                    console.error("Unexpected Veterinary License Upload Error:", error);
-                    Alert.alert("Error", "An unexpected error occurred during Veterinary License upload.");
-                    hasErrors = true;
-                }
-            }
-
             // Upload Owner ID
             if (ownerData.id) {
                 try {
@@ -202,6 +186,8 @@ const VetClinicOnboarding = () => {
         } catch (error) {
             console.error(error);
             Alert.alert("Error", "An unexpected error occurred.", error.message);
+        } finally {
+            setIsLoading(false); // Reset loading state
         }
     }
 
@@ -269,6 +255,15 @@ const VetClinicOnboarding = () => {
                             onBlur={handleEmailBlur}
                         />
                         {emailError ? <Text style={[styles.text, { color: "red", marginTop: -16, marginLeft: 4 }]}>{emailError}</Text> : null}
+                        <Text style={styles.label}>Clinic Description</Text>
+                        <TextInput
+                            style={[styles.input, { height: 100, textAlignVertical: 'top' }]}
+                            placeholder="A brief description of your clinic..."
+                            value={clinicData.description}
+                            onChangeText={text => setclinicData({ ...clinicData, description: text })}
+                            multiline
+                        />
+
                         <Text style={styles.label}>Address</Text>
                         <TextInput
                             style={styles.input}
@@ -338,14 +333,14 @@ const VetClinicOnboarding = () => {
                             value={businessData.businessRegistrationNumber}
                             onChangeText={text => setbusinessData({ ...businessData, businessRegistrationNumber: text })}
                         />
-                        <Text style={styles.label}>Veterinary License Number</Text>
+                        {/* <Text style={styles.label}>Veterinary License Number</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="PRC-1234567"
                             value={businessData.veterinaryLicenseNumber}
                             onChangeText={text => setbusinessData({ ...businessData, veterinaryLicenseNumber: text })}
-                        />
-                        <Text style={styles.label}>
+                        /> */}
+                        <Text style={[styles.label, { marginBottom: 10 }]}>
                             Upload Documents <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.png/.jpg/.jpeg)</Text>
                         </Text>
                         <View style={styles.uploadCard}>
@@ -364,7 +359,7 @@ const VetClinicOnboarding = () => {
                                 {businessData.businessPermit ? businessData.businessPermit.name : ""}
                             </Text>
                         </View>
-                        <View style={styles.uploadCard}>
+                        {/* <View style={styles.uploadCard}>
                             <View style={styles.cardContent}>
                                 <Text style={styles.fileName}>
                                     Veterinary License
@@ -379,56 +374,66 @@ const VetClinicOnboarding = () => {
                             <Text style={{ maxWidth: "75%", fontStyle: 'italic', fontWeight: 200, color: 'white', marginTop: 2 }}>
                                 {businessData.veterinaryLicense ? businessData.veterinaryLicense.name : ""}
                             </Text>
-                        </View>
+                        </View> */}
                     </View>
                 </ProgressStep>
                 <ProgressStep label="Owner Info" buttonFillColor="#3C3C4C" buttonBorderColor="#3C3C4C" onSubmit={submitOnboarding}>
-                    <View style={styles.stepContent}>
-                        <Text style={styles.label}>Name of Owner/Representative</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Juan Dela Cruz"
-                            value={ownerData.ownerName}
-                            onChangeText={text => setownerData({ ...ownerData, ownerName: text })}
-                        />
-                        <Text style={styles.label}>Position</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Position"
-                            value={ownerData.position}
-                            onChangeText={text => setownerData({ ...ownerData, position: text })}
-                        />
-                        <Text style={styles.label}>Contact Number</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="0912 345 6789"
-                            value={ownerData.contactNumber}
-                            onChangeText={text => setownerData({ ...ownerData, contactNumber: text })}
-                        />
-                        <Text style={styles.label}>Upload ID
-                            <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.png/.jpg/.jpeg)</Text>
-                        </Text>
-                        <View style={styles.uploadCard}>
-                            <View style={styles.cardContent}>
-                                <Text style={styles.fileName}>
-                                    Any Valid ID
-                                </Text>
-                                <TouchableOpacity
-                                    style={styles.uploadBtn}
-                                    onPress={handleDocumentSelection.bind(this, "ownerId")}
-                                >
-                                    <Entypo name="upload" size={20} color="white" />
-                                </TouchableOpacity>
-                                {ownerData.id &&
-                                    <Text style={{ maxWidth: "75%", fontStyle: 'italic', fontWeight: 200, color: 'white', marginTop: 2 }}>
-                                        {ownerData ? ownerData.id.name : ""}
-                                    </Text>
-                                }
+                    {
+                        isLoading ? (
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                                <ActivityIndicator size="large" color="#3C3C4C" />
+                                <Text style={{ marginTop: 10 }}>Submitting...</Text>
                             </View>
+                        ) : (
+                            <View style={styles.stepContent}>
+                                <Text style={styles.label}>Name of Owner/Representative</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Juan Dela Cruz"
+                                    value={ownerData.ownerName}
+                                    onChangeText={text => setownerData({ ...ownerData, ownerName: text })}
+                                />
+                                <Text style={styles.label}>Position</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Position"
+                                    value={ownerData.position}
+                                    onChangeText={text => setownerData({ ...ownerData, position: text })}
+                                />
+                                <Text style={styles.label}>Contact Number</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="0912 345 6789"
+                                    value={ownerData.contactNumber}
+                                    onChangeText={text => setownerData({ ...ownerData, contactNumber: text })}
+                                />
+                                <Text style={styles.label}>Upload ID
+                                    <Text style={{ fontStyle: 'italic', fontWeight: 100 }}>(.png/.jpg/.jpeg)</Text>
+                                </Text>
+                                <View style={styles.uploadCard}>
+                                    <View style={styles.cardContent}>
+                                        <Text style={styles.fileName}>
+                                            Any Valid ID
+                                        </Text>
+                                        <TouchableOpacity
+                                            style={styles.uploadBtn}
+                                            onPress={handleDocumentSelection.bind(this, "ownerId")}
+                                        >
+                                            <Entypo name="upload" size={20} color="white" />
+                                        </TouchableOpacity>
+                                        {ownerData.id &&
+                                            <Text style={{ maxWidth: "75%", fontStyle: 'italic', fontWeight: 200, color: 'white', marginTop: 2 }}>
+                                                {ownerData ? ownerData.id.name : ""}
+                                            </Text>
+                                        }
+                                    </View>
 
-                        </View>
+                                </View>
 
-                    </View>
+                            </View>
+                        )
+                    }
+
                 </ProgressStep>
             </ProgressSteps>
 
@@ -462,7 +467,7 @@ const styles = StyleSheet.create({
         width: "100%",
         justifyContent: "center",
         height: "100vh",
-        gap: 10,
+        gap: 2,
         // backgroundColor: "blue",
     },
     uploadCard: {
@@ -512,7 +517,7 @@ const styles = StyleSheet.create({
         borderColor: "#808080",
         borderRadius: 10,
         padding: 10,
-        fontSize: 16, // Larger text for input from Style 1
+        fontSize: 14, // Larger text for input from Style 1
         marginBottom: 10,
         fontFamily: "Poppins Light", // Font style from Style 1
     },

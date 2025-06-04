@@ -67,31 +67,38 @@ const petList = () => {
                     </View>
 
                 ) : (
-                    <FlatList
-                        data={Patient}
-                        numColumns={2}
-                        columnWrapperStyle={{ justifyContent: "space-between" }}
-                        keyExtractor={(item) => item.pet_id.toString()}
-                        renderItem={({ item }) => (
-                            // {console.log("here", item.pet_id)}
-                            <View
-                                style={styles.petCard}
-                            >
-                                {item.img_path ? (
-                                    <Image source={{ uri: item.img_path }} style={styles.petImage} onError={() => console.log("Error loading image")} />
-                                ) : (
-                                    // <Image source={require('../../../assets/pictures/paw-logo.png')} style={styles.petImage} />
-                                    <Ionicons name="paw" size={70} color="white" />
-                                )}
-                                <View style={styles.petInfo}>
-                                    <Text style={styles.petName}>{capitalizeFirstLetter(item.pets.name)}</Text>
-                                    <Text style={styles.petDetails}>{item.pets.age} years • {item.pets.sex}</Text>
-                                    <Text style={styles.petType}>{capitalizeFirstLetter(item.pets.type)}</Text>
-                                    {/* <Text style={styles.petName}>{item.pets.name}</Text> */}
+                    Patient.length === 0 ? (
+                        <View style={styles.petList}>
+                            <Text style={styles.petListText}>No pet patients found for this vet.</Text>
+                        </View>
+                    ) : (
+
+                        <FlatList
+                            data={Patient}
+                            numColumns={2}
+                            columnWrapperStyle={{ justifyContent: "space-between" }}
+                            keyExtractor={(item) => item.pet_id.toString()}
+                            renderItem={({ item }) => (
+                                // {console.log("here", item.pet_id)}
+                                <View
+                                    style={styles.petCard}
+                                >
+                                    {item.img_path ? (
+                                        <Image source={{ uri: item.img_path }} style={styles.petImage} onError={() => console.log("Error loading image")} />
+                                    ) : (
+                                        // <Image source={require('../../../assets/pictures/paw-logo.png')} style={styles.petImage} />
+                                        <Ionicons name="paw" size={70} color="white" />
+                                    )}
+                                    <View style={styles.petInfo}>
+                                        <Text style={styles.petName}>{capitalizeFirstLetter(item.pets.name)}</Text>
+                                        <Text style={styles.petDetails}>{item.pets.age} years • {item.pets.sex}</Text>
+                                        <Text style={styles.petType}>{capitalizeFirstLetter(item.pets.type)}</Text>
+                                        {/* <Text style={styles.petName}>{item.pets.name}</Text> */}
+                                    </View>
                                 </View>
-                            </View>
-                        )}
-                    />
+                            )}
+                        />
+                    )
                 )}
             </View>
         </SafeAreaView>
@@ -196,7 +203,9 @@ const styles = StyleSheet.create({
 
     petListText: {
         fontSize: 18,
-        fontWeight: 'bold',
+        // fontWeight: 'bold',
+        fontFamily: 'Poppins Light',
+        fontStyle: 'italic',
         color: 'gray'
     },
 
