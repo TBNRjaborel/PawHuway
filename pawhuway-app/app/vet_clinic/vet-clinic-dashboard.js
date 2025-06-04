@@ -21,7 +21,7 @@ import VetClinicSVG from "../../assets/pictures/vet_clinic.svg";
 import { TextInput } from "react-native-paper";
 import { FlatList } from "react-native";
 import Fontisto from "@expo/vector-icons/Fontisto";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 // export default Dashboard;
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
@@ -100,6 +100,7 @@ const VetClinicDashboard = () => {
         // console.log("vets", vetData[0])
         // console.log("vet_profiles", vetData[0].vet_profiles)
         // console.log("user_accounts", vetData[0].vet_profiles.user_accounts)
+
       } catch (err) {
         console.error("Fetch error:", err.message);
       } finally {
@@ -135,20 +136,19 @@ const VetClinicDashboard = () => {
               if (error) throw new Error(error.message);
 
               // Remove the vet from the local state
-              setVetList(vetList.filter(vet => vet.vet_id !== vetId));
+              setVetList(vetList.filter((vet) => vet.vet_id !== vetId));
               setSelectedVet(null); // Close the modal after removal
             } catch (err) {
               console.error("Error removing vet:", err.message);
             } finally {
-              router.replace('/vet_clinic/vet-clinic-dashboard');
+              router.replace("/vet_clinic/vet-clinic-dashboard");
             }
           },
         },
       ],
       { cancelable: false }
     );
-
-  }
+  };
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -258,28 +258,6 @@ const VetClinicDashboard = () => {
                 <ActivityIndicator size="large" color="#3C3C4C" />
               </View>
             ) : (
-              // <View contentContainerStyle={styles.scrollContainer}>
-              //   {vetlist.map((item, index) => (
-              //     <View key={item.vet_id || index} style={styles.cardWrapper}>
-              //       <TouchableOpacity
-              //         style={styles.vetCard}
-              //         onPress={() => setSelectedVet(item)}
-              //       >
-              //         <Fontisto name="doctor" size={75} color="white" />
-              //         <Text
-              //           style={[
-              //             styles.label,
-              //             { marginTop: 10, color: "white" },
-              //           ]}
-              //         >
-              //           {capitalizeFirstLetter(
-              //             item.vet_profiles.user_accounts.first_name
-              //           )}
-              //         </Text>
-              //       </TouchableOpacity>
-              //     </View>
-              //   ))}
-              // </View>
 
               <FlatList
                 data={vetlist}
@@ -347,7 +325,7 @@ const VetClinicDashboard = () => {
                               {capitalizeFirstLetter(
                                 selectedVet.vet_profiles.user_accounts.last_name
                                   ? selectedVet.vet_profiles.user_accounts
-                                    .last_name
+                                      .last_name
                                   : ""
                               )}
                             </Text>
@@ -469,15 +447,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   scrollContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
     gap: 16,
-    width: '100%',
+    width: "100%",
     marginTop: 20,
   },
   cardWrapper: {
-    width: '45%',
+    width: "45%",
     // marginBottom: 10,
   },
   vetCard: {
@@ -497,16 +475,16 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     // width: "100%",
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    width: '95%',
-    backgroundColor: 'white',
+    width: "95%",
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalImage: {
     width: 100,
@@ -515,23 +493,23 @@ const styles = StyleSheet.create({
   },
   modalName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 5,
   },
   closeButton: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     padding: 5,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '95%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "95%",
     // marginBottom: 10,
   },
   closeText: {
     fontSize: 20,
-    color: '#333',
+    color: "#333",
     padding: 4,
   },
   value: {
