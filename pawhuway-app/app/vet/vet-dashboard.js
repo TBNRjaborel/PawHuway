@@ -34,14 +34,6 @@ const PetDashboard = () => {
     // { id: '3', name: 'Search Clinic', icon: 'cut', color: '#F90' },
   ];
 
-  const filter = [
-    { id: "1", type: "Dog", color: "#3C3C4C", icon: "🐶" },
-    { id: "2", type: "Cat", color: "#3C3C4C", icon: "🐱" },
-    { id: "3", type: "Rodent", color: "#3C3C4C", icon: "🐹" },
-    { id: "4", type: "Bird", color: "#3C3C4C", icon: "🐦" },
-    { id: "5", type: "Reptile", color: "#3C3C4C", icon: "🐍" },
-    { id: "6", type: "Fish", color: "#3C3C4C", icon: "🐠" },
-  ];
   const profile = () => {
     router.push("/vet/screens/Profile");
   };
@@ -137,6 +129,27 @@ const PetDashboard = () => {
           ))}
         </View>
 
+        <View style={styles.viewClinicContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/vet/view-clinics");
+            }}
+          >
+            <View style={styles.viewClinic}>
+              <Text style={{ fontFamily: 'Poppins Light' }}>View Clinic Affiliation</Text>
+              <Image
+                source={require('../../assets/pictures/back-btn.png')}
+                style={{
+                  tintColor: 'black',
+                  transform: [{ scaleX: -1 }],
+                  height: 18,
+                  width: 18,
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+        </View>
+
         {/* Upcoming Appointment */}
         <View style={styles.appointmentCard}>
           <View style={styles.appointmentContent}>
@@ -163,22 +176,6 @@ const PetDashboard = () => {
           </View>
         </View>
 
-        {/* Filter Section */}
-        <View>
-          <Text style={{ fontFamily: "Poppins Light", fontSize: 20 }}>
-            Category
-          </Text>
-          <View style={styles.filterContainer}>
-            {filter.map((type) => (
-              <TouchableOpacity key={type.id} style={styles.filterButton}>
-                <View>
-                  <Text style={{ fontSize: 24 }}>{type.icon}</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-        {/* My Pets Section */}
         <View style={styles.petsHeader}>
           <Text style={styles.petsTitle}>Patients</Text>
           <TouchableOpacity
@@ -409,6 +406,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#3C3C4C",
     borderRadius: 20,
     padding: 10,
+  },
+  viewClinicContainer: {
+    marginBottom: 20,
+
+  },
+  viewClinic: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    gap: '40%',
+    alignItems: 'center',
+    backgroundColor: '#B3EBF2',
+    height: 75,
+    borderRadius: 15,
   },
 });
 
