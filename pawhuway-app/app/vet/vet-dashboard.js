@@ -172,12 +172,12 @@ const PetDashboard = () => {
                 ]}
               >
                 {category.name === "Calendar" && (
-                  <Ionicons name="calendar" size={30} color="#fff" />
+                  <Ionicons name="calendar" size={40} color="#fff" />
                 )}
                 {category.name === "QR Code" && (
                   <Ionicons
                     name="scan-outline"
-                    size={30}
+                    size={40}
                     color="#fff"
                   ></Ionicons>
                 )}
@@ -194,7 +194,7 @@ const PetDashboard = () => {
             }}
           >
             <View style={styles.viewClinic}>
-              <Text style={{ fontFamily: 'Poppins Light' }}>View Clinic Affiliation</Text>
+              <Text style={{ fontFamily: 'Poppins Light', fontSize: 18 }}>View Clinic Affiliation</Text>
               <Image
                 source={require('../../assets/pictures/back-btn.png')}
                 style={{
@@ -209,7 +209,7 @@ const PetDashboard = () => {
         </View>
 
         {/* Upcoming Appointment */}
-        <View style={styles.appointmentCard}>
+        {/* <View style={styles.appointmentCard}>
           <View style={styles.appointmentContent}>
             <View style={styles.appointmentIcon}>
               <Ionicons name="link" size={20} color="#fff" />
@@ -230,9 +230,9 @@ const PetDashboard = () => {
             </View>
           </View>
           <View style={styles.appointmentImageContainer}>
-            {/* <CatIllustration /> */}
+          
           </View>
-        </View>
+        </View> */}
 
         <View style={styles.petsHeader}>
           <Text style={styles.petsTitle}>Patients</Text>
@@ -246,42 +246,39 @@ const PetDashboard = () => {
           </TouchableOpacity>
         </View>
 
-        <FlatList
-          data={patients}
-          keyExtractor={(item) => item.id}
-          horizontal={true}
-          ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => {
-                router.push(
-                  `/vet/screens/Patients/patient-details?petId=${item.id}&vetId=${vetId}` // Assuming vet_id is available in item
-                );
-              }}
-            >
-              <View style={styles.petCard}>
-                <Text style={styles.petName}>{item.name}</Text>
-                <Text style={styles.petType}>{item.type}</Text>
-                <Text style={styles.petAge}>Age: {item.age}</Text>
-                <View style={styles.petImageContainer}>
-                  {item.img_path ? (
-                    <Image
-                      fill
-                      height={200}
-                      width={200}
-                      source={{ uri: item.img_path }}
-                      style={{ borderRadius: 10 }}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <Ionicons name="paw" size={80} color="#ccc" style={{ marginBottom: 10 }} />
-                  )}
+        {/* Pet Cards */}
+        {pets.length > 0 ? (
+          <FlatList
+            data={pets}
+            keyExtractor={(item) => item.id}
+            horizontal={true} // or true if you want horizontal scrolling
+            ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  router.push(
+                    `/pet_owner/screens/Pets/pet-details?petId=${item.id}`
+                  );
+                }}
+              >
+                <View style={styles.petCard}>
+                  <Text style={styles.petName}>{item.name}</Text>
+                  <Text style={styles.petType}>{item.type}</Text>
+                  <Text style={styles.petAge}>Age: {item.age}</Text>
                 </View>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
+              </TouchableOpacity>
+            )}
+          />
+        ) : (
+          <View style={{ alignItems: "center", marginTop: 100 }}>
+            <Text style={{ fontFamily: "Poppins Light", fontSize: 16, color: "gray", fontStyle: 'italic' }}>
+              No pet patients found. Add your first pet patient!
+            </Text>
+          </View>
+        )}
+
+        {/* Filter Button */}
       </View>
     </SafeAreaView>
   );
@@ -352,7 +349,7 @@ const styles = StyleSheet.create({
   },
   categoryIcon: {
     width: "100%",
-    height: 75,
+    height: 100,
     borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
@@ -483,12 +480,14 @@ const styles = StyleSheet.create({
   },
   viewClinic: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    gap: '40%',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    // gap: '40%',
     alignItems: 'center',
     backgroundColor: '#B3EBF2',
-    height: 75,
+    height: 85,
     borderRadius: 15,
+    marginBottom: 20,
   },
 });
 

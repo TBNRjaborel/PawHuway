@@ -162,10 +162,10 @@ const PetDashboard = () => {
                 ]}
               >
                 {category.name === "Calendar" && (
-                  <Ionicons name="calendar" size={30} color="#fff" />
+                  <Ionicons name="calendar" size={40} color="#fff" />
                 )}
                 {category.name === "Search Clinic" && (
-                  <FontAwesome5 name="search" size={30} color="#fff" />
+                  <FontAwesome5 name="search" size={40} color="#fff" />
                 )}
               </View>
               <Text style={styles.categoryText}>{category.name}</Text>
@@ -174,7 +174,7 @@ const PetDashboard = () => {
         </View>
 
         {/* Upcoming Appointment */}
-        <View style={styles.appointmentCard}>
+        {/* <View style={styles.appointmentCard}>
           <View style={styles.appointmentContent}>
             <View style={styles.appointmentIcon}>
               <Ionicons name="link" size={20} color="#fff" />
@@ -195,12 +195,11 @@ const PetDashboard = () => {
             </View>
           </View>
           <View style={styles.appointmentImageContainer}>
-            {/* <CatIllustration /> */}
           </View>
-        </View>
+        </View> */}
 
         {/* Filter Section */}
-        <View>
+        {/* <View>
           <Text style={{ fontFamily: "Poppins Light", fontSize: 20 }}>
             Category
           </Text>
@@ -213,7 +212,7 @@ const PetDashboard = () => {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </View> */}
         {/* My Pets Section */}
         <View style={styles.petsHeader}>
           <Text style={styles.petsTitle}>My Pets</Text>
@@ -228,50 +227,46 @@ const PetDashboard = () => {
         </View>
 
         {/* Pet Cards */}
-        <FlatList
-          data={pets}
-          keyExtractor={(item) => item.id}
-          horizontal={true} // or true if you want horizontal scrolling
-          ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => {
-                router.push(
-                  `/pet_owner/screens/Pets/pet-details?petId=${item.id}`
-                );
-              }}
-            >
-              <View style={styles.petCard}>
-                {/* <Image
-                  source={item.img_path ? { uri: item.img_path } : require('../../assets/pictures/vet_1.png')}
-                  style={{ width: 120, height: 120, borderRadius: 60, marginVertical: 20 }}
-                  resizeMode="cover"
-                /> */}
-                <Text style={styles.petName}>{item.name}</Text>
-                <Text style={styles.petType}>{item.type}</Text>
-                <Text style={styles.petAge}>Age: {item.age}</Text>
-                <View style={styles.petImageContainer}>
-                  {item.img_path ? (
-                    <Image
-                      fill
-                      height={200}
-                      width={200}
-                      source={{ uri: item.img_path }}
-                      style={{ borderRadius: 10 }}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <Image
-                      source={require("../../assets/pictures/vet_1.png")}
-                      style={{ width: 200, height: 200, borderRadius: 10 }}
-                    />
-                  )}
+        {pets.length > 0 ? (
+
+          <FlatList
+            data={pets}
+            keyExtractor={(item) => item.id}
+            horizontal={true} // or true if you want horizontal scrolling
+            ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
+            showsHorizontalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => {
+                  router.push(
+                    `/pet_owner/screens/Pets/pet-details?petId=${item.id}`
+                  );
+                }}
+              >
+                <View style={styles.petCard}>
+                  <Image
+                    source={item.img_path ? { uri: item.img_path } : require('../../assets/pictures/vet_1.png')}
+                    style={{ width: 120, height: 120, borderRadius: 60, marginVertical: 20 }}
+                    resizeMode="cover"
+                  />
+                  <Text style={styles.petName}>{item.name}</Text>
+                  <Text style={styles.petType}>{item.type}</Text>
+                  <Text style={styles.petAge}>Age: {item.age}</Text>
                 </View>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
+              </TouchableOpacity>
+            )}
+          />
+        ) : (
+          <View style={{ alignItems: "center", marginTop: 100 }}>
+            <Text style={{ fontFamily: "Poppins Light", fontSize: 16, color: "gray", fontStyle: 'italic' }}>
+              No pets found. Add your first pet!
+            </Text>
+          </View>
+        )
+
+        }
+
+
       </View>
     </SafeAreaView>
   );
@@ -321,7 +316,7 @@ const styles = StyleSheet.create({
   },
   greetingTitle: {
     fontFamily: "Kanit Medium",
-    fontSize: 24,
+    fontSize: 32,
     // fontWeight: "bold",
     color: "#333",
     marginBottom: 5,
@@ -349,7 +344,7 @@ const styles = StyleSheet.create({
   },
   categoryIcon: {
     width: "100%",
-    height: 75,
+    height: 150,
     borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
@@ -413,11 +408,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 32,
   },
   petsTitle: {
-    fontFamily: "Poppins Light",
-    fontSize: 20,
+    fontFamily: "Kanit Medium",
+    fontSize: 32,
     color: "#333",
   },
   addPetButton: {
