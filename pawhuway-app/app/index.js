@@ -20,7 +20,7 @@ export default function Index() {
   // return <Redirect href="/pet_owner/dashboard-v2/" />;
 
 
-  return <Redirect href="/starting-page" />;
-  
+  // return <Redirect href="/starting-page" />;
+  return <Redirect href="/vet/screens/Calendar" />;
   // return <Redirect href="/pet_owner/screens/Pets/pet-details" />;
 }

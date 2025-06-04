@@ -84,30 +84,6 @@ const createVetProfile = () => {
         fetchUserProfile();
     },[]);
 
-    const deleteVetProfile = async () => {
-        const { data: user, error: userError } = await supabase.auth.getUser();
-        
-        if (userError) {
-            console.error('Error fetching user:', userError);
-            // return;
-        }
-
-        const userId = user?.user?.id;
-
-        const { error: deleteError } = await supabase
-            .from('vet_profiles')
-            .delete()
-            .eq('id', userId);
-
-        if (deleteError) {
-            console.error('Error deleting profile:', deleteError);
-            Alert.alert("Delete Failed", deleteError.message);
-        } else {
-            console.log(`Profile with ID ${userId} deleted successfully.`);
-            Alert.alert("Success", "Your profile has been deleted.");
-        }
-    };
-
     const updateVetProfile = async () => {
         const { data: user, error } = await supabase.auth.getUser();
     
@@ -181,12 +157,6 @@ const createVetProfile = () => {
                             <TouchableOpacity style = {styles.saveChanges} onPress={updateVetProfile}> 
                                 <Text style = {styles.saveChangesText}>Save Changes</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={deleteVetProfile}>
-                                <Text>
-                                    Delete Profile
-                                </Text>
-                            </TouchableOpacity>
-
                         </View>
                     </View>
                 </View>

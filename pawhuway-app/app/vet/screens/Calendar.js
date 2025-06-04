@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, FlatList, Modal, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, ScrollView, FlatList, Modal, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../../src/lib/supabase';
 import { Stack } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
+import { Picker } from '@react-native-picker/picker';
 
 const CalendarScreen = () => {
     const [appointments, setAppointments] = useState([]);
+    const [selectedStatus, setSelectedStatus] = useState('pending');
     const [loading, setLoading] = useState(true);
+    const [markedDates, setMarkedDates] = useState({});
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
 
@@ -14,18 +17,71 @@ const CalendarScreen = () => {
         const fetchAppointments = async () => {
             try {
                 const { data, error } = await supabase
-                    .from('appointment_requests')
-                    .select('*');
+                .from('appointment_requests')
+                .select('*');
 
                 if (error) {
-                    console.error('Error fetching appointments:', error);
-                    return;
+                console.error('Error fetching appointments:', error);
+                return;
                 }
 
                 setAppointments(data);
-                console.log('Fetched appointments:', data);
+
+                // Collect all appointment dates
+                const appointmentDates = data.map(app => app.date); // assuming 'YYYY-MM-DD' format
+
+                // Get a range of dates or specific month to show free slots too
+                const marks = {};
+
+appointments.forEach(({ date, status }) => {
+  let bgColor;
+  let textColor = 'white';
+
+  if (status === 'pending') bgColor = 'orange';
+  else if (status === 'accepted') bgColor = 'green';
+  else if (status === 'declined') bgColor = 'red';
+  else bgColor = 'gray'; // fallback color if needed
+
+  marks[date] = {
+    customStyles: {
+      container: {
+        backgroundColor: bgColor,
+        borderRadius: 5,
+      },
+      text: {
+        color: textColor,
+        fontWeight: 'bold',
+      },
+    },
+  };
+});
+
+
+                // Optionally mark remaining dates as gray
+                const today = new Date();
+                for (let i = 0; i < 30; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+
+                if (!marks[dateStr]) {
+                    marks[dateStr] = {
+                    customStyles: {
+                        container: {
+                        backgroundColor: '#e0e0e0',
+                        borderRadius: 5,
+                        },
+                        text: {
+                        color: 'black',
+                        },
+                    },
+                    };
+                }
+                }
+
+                setMarkedDates(marks);
             } catch (err) {
-                console.error('Unexpected error fetching appointments:', err);
+                console.error('Unexpected error:', err);
             } finally {
                 setLoading(false);
             }
@@ -33,6 +89,27 @@ const CalendarScreen = () => {
 
         fetchAppointments();
     }, []);
+
+    const calendarTheme = {
+        backgroundColor: "#ffffff",
+        calendarBackground: "#ffffff",
+        textSectionTitleColor: "#2d4150",
+        selectedDayBackgroundColor: "#1FB2A6", // more pastel version of teal
+        selectedDayTextColor: "#ffffff",
+        todayTextColor: "#FF6B6B", // red to highlight today
+        dayTextColor: "#1E1E1E",
+        textDisabledColor: "#d9e1e8",
+        dotColor: "#1FB2A6",
+        selectedDotColor: "#ffffff",
+        arrowColor: "#1FB2A6",
+        monthTextColor: "#1E1E1E",
+        textDayFontFamily: "Poppins Light",
+        textMonthFontFamily: "Kanit Medium",
+        textDayHeaderFontFamily: "Poppins Light",
+        textDayFontSize: 16,
+        textMonthFontSize: 20,
+        textDayHeaderFontSize: 14,
+    };
 
     const handleAccept = async (id) => {
         try {
@@ -78,6 +155,10 @@ const CalendarScreen = () => {
         }
     };
 
+    const handleDateSelect = (day) => {
+        console.log('Selected date:', day.dateString);
+    };
+
     const renderAppointment = ({ item }) => {
         const getStatusStyle = () => {
             if (item.status === 'accepted') {
@@ -110,26 +191,52 @@ const CalendarScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
-            <View style={styles.topHalf}>
+            <View style={styles.top}>
                 <Text style={styles.header}>Calendar</Text>
                 <Calendar
                     style={styles.calendar}
-                    theme={styles.calendarTheme}
+                    theme={calendarTheme}
+                    markingType={'custom'}
+                    markedDates={markedDates}
+                    hideExtraDays={true}
+                    firstDay={0} // Monday as the first day of the week
+                    enableSwipeMonths={true}
+                    onDayPress={handleDateSelect}
                 />
+                <View style={styles.statusPicker}>
+                    <Picker
+                        selectedValue={selectedStatus}
+                        onValueChange={(value) => setSelectedStatus(value)}
+                        style={styles.picker}
+                        dropdownIconColor="#333"
+                    >
+                        <Picker.Item label="Pending" value="pending" />
+                        <Picker.Item label="Accepted" value="accepted" />
+                        <Picker.Item label="Declined" value="declined" />
+                    </Picker>
+                    {selectedStatus === 'pending' && (
+                        <Text style={styles.statusText}>Showing pending requests...</Text>
+                    )}
+                    {selectedStatus === 'accepted' && (
+                        <Text style={styles.statusText}>Showing accepted requests...</Text>
+                    )}
+                    {selectedStatus === 'declined' && (
+                        <Text style={styles.statusText}>Showing declined requests...</Text>
+                    )}
+                </View>
+                <View style={styles.bottomHalf}>
+                    <Text style={styles.header}>Appointment Requests</Text>
+                    {loading ? (
+                        <Text style={styles.loadingText}>Loading...</Text>
+                    ) : (
+                        <FlatList
+                            data={appointments.filter(app => app.status === selectedStatus)}
+                            keyExtractor={(item) => item.id.toString()}
+                            renderItem={renderAppointment}
+                        />
+                    )}
+                </View>
             </View>
-            <View style={styles.bottomHalf}>
-                <Text style={styles.header}>Appointment Requests</Text>
-                {loading ? (
-                    <Text style={styles.loadingText}>Loading...</Text>
-                ) : (
-                    <FlatList
-                        data={appointments}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={renderAppointment}
-                    />
-                )}
-            </View>
-
             {selectedAppointment && (
                 <Modal
                     visible={modalVisible}
@@ -181,7 +288,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         padding: 20,
     },
-    topHalf: {
+    top: {
         flex: 1,
         backgroundColor: "#C9FDF2",
         borderRadius: 30,
@@ -206,33 +313,15 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     calendar: {
-        flex: 1,
-        borderRadius: 10,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 1,
-    },
-    calendarTheme: {
+        borderRadius: 20,
+        overflow: 'hidden',
         backgroundColor: "#ffffff",
-        calendarBackground: "#ffffff",
-        textSectionTitleColor: "#2d4150",
-        selectedDayBackgroundColor: "#00adf5",
-        selectedDayTextColor: "#ffffff",
-        todayTextColor: "#00adf5",
-        dayTextColor: "#2d4150",
-        textDisabledColor: "#d9e1e8",
-        dotColor: "#00adf5",
-        selectedDotColor: "#ffffff",
-        arrowColor: "#00adf5",
-        monthTextColor: "#1E1E1E",
-        textDayFontFamily: "Poppins Light",
-        textMonthFontFamily: "Poppins Medium",
-        textDayHeaderFontFamily: "Poppins Light",
-        textDayFontSize: 16,
-        textMonthFontSize: 18,
-        textDayHeaderFontSize: 14,
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        paddingBottom: 10,
     },
     loadingText: {
         fontSize: 18,
@@ -332,6 +421,24 @@ const styles = StyleSheet.create({
     pendingAppointment: {
         borderColor: 'orange',
         borderWidth: 2,
+    },
+    statusPicker: {
+        marginVertical: 16,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        backgroundColor: '#f9f9f9',
+    },
+    picker: {
+        width: '100%',
+        color: '#333',  // text color
+    },
+    statusText: {
+        marginTop: 12,
+        fontSize: 16,
+        color: '#555',
     },
 });
 
