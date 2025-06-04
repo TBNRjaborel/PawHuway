@@ -30,26 +30,26 @@ const SignIn = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const autoSignIn = async () => {
-      setEmail("andeellenes@gmail.com");
-      setPassword("password");
-      setIsLoading(true);
-      try {
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email: "andeellenes@gmail.com",
-          password: "password",
-        });
-        if (authError) throw authError;
-        router.push("/vet/vet-dashboard");
-      } catch (error) {
-        Alert.alert("Error", error.message || "Auto login failed");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    autoSignIn();
-  }, []);
+  // useEffect(() => {
+  //   const autoSignIn = async () => {
+  //     setEmail("andeellenes@gmail.com");
+  //     setPassword("password");
+  //     setIsLoading(true);
+  //     try {
+  //       const { error: authError } = await supabase.auth.signInWithPassword({
+  //         email: "andeellenes@gmail.com",
+  //         password: "password",
+  //       });
+  //       if (authError) throw authError;
+  //       router.push("/vet/vet-dashboard");
+  //     } catch (error) {
+  //       Alert.alert("Error", error.message || "Auto login failed");
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //   autoSignIn();
+  // }, []);
 
   async function signInWithEmail() {
     try {
