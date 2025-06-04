@@ -13,6 +13,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Modal,
+  Alert
 } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/lib/supabase";
@@ -109,6 +110,7 @@ const VetClinicDashboard = () => {
   }, []);
 
   const handleRemoveVet = async (vetId) => {
+    console.log("Removing vet with ID:", vetId);
     Alert.alert(
       "Remove Veterinarian",
       "Are you sure you want to remove this veterinarian from your clinic?",
@@ -274,33 +276,19 @@ const VetClinicDashboard = () => {
               //     </View>
               //   ))}
               // </View>
-              <TouchableOpacity
-                          style={styles.addPetButton}
-                          onPress={() => {
-                            router.push("/pet_owner/screens/Pets/add-pet");
-                          }}
-                        >
-                          <Ionicons name="add" size={24} color="#fff" />
-                        </TouchableOpacity>
+
               <FlatList
                 data={vetlist}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.vet_id} // Ensure vet_id is unique
                 horizontal={true} // or true if you want horizontal scrolling
                 ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
                 showsHorizontalScrollIndicator={false}
-                // contentContainerStyle={styles.scrollContainer}
-
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={styles.vetCard}
                     key={item.vet_id}
                     onPress={() => setSelectedVet(item)}
                   >
-                    {/* <View style={styles.petCard}>
-                              <Text style={styles.petName}>{item.name}</Text>
-                              <Text style={styles.petType}>{item.type}</Text>
-                              <Text style={styles.petAge}>Age: {item.age}</Text>
-                            </View> */}
                     <Fontisto name="doctor" size={75} color="white" />
                     <Text
                       style={[
