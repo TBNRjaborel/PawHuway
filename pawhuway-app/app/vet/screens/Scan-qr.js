@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { SafeAreaView, StyleSheet, Text, View, Button, TouchableOpacity, Modal, Alert, Image, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, Button, TouchableOpacity, Modal, Alert, Image, ActivityIndicator, Linking } from 'react-native';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -15,6 +15,9 @@ const ScanQR = () => {
     const [petInfo, setPetInfo] = useState(null);
     const [loading, setLoading] = useState(false); 
     const [vetId, setVetId] = useState(null);
+    const [medHistoryVisible, setMedHistoryVisible] = useState(false);
+    const [medHistoryImages, setMedHistoryImages] = useState([]);
+    const [medHistoryLoading, setMedHistoryLoading] = useState(false);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -82,7 +85,6 @@ const ScanQR = () => {
 
     const handleAddPatient = () => {
         setModalVisible(false);
-        // Implement your logic to add the pet as a patient here
         console.log("Adding pet as patient:", petInfo.id);
         console.log("Vet ID:", vetId);
 
@@ -92,15 +94,95 @@ const ScanQR = () => {
             .then(({ error }) => {
                 if (error) {
                     console.error("Error adding pet as patient:", error);
-                    Alert.alert("Error", "Failed to add pet as patient.");
+                    if (error.code === "23505") {
+                        Alert.alert("Already Added", `${petInfo.name} is already a patient.`);
+                    } else {
+                        Alert.alert("Error", "Failed to add pet as patient.");
+                    }
                 } else {
                     console.log("Pet added as patient successfully");
                     Alert.alert("Please take care of me!",  `${petInfo.name} has been added as a patient.`);
                 }
-            })
+            });
 
-        router.push('/vet_clinic/vet-clinic-dashboard');
-        
+        router.push('/vet/vet-dashboard');
+    };
+
+    const handleShowMedicalHistory = async () => {
+      console.log("Showing medical history for pet:", petInfo);
+      setMedHistoryLoading(true);
+      setMedHistoryVisible(true);
+      try {
+        console.log("Listing files in pet-medical-history bucket...");
+        const { data: files, error } = await supabase
+          .storage
+          .from("pet-medical-history")
+          .list("");
+  
+        console.log("Supabase list() response:", { files, error });
+  
+        if (error || !files || files.length === 0) {
+          console.warn("No files found or error:", error);
+          setMedHistoryImages([]);
+          setMedHistoryLoading(false);
+          Alert.alert("No Medical History", "No medical history file found for this pet.");
+          return;
+        }
+  
+        console.log("Files in bucket:", files);
+  
+        const prefix = `${petInfo.id}-${petInfo.name}-`;
+        const pdfFile = files.find(
+          file =>
+            file.name.startsWith(prefix) &&
+            file.name.endsWith('.pdf')
+        );
+  
+        console.log("Matching PDF file:", pdfFile);
+  
+        if (!pdfFile) {
+          console.warn("No matching PDF file found for prefix:", prefix);
+          setMedHistoryImages([]);
+          setMedHistoryLoading(false);
+          Alert.alert("No PDF", "No PDF medical history file found for this pet.");
+          return;
+        }
+  
+        console.log("Getting public URL for file:", pdfFile.name);
+  
+        const { data: publicUrlData, error: publicUrlError } = supabase
+          .storage
+          .from("pet-medical-history")
+          .getPublicUrl(pdfFile.name);
+  
+        console.log("Result of getPublicUrl:", publicUrlData, publicUrlError);
+  
+        const publicUrl = publicUrlData?.publicUrl;
+  
+        console.log("Public URL for medical history PDF:", publicUrl);
+  
+        // Set state for UI if needed
+        setMedHistoryImages([{ url: publicUrl }]);
+        setMedHistoryLoading(false);
+  
+        // Open the PDF directly
+        handleOpenPdf(publicUrl);
+  
+      } catch (e) {
+        console.error("Error loading medical history:", e);
+        Alert.alert("Error", "Failed to load medical history.");
+        setMedHistoryImages([]);
+        setMedHistoryLoading(false);
+      }
+    };
+    
+    const handleOpenPdf = (url) => {
+      console.log("Opening medical history PDF:", url);
+      if (url) {
+        Linking.openURL(url);
+      } else {
+        Alert.alert("No PDF", "No medical history PDF found.");
+      }
     };
 
     return (
@@ -149,7 +231,7 @@ const ScanQR = () => {
                                 {/* Medical History Button */}
                                 <TouchableOpacity
                                     style={styles.medHistoryButton}
-                                    onPress={() => Alert.alert("Medical History", "Show medical history here.")}
+                                    onPress={handleShowMedicalHistory}
                                 >
                                     <Text style={styles.medHistoryButtonText}>Medical History</Text>
                                 </TouchableOpacity>
