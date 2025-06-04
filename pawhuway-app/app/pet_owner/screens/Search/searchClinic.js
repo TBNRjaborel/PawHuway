@@ -12,16 +12,8 @@ export default function SearchClinic() {
     const router = useRouter()
     const [search, setSearch] = useState('');
     const today = new Date();
-    const [clinisList, setClinicsList] = useState([]);
+    const [clinicsList, setClinicsList] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [checkInDate, setCheckInDate] = useState(today);
-    const [checkOutDate, setCheckOutDate] = useState(today);
-    const [showCheckIn, setShowCheckIn] = useState(false);
-    const [showCheckOut, setShowCheckOut] = useState(false);
-
-
-    const minDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-    const maxDate = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate());
 
     useEffect(() => {
         const fetchClinics = async () => {
@@ -57,6 +49,12 @@ export default function SearchClinic() {
         fetchClinics();
         // console.log("hey", clinic)
     }, []);
+
+    const filteredClinics = clinicsList.filter(clinic =>
+        clinic.clinic_name.toLowerCase().includes(search.toLowerCase()) ||
+        clinic.clinic_address.toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
         <View style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
@@ -71,7 +69,7 @@ export default function SearchClinic() {
                         <Text style={{ fontFamily: 'Poppins Light', fontSize: 20, color: '#3C3C4C', marginLeft: 12, marginBottom: 12 }}>Need a clinic?</Text>
                         <Text style={{ fontFamily: 'Poppins Light', fontSize: 30, color: '#3C3C4C', marginLeft: 12 }}>Let's find you one for your pet.</Text>
                         <SearchBar
-                            placeholder="Search activities..."
+                            placeholder="Search for your location..."
                             onChangeText={setSearch}
                             value={search}
                             platform="default"
@@ -101,7 +99,7 @@ export default function SearchClinic() {
                 {loading ? (
                     <ActivityIndicator size="large" color="#3C3C4C" style={{ marginTop: 20 }} />
                 ) : (
-                    clinisList.map((clinic, index) => (
+                    filteredClinics.map((clinic, index) => (
                         <TouchableOpacity
                             key={index}
                             style={styles.card}

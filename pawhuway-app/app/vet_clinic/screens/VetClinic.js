@@ -17,7 +17,6 @@ import { Stack, useRouter } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 // import * as DocumentPicker from "expo-document-picker";
 
@@ -167,11 +166,15 @@ const VetClinic = () => {
             <SafeAreaView style={styles.container}>
                 <Stack.Screen options={{ headerShown: false }} />
                 <StatusBar hidden={true} />
-
-                <TouchableOpacity style={styles.backButton}
+                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                    <View>
+                        <AntDesign name="left" size={20} color="black" />
+                    </View>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.logoutButton}
                     onPress={handleLogout}
                 >
-                    <MaterialIcons name="logout" size={24} color="#3C3C4C" />
+                    <MaterialIcons name="logout" size={20} color="#3C3C4C" />
                 </TouchableOpacity>
                 <View style={styles.imgcontainer}>
                     <Image
@@ -244,6 +247,20 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     backButton: {
+        position: "absolute",
+        top: 40,
+        left: 20,
+        zIndex: 10,
+        backgroundColor: "#FFFFFF",
+        padding: 10,
+        borderRadius: 50,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+    },
+    logoutButton: {
         position: "absolute",
         top: 40,
         right: 20,
