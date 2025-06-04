@@ -12,6 +12,7 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { supabase } from "../../src/lib/supabase";
@@ -19,7 +20,7 @@ import VetClinicSVG from "../../assets/pictures/vet_clinic.svg";
 import { TextInput } from "react-native-paper";
 import { FlatList } from "react-native";
 import Fontisto from "@expo/vector-icons/Fontisto";
-
+import { Ionicons } from '@expo/vector-icons';
 // export default Dashboard;
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
@@ -92,10 +93,10 @@ const VetClinicDashboard = () => {
           .eq("vet_clinic_id", clinicData.id);
 
         if (vetError) throw new Error(vetError.message);
-        setVetlist(vetData);
-        // console.log("vets", vetData[0])
-        // console.log("vet_profiles", vetData[0].vet_profiles)
-        // console.log("user_accounts", vetData[0].vet_profiles.user_accounts)
+        setVetList(vetData);
+        console.log("vets", vetData[0])
+        console.log("vet_profiles", vetData[0].vet_profiles)
+        console.log("user_accounts", vetData[0].vet_profiles.user_accounts)
       } catch (err) {
         console.error("Fetch error:", err.message);
       } finally {
@@ -107,6 +108,43 @@ const VetClinicDashboard = () => {
     // console.log("vets2", vetList)
   }, []);
 
+  const handleRemoveVet = async (vetId) => {
+    Alert.alert(
+      "Remove Veterinarian",
+      "Are you sure you want to remove this veterinarian from your clinic?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from("clinic_vet_relation")
+                .delete()
+                .eq("vet_id", vetId)
+                .eq("vet_clinic_id", clinic.id);
+
+              if (error) throw new Error(error.message);
+
+              // Remove the vet from the local state
+              setVetList(vetList.filter(vet => vet.vet_id !== vetId));
+              setSelectedVet(null); // Close the modal after removal
+            } catch (err) {
+              console.error("Error removing vet:", err.message);
+            } finally {
+              router.replace('/vet_clinic/vet-clinic-dashboard');
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+
+  }
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -184,14 +222,14 @@ const VetClinicDashboard = () => {
               Veterinarians
             </Text>
           </View>
-          <View style={{ marginTop: 20 }}>
+          {/* <View style={{ marginTop: 20 }}>
             <TextInput
               style={styles.searchbar}
               placeholder="Search Vet Here"
               onChangeText={searchVet}
               underlineColor="transparent"
             />
-          </View>
+          </View> */}
           <View
             style={{
               alignItems: vetlist.length > 1 ? "center" : "flex-start",
@@ -199,9 +237,9 @@ const VetClinicDashboard = () => {
               width: vetlist.length > 1 ? "100%" : "94%",
             }}
           >
-            <Text style={[styles.title, { alignSelf: "center" }]}>
+            {/* <Text style={[styles.title, { alignSelf: "center" }]}>
               Veterinarian List
-            </Text>
+            </Text> */}
             {isLoading ? (
               <View
                 style={{
@@ -214,28 +252,69 @@ const VetClinicDashboard = () => {
                 <ActivityIndicator size="large" color="#3C3C4C" />
               </View>
             ) : (
-              <ScrollView contentContainerStyle={styles.scrollContainer}>
-                {vetlist.map((item, index) => (
-                  <View key={item.vet_id || index} style={styles.cardWrapper}>
-                    <TouchableOpacity
-                      style={styles.vetCard}
-                      onPress={() => setSelectedVet(item)}
+              // <View contentContainerStyle={styles.scrollContainer}>
+              //   {vetlist.map((item, index) => (
+              //     <View key={item.vet_id || index} style={styles.cardWrapper}>
+              //       <TouchableOpacity
+              //         style={styles.vetCard}
+              //         onPress={() => setSelectedVet(item)}
+              //       >
+              //         <Fontisto name="doctor" size={75} color="white" />
+              //         <Text
+              //           style={[
+              //             styles.label,
+              //             { marginTop: 10, color: "white" },
+              //           ]}
+              //         >
+              //           {capitalizeFirstLetter(
+              //             item.vet_profiles.user_accounts.first_name
+              //           )}
+              //         </Text>
+              //       </TouchableOpacity>
+              //     </View>
+              //   ))}
+              // </View>
+              <TouchableOpacity
+                          style={styles.addPetButton}
+                          onPress={() => {
+                            router.push("/pet_owner/screens/Pets/add-pet");
+                          }}
+                        >
+                          <Ionicons name="add" size={24} color="#fff" />
+                        </TouchableOpacity>
+              <FlatList
+                data={vetlist}
+                keyExtractor={(item) => item.id}
+                horizontal={true} // or true if you want horizontal scrolling
+                ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
+                showsHorizontalScrollIndicator={false}
+                // contentContainerStyle={styles.scrollContainer}
+
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.vetCard}
+                    key={item.vet_id}
+                    onPress={() => setSelectedVet(item)}
+                  >
+                    {/* <View style={styles.petCard}>
+                              <Text style={styles.petName}>{item.name}</Text>
+                              <Text style={styles.petType}>{item.type}</Text>
+                              <Text style={styles.petAge}>Age: {item.age}</Text>
+                            </View> */}
+                    <Fontisto name="doctor" size={75} color="white" />
+                    <Text
+                      style={[
+                        styles.label,
+                        { marginTop: 10, color: "white" },
+                      ]}
                     >
-                      <Fontisto name="doctor" size={75} color="white" />
-                      <Text
-                        style={[
-                          styles.label,
-                          { marginTop: 10, color: "white" },
-                        ]}
-                      >
-                        {capitalizeFirstLetter(
-                          item.vet_profiles.user_accounts.first_name
-                        )}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </ScrollView>
+                      {capitalizeFirstLetter(
+                        item.vet_profiles.user_accounts.first_name
+                      )}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              />
             )}
           </View>
           {selectedVet && (
@@ -276,7 +355,7 @@ const VetClinicDashboard = () => {
                               {capitalizeFirstLetter(
                                 selectedVet.vet_profiles.user_accounts.last_name
                                   ? selectedVet.vet_profiles.user_accounts
-                                      .last_name
+                                    .last_name
                                   : ""
                               )}
                             </Text>
@@ -396,6 +475,71 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     height: 40,
     paddingHorizontal: 16,
+  },
+  scrollContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    gap: 16,
+    width: '100%',
+    marginTop: 20,
+  },
+  cardWrapper: {
+    width: '45%',
+    // marginBottom: 10,
+  },
+  vetCard: {
+    backgroundColor: "#B3EBF2",
+    borderRadius: 16,
+    padding: 16,
+    width: 300,
+    height: 300,
+    alignItems: "center",
+  },
+  label: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    // width: "100%",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '95%',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 10,
+  },
+  modalName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    padding: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '95%',
+    // marginBottom: 10,
+  },
+  closeText: {
+    fontSize: 20,
+    color: '#333',
+    padding: 4,
   },
 });
 export default VetClinicDashboard;

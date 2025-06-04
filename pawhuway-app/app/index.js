@@ -15,7 +15,8 @@ export default function Index() {
   }
 
 
-  return <Redirect href="/vet_clinic/vet-clinic-dashboard" />;
+  // return <Redirect href="/vet_clinic/vet-clinic-dashboard" />;
+  return <Redirect href="/starting-page" />; // Redirect to the sign-in page
 
 
 }
