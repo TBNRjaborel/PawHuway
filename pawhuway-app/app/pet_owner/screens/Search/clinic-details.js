@@ -155,7 +155,9 @@ const clinicDetails = () => {
                         event_id: event.id, // Use the newly created event's ID
                         preferred_date: selectedDate,
                         preferred_time: selectedTime,
-                        desc: `Appointment for ${selectedPet.name} at ${clinic.clinic_name}`,
+                        status: 'pending', // Default status
+                        desc: `Appointment for ${selectedPet.name} at ${clinic.clinic_name} on ${selectedDate} at ${selectedTime}`,
+
                     },
 
                 ]).select();
