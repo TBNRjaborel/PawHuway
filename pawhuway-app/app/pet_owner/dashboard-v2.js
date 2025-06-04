@@ -243,6 +243,11 @@ const PetDashboard = () => {
               }}
             >
               <View style={styles.petCard}>
+                <Image
+                  source={item.img_path ? { uri: item.img_path } : require('../../assets/pictures/vet_1.png')}
+                  style={{ width: 120, height: 120, borderRadius: 60, marginVertical: 20 }}
+                  resizeMode="cover"
+                />
                 <Text style={styles.petName}>{item.name}</Text>
                 <Text style={styles.petType}>{item.type}</Text>
                 <Text style={styles.petAge}>Age: {item.age}</Text>

@@ -22,7 +22,6 @@ import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { FlatList } from "react-native";
 import { set } from "lodash";
-import ImageViewer from "react-native-image-zoom-viewer";
 
 const PetDetails = () => {
   const [image, setImage] = useState(null);
@@ -327,9 +326,14 @@ const PetDetails = () => {
           />
         </View>
         <View style={styles.buttonContainer}>
+          {/* <TouchableOpacity style={styles.button} onPress={handleShowMedicalHistory}>
+            <View>
+              <Text style={styles.buttonText}>Generate Medical History</Text>
+            </View>
+          </TouchableOpacity> */}
           <TouchableOpacity style={styles.button} onPress={handleShowMedicalHistory}>
             <View>
-              <Text style={styles.buttonText}>Medical History</Text>
+              <Text style={styles.buttonText}>View Medical History</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity
@@ -413,16 +417,16 @@ const styles = StyleSheet.create({
     // flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 40,
+    marginTop: 20,
     gap: 20,
     // paddingHorizontal: 20,
   },
   button: {
     backgroundColor: "#3C3C4C",
-    paddingHorizontal: 100,
-    paddingVertical: 15,
+    // paddingHorizontal: 100,
+    paddingVertical: 10,
     borderRadius: 10,
-    // width: 150,
+    width: '90%',
     // height: 50,
     alignItems: "center",
     justifyContent: "center",
