@@ -189,31 +189,31 @@ const VetClinic = () => {
 
                     <View style={styles.profileSection}>
                         <Text style={styles.title}>
-                            Clinic Name: <Text style={{ fontWeight: 'normal' }}>{clinic?.clinic_name}</Text>
+                            Clinic Name: <Text style={{ fontFamily: 'Poppins Light' }}>{clinic?.clinic_name}</Text>
                         </Text>
                         <Text style={styles.title}>
-                            Address: <Text style={{ fontWeight: 'normal' }}>{clinic?.clinic_address}</Text>
+                            Address: <Text style={{ fontFamily: 'Poppins Light' }}>{clinic?.clinic_address}</Text>
                         </Text>
                         <Text style={styles.title}>
-                            Contact: <Text style={{ fontWeight: 'normal' }}>{clinic?.clinic_contact_number}</Text>
+                            Contact: <Text style={{ fontFamily: 'Poppins Light' }}>{clinic?.clinic_contact_number}</Text>
                         </Text>
                         <Text style={styles.title}>
                             Operating Hours:{" "}
-                            <Text style={{ fontWeight: "normal" }}>
+                            <Text style={{ fontFamily: 'Poppins Light' }}>
                                 {formatTime(clinic?.open_time)} - {formatTime(clinic?.close_time)}
                             </Text>
                         </Text>
                         <Text style={styles.title}>
-                            Representative: <Text style={{ fontWeight: 'normal' }}>{clinic?.owner_name}</Text>
+                            Representative: <Text style={{ fontFamily: 'Poppins Light' }}>{clinic?.owner_name}</Text>
                         </Text>
 
                         <View style={styles.bottomButtons}>
                             <TouchableOpacity style={styles.editButton} onPress={() => router.push('../screens/EditScreen')}>
                                 <Text style={styles.buttonText}>Edit</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+                            {/* <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
                                 <Text style={styles.buttonText}>Delete</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     </View>
 
@@ -242,9 +242,11 @@ const styles = StyleSheet.create({
     title: {
         // fontFamily: "Poppins Light",
         fontSize: 20,
-        fontWeight: "bold",
+        // fontWeight: "bold",
         marginLeft: 0,
         marginTop: 5,
+        fontFamily: "Poppins",
+        color: "#3C3C4C",
     },
     backButton: {
         position: "absolute",
@@ -364,6 +366,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
         textAlign: 'center',
+        fontFamily: "Poppins Light",
     },
 });
 

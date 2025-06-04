@@ -194,14 +194,18 @@ const styles = StyleSheet.create({
     },
     heading: {
         fontSize: 24,
-        fontWeight: "bold",
+        // fontWeight: "bold",
         marginBottom: 20,
         textAlign: "center",
+        fontFamily: "Poppins",
+        color: "#3C3C4C",
     },
     label: {
         fontSize: 16,
         marginBottom: 5,
         fontWeight: "500",
+        fontFamily: "Poppins",
+        color: "#3C3C4C",
     },
     input: {
         backgroundColor: "#fff",
@@ -210,7 +214,9 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         borderColor: "#ccc",
         borderWidth: 1,
-        color: 'black'
+        color: 'black',
+        fontFamily: "Poppins Light",
+        color: "#3C3C4C",
     },
     buttonRow: {
         paddingVertical: 20,
@@ -237,7 +243,9 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: '600',
+        // fontWeight: '600',
+        fontFamily: "Poppins Light",
+        // color: "#3C3C4C",
         textAlign: 'center',
     },
 });
