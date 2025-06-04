@@ -21,19 +21,19 @@ const SignIn = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const autoLogin = async () => {
-      setEmail("andeellenes@gmail.com");
-      setPassword("password");
-      if (email && password) {
-        signInWithEmail();
-      }
+  // useEffect(() => {
+  //   const autoLogin = async () => {
+  //     setEmail("andeellenes@gmail.com");
+  //     setPassword("password");
+  //     if (email && password) {
+  //       signInWithEmail();
+  //     }
 
-      router.push('/vet/screens/Scan-qr');
-    }
+  //     router.push('/vet/screens/Scan-qr');
+  //   }
 
-    autoLogin();
-  }, []);
+  //   autoLogin();
+  // }, []);
 
   async function signInWithEmail() {
     try {
