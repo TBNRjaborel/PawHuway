@@ -36,7 +36,7 @@ const CalendarScreen = () => {
                 // Get a range of dates or specific month to show free slots too
                 const marks = {};
 
-                data.forEach(({ date, status }) => {
+                data.forEach(({ preferred_date, status }) => {
                     let bgColor;
                     let textColor = 'white';
 
@@ -45,19 +45,21 @@ const CalendarScreen = () => {
                     else if (status === 'declined') bgColor = 'red';
                     else bgColor = 'gray'; // fallback color if needed
 
-                    marks[date] = {
+                    marks[preferred_date] = {
                         customStyles: {
-                        container: {
-                            backgroundColor: bgColor,
-                            borderRadius: 5,
-                        },
-                        text: {
-                            color: textColor,
-                            fontWeight: 'bold',
-                        },
+                            container: {
+                                backgroundColor: bgColor,
+                                borderRadius: 5,
+                            },
+                            text: {
+                                color: textColor,
+                                fontWeight: 'bold',
+                            },
                         },
                     };
                 });
+
+                console.log("Marks: ", marks)
 
                 // Optionally mark remaining dates as gray
                 const today = new Date();
@@ -181,8 +183,8 @@ const CalendarScreen = () => {
             >
                 <Text style={styles.appointmentText}>Clinic ID: {item.clinic_id}</Text>
                 <Text style={styles.appointmentText}>Pet ID: {item.pet_id}</Text>
-                <Text style={styles.appointmentText}>Date: {item.date}</Text>
-                <Text style={styles.appointmentText}>Time: {item.time}</Text>
+                <Text style={styles.appointmentText}>Date: {item.preferred_date}</Text>
+                <Text style={styles.appointmentText}>Time: {item.preferred_time}</Text>
                 <Text style={styles.appointmentText} numberOfLines={1}>
                     Description: {item.desc}
                 </Text>
@@ -311,14 +313,15 @@ const styles = StyleSheet.create({
         backgroundColor: "#B3EBF2",
         alignItems: "center",
         padding: 20,
+        width: '100%'
     },
     top: {
-        // flex: 1,
+        flex: 1,
         // backgroundColor: "#C9FDF2",
         // borderRadius: 30,
         // padding: 10,
         marginBottom: 10,
-        // width: "100%",
+        width: "100%",
     },
     bottomHalf: {
         flex: 1,
