@@ -25,6 +25,8 @@ import { Ionicons } from "@expo/vector-icons";
 // export default Dashboard;
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
+
+const statusBarHeight = StatusBar.currentHeight;
 const VetClinicDashboard = () => {
   const [user, setUser] = useState(null);
   const [image, setImage] = useState(null);
@@ -95,9 +97,10 @@ const VetClinicDashboard = () => {
 
         if (vetError) throw new Error(vetError.message);
         setVetList(vetData);
-        console.log("vets", vetData[0]);
-        console.log("vet_profiles", vetData[0].vet_profiles);
-        console.log("user_accounts", vetData[0].vet_profiles.user_accounts);
+        // console.log("vets", vetData[0])
+        // console.log("vet_profiles", vetData[0].vet_profiles)
+        // console.log("user_accounts", vetData[0].vet_profiles.user_accounts)
+
       } catch (err) {
         console.error("Fetch error:", err.message);
       } finally {
@@ -164,7 +167,9 @@ const VetClinicDashboard = () => {
               <Text style={styles.locationText}>PawHuway</Text>
             </View>
 
-            <TouchableOpacity style={styles.profileButton}>
+            <TouchableOpacity style={styles.profileButton}
+              onPress={() => router.push("/vet_clinic/screens/VetClinic")}
+            >
               <Image
                 source={
                   image
@@ -247,7 +252,7 @@ const VetClinicDashboard = () => {
                   alignSelf: "center",
                   justifyContent: "center",
                   alignItems: "center",
-                  height: "80%",
+                  height: "60%",
                 }}
               >
                 <ActivityIndicator size="large" color="#3C3C4C" />
@@ -266,18 +271,11 @@ const VetClinicDashboard = () => {
                     key={item.vet_id}
                     onPress={() => setSelectedVet(item)}
                   >
-
-                    {/* <View style={styles.petCard}>
-                              <Text style={styles.petName}>{item.name}</Text>
-                              <Text style={styles.petType}>{item.type}</Text>
-                              <Text style={styles.petAge}>Age: {item.age}</Text>
-                            </View> */}
-                    <Fontisto name="doctor" size={75} color="#3C3C4C" />
-
+                    <Fontisto name="doctor" size={120} color="#3C3C4C" />
                     <Text
                       style={[
                         styles.label,
-                        { marginTop: 10, color: "#3C3C4C" },
+                        { fontSize: 32, marginTop: 10, color: "#3C3C4C" },
                       ]}
                     >
                       {capitalizeFirstLetter(
@@ -467,6 +465,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     alignItems: "center",
+    justifyContent: "center",
   },
   label: {
     fontSize: 20,
@@ -512,6 +511,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#333",
     padding: 4,
+  },
+  value: {
+    fontWeight: "normal",
+
   },
 });
 export default VetClinicDashboard;
