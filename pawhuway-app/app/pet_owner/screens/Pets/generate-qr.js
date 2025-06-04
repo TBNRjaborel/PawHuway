@@ -18,7 +18,7 @@ const QRCodeGenerator = ({ value, visible, onClose }) => {
                         value={value}  // Dynamic QR data
                         size={200}
                         logo={logoFromFile}
-                        logoSize={100}
+                        logoSize={60}
                         // backgroundColor=''
                         logoBackgroundColor="transparent"
                     />
@@ -46,14 +46,14 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         marginTop: 15,
-        backgroundColor: '#FFD166',
+        backgroundColor: '#B3EBF2',
         paddingVertical: 8,
         paddingHorizontal: 20,
         borderRadius: 5,
     },
     closeText: {
         color: 'black',
-        fontWeight: 'bold',
+        fontFamily: 'Kanit Medium',
     },
 });
 

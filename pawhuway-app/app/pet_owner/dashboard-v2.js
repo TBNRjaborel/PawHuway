@@ -360,7 +360,6 @@ const styles = StyleSheet.create({
   appointmentTitle: {
     fontFamily: "Poppins Light",
     fontSize: 16,
-    fontWeight: "bold",
     color: "Black",
     marginBottom: 6,
   },

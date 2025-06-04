@@ -21,17 +21,19 @@ const SignIn = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const autoLogin = async () => {
-      setEmail("fieljrc@gmail.com");
-      setPassword("123456");
-      if (email && password) {
-        signInWithEmail();
-      }
-    }
+  // useEffect(() => {
+  //   const autoLogin = async () => {
+  //     setEmail("andeellenes@gmail.com");
+  //     setPassword("password");
+  //     if (email && password) {
+  //       signInWithEmail();
+  //     }
 
-    autoLogin();
-  }, []);
+  //     router.push('/vet/screens/Scan-qr');
+  //   }
+
+  //   autoLogin();
+  // }, []);
 
   async function signInWithEmail() {
     try {

@@ -19,6 +19,7 @@ import QRCodeGenerator from "./generate-qr";
 import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { FlatList } from "react-native";
+import { set } from "lodash";
 
 // const PetDetails = () => {
 //   const router = useRouter();
@@ -341,6 +342,10 @@ const PetDetails = () => {
     { label: "Height", value: petData.height },
     { label: "Weight", value: petData.weight },
   ];
+
+  const [qrVisible, setQrVisible] = useState(false);
+  const [qrValue, setQrValue] = useState("");
+
   useEffect(() => {
     async function fetchPetDetails() {
       const { data, error } = await supabase
@@ -438,6 +443,10 @@ const PetDetails = () => {
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar hidden={true} />
 
+      {qrVisible && (
+        <QRCodeGenerator value={JSON.stringify(petData)} onClose={() => setQrVisible(false)}/>
+      )}
+
       <View style={styles.imageContainer}>
         <TouchableOpacity
           style={styles.backbtn}
@@ -469,6 +478,14 @@ const PetDetails = () => {
         >
           <View>
             <Ionicons name="trash-outline" size={30} />
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{ position: "absolute", right: 30, top: 170, zIndex: 10 }}
+          onPress={() => setQrVisible(true)}
+        >
+          <View>
+            <Ionicons name="qr-code-outline" size={30} />
           </View>
         </TouchableOpacity>
         <Image
