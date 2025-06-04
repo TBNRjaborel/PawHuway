@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  Modal,
 } from "react-native";
 import { supabase } from "../../src/lib/supabase";
 import { Stack, useRouter } from "expo-router";
@@ -17,7 +18,7 @@ import { StatusBar } from "expo-status-bar";
 import Icon from "react-native-vector-icons/Ionicons";
 
 // Ticket card component
-const TicketCard = ({ title, preview, date, status, icon }) => (
+const TicketCard = ({ title, preview, date, status, icon, onPress }) => (
   <View style={styles.card}>
     <View style={styles.cardContent}>
       {icon}
@@ -39,7 +40,8 @@ const TicketCard = ({ title, preview, date, status, icon }) => (
             <Text style={styles.statusText}>{status}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.button}>
+
+        <TouchableOpacity style={styles.button} onPress={onPress}>
           <Text style={styles.buttonText}>View Details</Text>
         </TouchableOpacity>
       </View>
@@ -48,6 +50,9 @@ const TicketCard = ({ title, preview, date, status, icon }) => (
 );
 
 const SupportTicketsPage = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+
   const [pastTickets, setPastTickets] = useState([]);
   const [ticketnum, setTicketNum] = useState([]);
   const [subject, setSubject] = useState("");
@@ -112,6 +117,10 @@ const SupportTicketsPage = () => {
               preview={ticket.body}
               // date={ticket.date}
               status={ticket.status}
+              onPress={() => {
+                setSelectedTicket(ticket);
+                setModalVisible(true);
+              }}
               // icon={ticket.icon}
             />
           ))}
@@ -129,6 +138,26 @@ const SupportTicketsPage = () => {
             <Icon name="close" size={30} color="black" />
           </TouchableOpacity>
         </View>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalView}>
+              <Text style={styles.cardTitle}>{selectedTicket?.subject}</Text>
+              <Text style={styles.cardPreview}>{selectedTicket?.body}</Text>
+              <View style={{ marginTop: 20 }}>
+                <Button
+                  title="Close"
+                  onPress={() => setModalVisible(false)}
+                  color="#3C3C4C"
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -277,6 +306,23 @@ const styles = StyleSheet.create({
   closeIconContainer: {
     alignItems: "center",
     marginTop: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalView: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 20,
+    width: "80%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });
 

@@ -14,6 +14,8 @@ export default function Index() {
     return null; // Prevent rendering until fonts are loaded
   }
 
-  // return <Redirect href="/vet_clinic/vet-clinic-dashboard" />;
-  return <Redirect href="/starting-page" />; // Redirect to the sign-in page
+
+  return <Redirect href="/starting-page" />; 
+  
 }
+

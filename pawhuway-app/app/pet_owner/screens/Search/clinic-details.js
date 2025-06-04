@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, FlatList } from 'react-native'
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, FlatList, Alert } from 'react-native'
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect } from 'react'
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -153,6 +153,9 @@ const clinicDetails = () => {
                         clinic_id: clinicId,
                         pet_id: selectedPet.id, // Use the selected pet's ID
                         event_id: event.id, // Use the newly created event's ID
+                        preferred_date: selectedDate,
+                        preferred_time: selectedTime,
+                        desc: `Appointment for ${selectedPet.name} at ${clinic.clinic_name}`,
                     },
 
                 ]).select();
@@ -165,8 +168,12 @@ const clinicDetails = () => {
             console.error("Error booking appointment:", error.message);
         } finally {
             setSubmitLoading(false);
-            alert("Appointment booked successfully!");
-            router.back();
+            Alert.alert(
+                "Appointment Request Sent",
+                `Your appointment request for ${selectedPet.name} at ${clinic.clinic_name} on ${selectedDate} at ${selectedTime} has been sent.`,
+                [{ text: "OK", onPress: () => router.back() }]
+            );
+            // router.back();
         }
         // console.log("Selected date and time:", selectedDate, selectedTime);
     }
@@ -200,19 +207,19 @@ const clinicDetails = () => {
                                     ? { uri: clinic.clinic_image }
                                     : require('../../../../assets/pictures/pet-medication.jpg')
                             }
-                            style={{ width: 100, height: 100, borderRadius: 20, marginBottom: 5 }}
+                            style={{ width: 100, height: 100, borderRadius: 20, marginTop: 15, marginBottom: 20 }}
                         />
                         <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{clinic.clinic_name}</Text>
                         <Text style={styles.subdetails}>{clinic.clinic_address}</Text>
                         <Text style={styles.subdetails}>{clinic.clinic_contact_number} | {clinic.clinic_email}</Text>
                         <View style={styles.description}>
-                            <View style={{ padding: 20 }}>
+                            <View style={{ padding: 20, justifyContent: 'center', }}>
                                 <Text style={styles.sectionTitle}>About</Text>
                                 <Text style={styles.details}>{clinic.description}</Text>
                             </View>
                         </View>
-                        <View style={{ width: "100%" }}>
-                            <View style={{ marginLeft: 20, justifyContent: "flex-start", marginTop: 10, alignItems: "flex-start" }}>
+                        <View style={{ width: "100%", marginBottom: 12 }}>
+                            <View style={{ marginLeft: 20, justifyContent: "flex-start", marginVertical: 10, alignItems: "flex-start" }}>
 
                                 <Text style={styles.sectionTitle}>Select Date</Text>
                             </View>
@@ -229,10 +236,10 @@ const clinicDetails = () => {
                             // }}
                             />
                         </View>
-                        <View style={{ width: "100%" }}>
+                        <View style={{ width: "100%", }}>
                             {
                                 hourlySlots.length > 0 ? (
-                                    <View style={{ marginLeft: 20, justifyContent: "flex-start", marginTop: 10, alignItems: "flex-start" }}>
+                                    <View style={{ marginLeft: 20, justifyContent: "flex-start", marginVertical: 12, alignItems: "flex-start" }}>
 
                                         <Text style={styles.sectionTitle}>Available Time Slots</Text>
                                     </View>
@@ -245,7 +252,7 @@ const clinicDetails = () => {
                                 keyExtractor={(item) => item}
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                // contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 10 }}
+                                contentContainerStyle={{ paddingHorizontal: 20 }}
                                 renderItem={({ item }) => (
                                     <TouchableOpacity
                                         style={[
@@ -325,7 +332,7 @@ const clinicDetails = () => {
                             <ActivityIndicator size="small" color="#fff" />
                         ) : (
                             <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'Poppins' }} >
-                                Book Appointment
+                                Request Appointment
                             </Text>
                         )}
                 </TouchableOpacity>
@@ -364,7 +371,7 @@ const styles = StyleSheet.create({
     },
     details: {
         fontSize: 16,
-        marginBottom: 10,
+        // marginBottom: 10,
         fontFamily: 'Poppins Light'
     },
     subdetails: {
@@ -390,11 +397,13 @@ const styles = StyleSheet.create({
     },
     description: {
         width: "95%",
-        height: 'auto',
+        // height: 'auto',
         backgroundColor: '#B3EBF2',
         borderRadius: 20,
-        // marginVertical: 10,
+        marginVertical: 12,
         alignSelf: 'center',
+        // alignItems: 'center',
+        // justifyContent: 'center'
     },
     infoBox: {
         width: "95%",
