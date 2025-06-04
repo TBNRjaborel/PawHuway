@@ -200,19 +200,19 @@ const clinicDetails = () => {
                                     ? { uri: clinic.clinic_image }
                                     : require('../../../../assets/pictures/pet-medication.jpg')
                             }
-                            style={{ width: 100, height: 100, borderRadius: 20, marginBottom: 5 }}
+                            style={{ width: 100, height: 100, borderRadius: 20, marginTop: 15, marginBottom: 20 }}
                         />
                         <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{clinic.clinic_name}</Text>
                         <Text style={styles.subdetails}>{clinic.clinic_address}</Text>
                         <Text style={styles.subdetails}>{clinic.clinic_contact_number} | {clinic.clinic_email}</Text>
                         <View style={styles.description}>
-                            <View style={{ padding: 20 }}>
+                            <View style={{ padding: 20, justifyContent: 'center', }}>
                                 <Text style={styles.sectionTitle}>About</Text>
                                 <Text style={styles.details}>{clinic.description}</Text>
                             </View>
                         </View>
-                        <View style={{ width: "100%" }}>
-                            <View style={{ marginLeft: 20, justifyContent: "flex-start", marginTop: 10, alignItems: "flex-start" }}>
+                        <View style={{ width: "100%", marginBottom: 12 }}>
+                            <View style={{ marginLeft: 20, justifyContent: "flex-start", marginVertical: 10, alignItems: "flex-start" }}>
 
                                 <Text style={styles.sectionTitle}>Select Date</Text>
                             </View>
@@ -229,10 +229,10 @@ const clinicDetails = () => {
                             // }}
                             />
                         </View>
-                        <View style={{ width: "100%" }}>
+                        <View style={{ width: "100%", }}>
                             {
                                 hourlySlots.length > 0 ? (
-                                    <View style={{ marginLeft: 20, justifyContent: "flex-start", marginTop: 10, alignItems: "flex-start" }}>
+                                    <View style={{ marginLeft: 20, justifyContent: "flex-start", marginVertical: 12, alignItems: "flex-start" }}>
 
                                         <Text style={styles.sectionTitle}>Available Time Slots</Text>
                                     </View>
@@ -245,7 +245,7 @@ const clinicDetails = () => {
                                 keyExtractor={(item) => item}
                                 horizontal
                                 showsHorizontalScrollIndicator={false}
-                                // contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 10 }}
+                                contentContainerStyle={{ paddingHorizontal: 20 }}
                                 renderItem={({ item }) => (
                                     <TouchableOpacity
                                         style={[
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
     },
     details: {
         fontSize: 16,
-        marginBottom: 10,
+        // marginBottom: 10,
         fontFamily: 'Poppins Light'
     },
     subdetails: {
@@ -390,11 +390,13 @@ const styles = StyleSheet.create({
     },
     description: {
         width: "95%",
-        height: 'auto',
+        // height: 'auto',
         backgroundColor: '#B3EBF2',
         borderRadius: 20,
-        // marginVertical: 10,
+        marginVertical: 12,
         alignSelf: 'center',
+        // alignItems: 'center',
+        // justifyContent: 'center'
     },
     infoBox: {
         width: "95%",

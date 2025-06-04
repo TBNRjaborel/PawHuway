@@ -16,4 +16,6 @@ export default function Index() {
 
   // return <Redirect href="/vet_clinic/vet-clinic-dashboard" />;
   return <Redirect href="/starting-page" />; 
+  // return <Redirect href="/pet_owner/screens/Search/searchClinic" />; 
+  // return <Redirect href="/pet_owner/screens/Search/clinic-details" />; 
 }

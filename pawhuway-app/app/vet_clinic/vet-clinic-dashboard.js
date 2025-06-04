@@ -180,7 +180,12 @@ const VetClinicDashboard = () => {
             <Text style={styles.greetingTitle}>{clinicName}</Text>
           </View>
           <View>
-            <TouchableOpacity style={styles.calendarButton}>
+            <TouchableOpacity 
+              style={styles.calendarButton}
+              onPress={() => (
+                router.push('/vet_clinic/screens/Calendar')
+              )}
+            >
               <View style={styles.calendarText}>
                 <Text
                   style={{
