@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Image, ActivityIndicator, Alert } from 'react-native';
 import { ExpandableCalendar, AgendaList, CalendarProvider } from 'react-native-calendars';
 import { useRouter, Stack } from 'expo-router';
 import { supabase } from '../../../../src/lib/supabase';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
 
 const getTimeColor = (timeStr) => {
   if (!timeStr) return '#E0F7FA';
@@ -17,10 +19,11 @@ const getTimeColor = (timeStr) => {
 };
 
 const getTypeStyle = (type) => {
+  console.log('Type received:', type);
   switch (type) {
-    case 'Exercise':
+    case 'appointment':
       return { backgroundColor: '#FFCDD2', color: '#B71C1C' }; // red-ish
-    case 'Hygiene':
+    case 'task':
       return { backgroundColor: '#C8E6C9', color: '#1B5E20' }; // green-ish
     case 'Nutrition':
       return { backgroundColor: '#FFF9C4', color: '#F57F17' }; // yellow-ish
@@ -60,6 +63,7 @@ const ExpandableCalendarScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const router = useRouter();
 
@@ -83,36 +87,58 @@ const ExpandableCalendarScreen = () => {
   };
 
   const handleDeleteEvent = async () => {
+    console.log(selectedEvent)
     if (!selectedEvent?.id) return;
 
-    try {
-      const { error } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', selectedEvent.id);
+    Alert.alert(
+      'Delete Event',
+      `Are you sure you want to delete the event "${selectedEvent.title}"?`,
+      [
+        {
+          text: 'Cancel',
+          onPress: () => setModalVisible(false),
+          style: 'cancel'
+        },
+        {
+          text: 'Delete',
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from('events')
+                .delete()
+                .eq('id', selectedEvent.id);
 
-      if (error) {
-        console.error('Error deleting event:', error.message);
-      } else {
-        console.log('Event deleted successfully.');
-        setAgendaData((prev) =>
-          prev
-            .map((section) => ({
-              ...section, 
-              data: section.data.filter((event) => event.id !== selectedEvent.id)
-            }))
-            .filter((section) => section.data.length > 0) 
-        );
-        setModalVisible(false);
-        setSelectedEvent(null);
-      }
-    } catch (err) {
-      console.error('Unexpected error:', err);
-    }
+              if (error) {
+                console.error('Error deleting event:', error.message);
+              } else {
+                console.log('Event deleted successfully.');
+                setAgendaData((prev) =>
+                  prev
+                    .map((section) => ({
+                      ...section,
+                      data: section.data.filter((event) => event.id !== selectedEvent.id)
+                    }))
+                    .filter((section) => section.data.length > 0)
+                );
+
+                setSelectedEvent(null);
+              }
+            } catch (err) {
+              console.error('Unexpected error:', err);
+            }
+          },
+          style: 'destructive'
+        }
+      ]
+    )
+
   };
+
+
 
   useEffect(() => {
     const fetchEvents = async () => {
+      setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       const userEmail = user?.email;
 
@@ -132,6 +158,7 @@ const ExpandableCalendarScreen = () => {
       }
       else {
         console.log('Activities: ', data)
+        setLoading(false);
       }
 
       const grouped = data.reduce((acc, item) => {
@@ -166,43 +193,48 @@ const ExpandableCalendarScreen = () => {
       setAgendaData(transformed);
     };
 
-      fetchEvents();
+    fetchEvents();
   }, []);
 
-    const renderItem = useCallback(({ item }) => (
-      <AgendaItem item={item} onPress={handleItemPress} />
-    ), []);
-    const keyExtractor = useCallback((item) => item.id, []);
+  const renderItem = useCallback(({ item }) => (
+    <AgendaItem item={item} onPress={handleItemPress} />
+  ), []);
+  const keyExtractor = useCallback((item) => item.id, []);
 
   return (
     <View style={styles.container}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={styles.returnButton}>
-          <TouchableOpacity onPress={() => router.push('/pet_owner/screens/Calendar/Calendar')} style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Image
-              source={require('../../../../assets/pictures/return.png')}
-              style={styles.returnIcon}
-            />
-            <Text style={styles.returnText}>Return</Text>
-          </TouchableOpacity>
-        </View>
-        <CalendarProvider
-            date={new Date().toISOString().split('T')[0]}
-            showTodayButton
-            disabledOpacity={0.6}
-            // minDate={minDate}
-            // maxDate={maxDate}
-        >
-            <ExpandableCalendar
-            initialPosition="closed"
-            markedDates={markedDates}
-            onDayPress={(day) => {
-                setSelectedDate(new Date(day.dateString));
-            }}
-            // minDate={minDate}
-            // maxDate={maxDate}
-            />
-            <AgendaList
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.returnButton}>
+        <TouchableOpacity onPress={() => router.push('/pet_owner/screens/Calendar/Calendar')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Image
+            source={require('../../../../assets/pictures/return.png')}
+            style={styles.returnIcon}
+          />
+          <Text style={styles.returnText}>Return</Text>
+        </TouchableOpacity>
+      </View>
+      <CalendarProvider
+        date={new Date().toISOString().split('T')[0]}
+        showTodayButton
+        disabledOpacity={0.6}
+      // minDate={minDate}
+      // maxDate={maxDate}
+      >
+        <ExpandableCalendar
+          initialPosition="closed"
+          markedDates={markedDates}
+          onDayPress={(day) => {
+            setSelectedDate(new Date(day.dateString));
+          }}
+        // minDate={minDate}
+        // maxDate={maxDate}
+        />
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#3C3C4C" />
+          </View>
+        ) :
+          <AgendaList
             sections={agendaData}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
@@ -212,152 +244,155 @@ const ExpandableCalendarScreen = () => {
             maxToRenderPerBatch={5}
             windowSize={5}
             ListFooterComponent={<View style={{ height: 60 }} />}
-            //   stickySectionHeadersEnabled={false}
-            />
-        </CalendarProvider>
-        <TouchableOpacity
-            style={styles.addEventButton}
-            onPress={() =>
-            router.push({
-                pathname: '/pet_owner/screens/Calendar/add-event',
-                params: {
-                date: selectedDate.toISOString().split('T')[0],
-                },
-            })
-            }
-        >
-            <Text style={{ color: '#FFFFFF', fontSize: 30 }}>+</Text>
-        </TouchableOpacity>
-        {selectedEvent && (
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => setModalVisible(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContainer}>
-                <View style={styles.editButton}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      router.push({
-                        pathname: '/pet_owner/screens/Calendar/edit-event',
-                        params: { eventId: selectedEvent.id },
-                      });
-                    }}
-                  >
-                    <Image
-                      source={require('../../../../assets/pictures/edit.png')}
-                      style={{ width: 28, height: 28 }}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.optionsButton}>
-                  <TouchableOpacity onPress={() => setShowDelete(!showDelete)}>
-                    <Image
-                      source={require('../../../../assets/pictures/options.png')}
-                      style={{ width: 24, height: 24 }}
-                    />
-                  </TouchableOpacity>
+          //   stickySectionHeadersEnabled={false}
+          />
+        }
 
-                  {showDelete && (
-                    <View style={styles.deleteButtonContainer}>
-                      <TouchableOpacity
-                        onPress={handleDeleteEvent}
-                        style={styles.deleteButton}
-                      >
-                        <Text style={{ color: 'white' }}>Delete Event</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                </View>
-                <View style={{ gap: 4, alignItems: 'center'}}>
-                  <Text style={styles.titleText}>{selectedEvent.title}</Text>
-                  <Text style={styles.descriptionText}>{selectedEvent.description}</Text>
-                  <Text style={styles.timeText}>{selectedEvent.startTime} - {selectedEvent.endTime}</Text>
-                  <Text style={styles.typeText}>{selectedEvent.type}</Text>
-                </View>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-                  <Text style={{ color: '#fff' }}>Close</Text>
+      </CalendarProvider>
+      <TouchableOpacity
+        style={styles.addEventButton}
+        onPress={() =>
+          router.push({
+            pathname: '/pet_owner/screens/Calendar/add-event',
+            params: {
+              date: selectedDate.toISOString().split('T')[0],
+            },
+          })
+        }
+      >
+        <Text style={{ color: '#FFFFFF', fontSize: 30 }}>+</Text>
+      </TouchableOpacity>
+      {selectedEvent && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <View style={styles.editButton}>
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push({
+                      pathname: '/pet_owner/screens/Calendar/edit-event',
+                      params: { eventId: selectedEvent.id },
+                    });
+                  }}
+                >
+                  <Image
+                    source={require('../../../../assets/pictures/edit.png')}
+                    style={{ width: 28, height: 28 }}
+                  />
                 </TouchableOpacity>
               </View>
+              <View style={styles.optionsButton}>
+                <TouchableOpacity onPress={handleDeleteEvent}>
+                  {/* <Image
+                    source={require('../../../../assets/pictures/options.png')}
+                    style={{ width: 24, height: 24 }}
+                  /> */}
+                  <Ionicons name="trash-outline" size={24} color="gray" />
+                </TouchableOpacity>
+
+                {/* {showDelete && (
+                  <View style={styles.deleteButtonContainer}>
+                    <TouchableOpacity
+                      onPress={handleDeleteEvent}
+                      style={styles.deleteButton}
+                    >
+                      <Text style={{ color: 'white' }}>Delete Event</Text>
+                    </TouchableOpacity>
+                  </View>
+                )} */}
+              </View>
+              <View style={{ gap: 4, alignItems: 'center' }}>
+                <Text style={styles.titleText}>{selectedEvent.title}</Text>
+                <Text style={styles.descriptionText}>{selectedEvent.description}</Text>
+                <Text style={styles.timeText}>{selectedEvent.startTime} - {selectedEvent.endTime}</Text>
+                <Text style={styles.typeText}>{selectedEvent.type}</Text>
+              </View>
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                <Text style={{ color: '#fff' }}>Close</Text>
+              </TouchableOpacity>
             </View>
-          </Modal>
-        )}
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-      flex: 1,
-      backgroundColor: '#B3EBF2',
+    flex: 1,
+    backgroundColor: '#B3EBF2',
   },
   item: {
-      backgroundColor: 'white',
-      gap: 6,
-      borderRadius: 8,
-      padding: 20,
-      marginHorizontal: 10,
-      marginTop: 10,
-      justifyContent: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.2,
-      shadowRadius: 2,
-      elevation: 3,
+    backgroundColor: 'white',
+    gap: 6,
+    borderRadius: 8,
+    padding: 20,
+    marginHorizontal: 10,
+    marginTop: 10,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   titleText: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: '#333',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
   },
   timeContainer: {
-      borderRadius: 16,
-      paddingVertical: 4,
-      paddingHorizontal: 14,
-      marginBottom: 5,
-      alignSelf: 'flex-start',
+    borderRadius: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 14,
+    marginBottom: 5,
+    alignSelf: 'flex-start',
   },
   timeText: {
-      fontSize: 14,
-      fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '600',
   },
   descriptionText: {
-      fontSize: 14,
-      color: '#666',
-      fontWeight: '400',
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '400',
   },
   section: {
-      backgroundColor: '#B3EBF2',
-      padding: 4,
+    backgroundColor: '#B3EBF2',
+    padding: 4,
   },
   addEventButton: {
-      position: 'absolute',
-      bottom: 40,
-      right: 20,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#3C3C4C',
-      width: 50,
-      height: 50,
-      borderRadius: 25,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.2,
-      shadowRadius: 2,
-      elevation: 3,
+    position: 'absolute',
+    bottom: 40,
+    right: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#3C3C4C',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   typeTag: {
-      paddingVertical: 4,
-      paddingHorizontal: 10,
-      borderRadius: 12,
-      alignSelf: 'flex-end',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    alignSelf: 'flex-end',
   },
   typeText: {
-      fontSize: 14,
-      fontWeight: '600',
-      textTransform: 'capitalize',
+    fontSize: 14,
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
   returnButton: {
     flexDirection: 'row',
