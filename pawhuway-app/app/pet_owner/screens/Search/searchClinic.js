@@ -43,7 +43,6 @@ export default function SearchClinic() {
             } finally {
                 setLoading(false);
             }
-            // co
         };
 
         fetchClinics();
