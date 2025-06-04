@@ -11,6 +11,8 @@ import {
   ScrollView,
   StatusBar,
   Touchable,
+  Modal,
+  Linking,
 } from "react-native";
 import { Stack } from "expo-router";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -20,6 +22,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { FlatList } from "react-native";
 import { set } from "lodash";
+import ImageViewer from "react-native-image-zoom-viewer";
 
 // const PetDetails = () => {
 //   const router = useRouter();
@@ -345,9 +348,13 @@ const PetDetails = () => {
 
   const [qrVisible, setQrVisible] = useState(false);
   const [qrValue, setQrValue] = useState("");
+  const [medHistoryVisible, setMedHistoryVisible] = useState(false);
+  const [medHistoryImages, setMedHistoryImages] = useState([]);
+  const [medHistoryLoading, setMedHistoryLoading] = useState(false);
 
   useEffect(() => {
     async function fetchPetDetails() {
+      console.log("Fetching pet details for ID:", petId);
       const { data, error } = await supabase
         .from("pets")
         .select(
@@ -357,13 +364,18 @@ const PetDetails = () => {
         .single();
 
       if (error) {
+        console.error("Error fetching pet details:", error);
         Alert.alert("Error", "Failed to fetch pet details.");
         return;
       }
 
+      console.log("Pet details from Supabase:", data);
+
       const { publicUrl } = supabase.storage
         .from("pet-images")
         .getPublicUrl(`${petId}.jpg`);
+
+      console.log("Pet image public URL:", publicUrl);
 
       setPetData({
         ...data,
@@ -438,6 +450,83 @@ const PetDetails = () => {
       ]
     );
   };
+
+  const handleGenerateQR = (pet) => {
+    setQrValue(JSON.stringify(pet)); // Encode pet data in QR code
+    setQrVisible(true);
+  };
+
+  const handleShowMedicalHistory = async () => {
+    setMedHistoryLoading(true);
+    setMedHistoryVisible(true);
+    try {
+      console.log("Listing files in pet-medical-history bucket...");
+      const { data: files, error } = await supabase
+        .storage
+        .from("pet-medical-history")
+        .list("");
+
+      console.log("Supabase list() response:", { files, error });
+
+      if (error || !files || files.length === 0) {
+        console.warn("No files found or error:", error);
+        setMedHistoryImages([]);
+        setMedHistoryLoading(false);
+        Alert.alert("No Medical History", "No medical history file found for this pet.");
+        return;
+      }
+
+      console.log("Files in bucket:", files);
+
+      const prefix = `${petData.id}-${petData.name}-`;
+      const pdfFile = files.find(
+        file =>
+          file.name.startsWith(prefix) &&
+          file.name.endsWith('.pdf')
+      );
+
+      console.log("Matching PDF file:", pdfFile);
+
+      if (!pdfFile) {
+        console.warn("No matching PDF file found for prefix:", prefix);
+        setMedHistoryImages([]);
+        setMedHistoryLoading(false);
+        Alert.alert("No PDF", "No PDF medical history file found for this pet.");
+        return;
+      }
+
+      console.log("Getting public URL for file:", pdfFile.name);
+
+      const { data: publicUrlData, error: publicUrlError } = supabase
+        .storage
+        .from("pet-medical-history")
+        .getPublicUrl(pdfFile.name);
+
+      console.log("Result of getPublicUrl:", publicUrlData, publicUrlError);
+
+      const publicUrl = publicUrlData?.publicUrl;
+
+      console.log("Public URL for medical history PDF:", publicUrl);
+
+      setMedHistoryImages([{ url: publicUrl }]);
+    } catch (e) {
+      console.error("Error loading medical history:", e);
+      Alert.alert("Error", "Failed to load medical history.");
+      setMedHistoryImages([]);
+    }
+    setMedHistoryLoading(false);
+    handleOpenPdf();
+  };
+
+  const handleOpenPdf = () => {
+    console.log("Opening medical history PDF:", medHistoryImages);
+    if (medHistoryImages.length > 0) {
+      Linking.openURL(medHistoryImages[0].url);
+    } else {
+      Alert.alert("No PDF", "No medical history PDF found.");
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -536,7 +625,7 @@ const PetDetails = () => {
           />
         </View>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={styles.button} onPress={handleShowMedicalHistory}>
             <View>
               <Text style={styles.buttonText}>Medical History</Text>
             </View>
@@ -555,6 +644,7 @@ const PetDetails = () => {
           </TouchableOpacity>
         </View>
       </View>
+
     </SafeAreaView>
   );
 };
@@ -641,4 +731,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
 export default PetDetails;

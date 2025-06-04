@@ -21,9 +21,11 @@
     "@rneui/themed": "^4.0.0-rc.8",
     "@supabase/storage-js": "^2.7.1",
     "@supabase/supabase-js": "^2.48.1",
+    "base64-arraybuffer": "^1.0.2",
     "expo": "^52.0.46",
     "expo-camera": "^16.0.18",
     "expo-document-picker": "~13.0.3",
+    "expo-file-system": "~18.0.12",
     "expo-font": "^13.0.4",
     "expo-image-manipulator": "~13.0.6",
     "expo-image-picker": "~16.0.6",
@@ -45,6 +47,7 @@
     "react-native-gesture-handler": "~2.20.2",
     "react-native-image-picker": "^8.2.0",
     "react-native-image-resizer": "^1.4.5",
+    "react-native-image-zoom-viewer": "^3.0.1",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-modal": "^14.0.0-rc.1",
     "react-native-pager-view": "6.5.1",
@@ -61,8 +64,8 @@
     "react-native-web": "~0.19.13"
   },
   "devDependencies": {
-    "@react-native-community/cli": "latest",
     "@babel/core": "^7.20.0",
+    "@react-native-community/cli": "latest",
     "@types/lodash": "^4.17.17",
     "react-native-svg-transformer": "^1.5.0",
     "typescript": "^5.3.3"

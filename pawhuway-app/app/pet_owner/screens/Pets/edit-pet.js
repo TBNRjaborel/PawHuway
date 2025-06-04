@@ -18,9 +18,10 @@ import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from 'expo-file-system'
 import * as ImageManipulator from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
 import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
+import { decode } from 'base64-arraybuffer'; 
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
@@ -126,25 +127,30 @@ const EditPet = () => {
   };
 
   const pickImage = async () => {
+    console.log("Opening image picker...");
     const result = await DocumentPicker.getDocumentAsync({
       type: "image/*",
       copyToCacheDirectory: true,
     });
 
-    if (result.canceled || !result.assets) return;
+    console.log("Image picker result:", result);
+
+    if (result.canceled || !result.assets) {
+      console.log("Image picking cancelled or no assets.");
+      return;
+    }
 
     const file = result.assets[0];
-
-    console.log("uri: ", file.uri);
+    console.log("Picked image file:", file);
 
     let sizeMB = file.size / (1024 * 1024);
-    console.log("filesize: ", sizeMB);
+    console.log("Original image size (MB):", sizeMB);
 
     let resizedImg = file;
     let quality = 0.9;
 
     while (sizeMB > 5 && quality > 0.1) {
-      console.log("resizing");
+      console.log("Resizing image, current quality:", quality);
       try {
         resizedImg = await ImageManipulator.manipulateAsync(
           resizedImg.uri,
@@ -153,17 +159,16 @@ const EditPet = () => {
         );
 
         const fileInfo = await FileSystem.getInfoAsync(resizedImg.uri);
-        console.log("done resizing, size: ", fileInfo.size / (1024 * 1024));
-        console.log(fileInfo);
         sizeMB = fileInfo.size / (1024 * 1024);
+        console.log("Resized image size (MB):", sizeMB);
         quality = quality - 0.1;
       } catch (error) {
-        console.error("error resizing: ", error);
+        console.error("Error resizing image:", error);
         break;
       }
     }
 
-    console.log("exited with size ", sizeMB);
+    console.log("Final image size (MB):", sizeMB);
 
     const newImg = {
       name: file.name,
@@ -171,7 +176,7 @@ const EditPet = () => {
       mimeType: "image/jpeg",
     };
 
-    console.log("file: ", newImg);
+    console.log("Final image object to upload:", newImg);
 
     setPetData({ ...petData, image: newImg, img_path: newImg.uri });
   };
@@ -185,28 +190,47 @@ const EditPet = () => {
   };
 
   const pickFile = async () => {
+    console.log("Opening file picker...");
     const result = await DocumentPicker.getDocumentAsync({
       type: "application/pdf",
       copyToCacheDirectory: true,
     });
 
-    if (!result.canceled) {
+    console.log("File picker result:", result);
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
       const file = result.assets[0];
+      const fileUri = file.uri;
+      console.log("Picked file URI:", fileUri);
 
       if (file.mimeType !== "application/pdf") {
+        console.log("Invalid file type:", file.mimeType);
         Alert.alert("Invalid Format", "Please select a PDF file.");
         return;
       }
 
+      const base64 = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      console.log("Read file as base64, length:", base64.length);
+
+      const arrayBuffer = decode(base64);
+      console.log("Decoded base64 to arrayBuffer, byteLength:", arrayBuffer.byteLength);
+
+      // Store the actual file URI for later reading/upload
       handleFileChange(file);
 
-      setPetData({ ...petData, medfile: file });
+      setPetData({ ...petData, medfile: file.uri });
+      // Optionally store arrayBuffer and filePath in state for upload
+    } else {
+      console.log("File picking cancelled or failed.");
     }
   };
 
   const updatePet = async () => {
-    console.log("id", petId);
-    console.log("petData:", petData);
+    console.log("Starting pet update for ID:", petId);
+    console.log("Pet data to update:", petData);
+
     if (
       petData.name == "" ||
       petData.type == "" ||
@@ -237,13 +261,14 @@ const EditPet = () => {
     }
 
     if (petData.image) {
+      console.log("Uploading image...");
       const imgFileName = `${petId}-${petData.name}-${new Date()
         .toLocaleDateString("en-US", {
           year: "numeric",
           month: "2-digit",
           day: "2-digit",
         })
-        .replace(/\//g, "-")}-(${petData.image.name})`;
+        .replace(/\//g, "-")}`;
 
       const { data: files, error: listError } = await supabase.storage
         .from("pet-images")
@@ -280,6 +305,8 @@ const EditPet = () => {
           name: imgFileName,
         });
 
+      console.log("Image upload response:", uploadError ? uploadError : "Success");
+
       if (uploadError) {
         console.error("Error uploading image:", uploadError);
         throw uploadError;
@@ -288,6 +315,8 @@ const EditPet = () => {
       const { data: urlData } = supabase.storage
         .from("pet-images")
         .getPublicUrl(imgFileName);
+
+      console.log("Image public URL:", urlData.publicUrl);
 
       const { error: updateError } = await supabase
         .from("pets")
@@ -301,50 +330,57 @@ const EditPet = () => {
 
     console.log("image done");
 
-    if (petData.medfile) {
+    if (petData.medfile && petData.medfile !== "") {
+      console.log("Uploading medical PDF...");
       const medFileName = `${petId}-${petData.name}-${new Date()
         .toLocaleDateString("en-US", {
           year: "numeric",
           month: "2-digit",
           day: "2-digit",
         })
-        .replace(/\//g, "-")}-(${fileName})`;
+        .replace(/\//g, "-")}.pdf`;
 
-      const { data: files, error: listError } = await supabase.storage
-        .from("pet-medical-history")
-        .list();
-
-      if (listError) {
-        console.error("Error fetching existing files:", listError);
-      } else {
-        const filesToDelete = files
-          ?.filter((file) => file.name.startsWith(`${petId}-`))
-          .map((file) => file.name);
-
-        if (filesToDelete.length > 0) {
-          const { error: deleteError } = await supabase.storage
-            .from("pet-medical-history")
-            .remove(filesToDelete);
-
-          if (deleteError) {
-            console.error("Error deleting files:", deleteError);
-          }
-        }
-      }
-
-      const { error: uploadError } = await supabase.storage
-        .from("pet-medical-history")
-        .upload(medFileName, {
-          uri: petData.medfile.uri,
-          type: petData.medfile.mimeType,
-          name: medFileName,
+      // Read the file as arrayBuffer before uploading
+      try {
+        const fileUri = petData.medfile
+        // petData.medfile is now always a file URI
+        const base64 = await FileSystem.readAsStringAsync(fileUri, {
+          encoding: FileSystem.EncodingType.Base64,
         });
+        const arrayBuffer = decode(base64);
+        const { error } = await supabase
+          .storage
+          .from('pet-medical-history') // use your correct bucket name
+          .upload(medFileName, arrayBuffer, {
+            contentType: 'application/pdf',
+            upsert: false,
+          });
 
-      if (uploadError) throw uploadError;
+        console.log("PDF upload response:", error ? error : "Success");
+
+        if (error) {
+          console.error("Error uploading medical file:", error);
+          Alert.alert("Error", "Failed to upload medical file.");
+          return;
+        }
+      } catch (err) {
+        console.error("Error reading or uploading PDF:", err);
+        Alert.alert("Error", "Failed to process medical file.");
+        return;
+      }
 
       Alert.alert("Success", "Pet updated successfully!");
       router.push("pet_owner/dashboard-v2");
     }
+
+      if (error) {
+        console.error("Error uploading medical file:", error);
+        Alert.alert("Error", "Failed to upload medical file.");
+        return;
+      }
+
+    Alert.alert("Success", "Pet updated successfully!");
+    router.push("pet_owner/dashboard-v2");
   };
 
   return (
