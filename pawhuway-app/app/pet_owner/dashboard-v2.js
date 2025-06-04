@@ -266,6 +266,7 @@ const PetDashboard = () => {
 
         }
 
+
       </View>
     </SafeAreaView>
   );
@@ -324,6 +325,13 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins Light",
     fontSize: 16,
     color: "#888",
+  },
+  petImageContainer: {
+    marginTop: 10,
+    width: "100%",
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   categoriesContainer: {
     flexDirection: "row",
@@ -424,13 +432,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     width: 300,
-    height: 300,
+    height: 350,
     alignItems: "center",
   },
   petImageContainer: {
-    width: 120,
-    height: 120,
-    marginBottom: 10,
+    marginTop: 10,
+    width: "100%",
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },

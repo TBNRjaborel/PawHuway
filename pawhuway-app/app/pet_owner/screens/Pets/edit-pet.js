@@ -368,16 +368,13 @@ const EditPet = () => {
         Alert.alert("Error", "Failed to process medical file.");
         return;
       }
-
-      Alert.alert("Success", "Pet updated successfully!");
-      router.push("pet_owner/dashboard-v2");
     }
 
-      if (error) {
-        console.error("Error uploading medical file:", error);
-        Alert.alert("Error", "Failed to upload medical file.");
-        return;
-      }
+    if (error) {
+      console.error("Error uploading medical file:", error);
+      Alert.alert("Error", "Failed to upload medical file.");
+      return;
+    }
 
     Alert.alert("Success", "Pet updated successfully!");
     router.push("pet_owner/dashboard-v2");
@@ -596,7 +593,6 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16, // Larger text for input from Style 1
     marginBottom: 10,
-    fontFamily: "Poppins Light", // Font style from Style 1
   },
   pickerContainer: {
     backgroundColor: "#FFFFFF",
@@ -609,16 +605,13 @@ const styles = StyleSheet.create({
   picker: {
     height: 50,
     width: "100%",
-    fontFamily: "Poppins Light", // Font style from Style 1
     fontSize: 14, // Adjusted font size to match Style 2's picker
   },
   pickerPlaceholder: {
-    fontFamily: "Poppins Light", // Font style from Style 1
     fontSize: 14,
     color: "gray", // Gray color for "Select Sex"
   },
   pickerItem: {
-    fontFamily: "Poppins Light",
     fontSize: 14, // Adjusted to match Style 2's item font size
   },
   fileUploadContainer: {
