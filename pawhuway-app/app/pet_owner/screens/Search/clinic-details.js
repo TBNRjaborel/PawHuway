@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, FlatList } from 'react-native'
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, ScrollView, FlatList, Alert } from 'react-native'
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect } from 'react'
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -153,6 +153,9 @@ const clinicDetails = () => {
                         clinic_id: clinicId,
                         pet_id: selectedPet.id, // Use the selected pet's ID
                         event_id: event.id, // Use the newly created event's ID
+                        preferred_date: selectedDate,
+                        preferred_time: selectedTime,
+                        desc: `Appointment for ${selectedPet.name} at ${clinic.clinic_name}`,
                     },
 
                 ]).select();
@@ -165,8 +168,12 @@ const clinicDetails = () => {
             console.error("Error booking appointment:", error.message);
         } finally {
             setSubmitLoading(false);
-            alert("Appointment booked successfully!");
-            router.back();
+            Alert.alert(
+                "Appointment Request Sent",
+                `Your appointment request for ${selectedPet.name} at ${clinic.clinic_name} on ${selectedDate} at ${selectedTime} has been sent.`,
+                [{ text: "OK", onPress: () => router.back() }]
+            );
+            // router.back();
         }
         // console.log("Selected date and time:", selectedDate, selectedTime);
     }
@@ -325,7 +332,7 @@ const clinicDetails = () => {
                             <ActivityIndicator size="small" color="#fff" />
                         ) : (
                             <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'Poppins' }} >
-                                Book Appointment
+                                Request Appointment
                             </Text>
                         )}
                 </TouchableOpacity>
