@@ -136,7 +136,7 @@ const VetClinicDashboard = () => {
               if (error) throw new Error(error.message);
 
               // Remove the vet from the local state
-              setVetList(vetList.filter((vet) => vet.vet_id !== vetId));
+              setVetList(vetlist.filter((vet) => vet.vet_id !== vetId));
               setSelectedVet(null); // Close the modal after removal
             } catch (err) {
               console.error("Error removing vet:", err.message);
@@ -184,10 +184,10 @@ const VetClinicDashboard = () => {
             <Text style={styles.greetingTitle}>{clinicName}</Text>
           </View>
           <View>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.calendarButton}
               onPress={() => (
-                router.push('/vet_clinic/screens/Calendar')
+                router.push(`/vet_clinic/screens/Calendar?=${clinic.id}`) // Pass clinic ID to the calendar screen
               )}
             >
               <View style={styles.calendarText}>
@@ -198,7 +198,7 @@ const VetClinicDashboard = () => {
                     color: "white",
                   }}
                 >
-                  Calendar
+                  Calendaryo
                 </Text>
               </View>
             </TouchableOpacity>
@@ -330,7 +330,7 @@ const VetClinicDashboard = () => {
                               {capitalizeFirstLetter(
                                 selectedVet.vet_profiles.user_accounts.last_name
                                   ? selectedVet.vet_profiles.user_accounts
-                                      .last_name
+                                    .last_name
                                   : ""
                               )}
                             </Text>

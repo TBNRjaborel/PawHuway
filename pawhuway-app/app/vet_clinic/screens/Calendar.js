@@ -2,41 +2,66 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, ScrollView, FlatList, Modal, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../../src/lib/supabase';
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { Picker } from '@react-native-picker/picker';
+import { set } from 'lodash';
 
 const CalendarScreen = () => {
+    const { clinicId } = useLocalSearchParams()
+    // const [vets, setVets] = useState([]);
     const [appointments, setAppointments] = useState([]);
     const [open, setOpen] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState('pending');
+    const [selectedVet, setSelectedVet] = useState('');
     const [loading, setLoading] = useState(true);
     const [markedDates, setMarkedDates] = useState({});
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const [clinic, setClinic] = useState(null);
+    const [vetlist, setVetList] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
-        const fetchAppointments = async () => {
+        const fetchUser = async () => {
             try {
-                const { data, error } = await supabase
-                .from('appointment_requests')
-                .select('*');
-
-                if (error) {
-                console.error('Error fetching appointments:', error);
-                return;
+                setLoading(true)
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
+                if (userError) {
+                    console.error('Error fetching user:', userError);
+                    return;
                 }
+                console.log("User: ", user.id);
 
-                setAppointments(data);
+                const { data: appointmentsData, error: appointmentsError } = await supabase
+                    .from('appointment_requests')
+                    .select(`
+        id, clinic_id, pet_id, preferred_date, preferred_time, desc, status,
+        pets(
+            name,
+            pet_owners(
+                email,
+                user_accounts(
+                    first_name, last_name
+                )
+            )
+        )
+    `)
+                    .eq('clinic_id', user.id);
 
-                // Collect all appointment dates
-                const appointmentDates = data.map(app => app.date);
-
-                // Get a range of dates or specific month to show free slots too
+                console.log("Appointments Data: ", appointmentsData);
+                console.log("Pet", appointmentsData[0].pets);
+                console.log("Pet Owner", appointmentsData[0].pets?.pet_owners);
+                if (appointmentsError) {
+                    console.error('Error fetching appointments:', appointmentsError);
+                    return;
+                }
+                setAppointments(appointmentsData);
                 const marks = {};
 
-                data.forEach(({ preferred_date, status }) => {
+                appointmentsData.forEach(({ preferred_date, status }) => {
                     let bgColor;
                     let textColor = 'white';
 
@@ -64,36 +89,89 @@ const CalendarScreen = () => {
                 // Optionally mark remaining dates as gray
                 const today = new Date();
                 for (let i = 0; i < 30; i++) {
-                const date = new Date(today);
-                date.setDate(today.getDate() + i);
-                const dateStr = date.toISOString().split('T')[0];
+                    const date = new Date(today);
+                    date.setDate(today.getDate() + i);
+                    const dateStr = date.toISOString().split('T')[0];
 
-                if (!marks[dateStr]) {
-                    marks[dateStr] = {
-                    customStyles: {
-                        container: {
-                        backgroundColor: '#e0e0e0',
-                        borderRadius: 5,
-                        },
-                        text: {
-                        color: 'black',
-                        },
-                    },
-                    };
-                }
+                    if (!marks[dateStr]) {
+                        marks[dateStr] = {
+                            customStyles: {
+                                container: {
+                                    backgroundColor: '#e0e0e0',
+                                    borderRadius: 5,
+                                },
+                                text: {
+                                    color: 'black',
+                                },
+                            },
+                        };
+                    }
                 }
 
-                setMarkedDates(marks);
             } catch (err) {
                 console.error('Unexpected error:', err);
             } finally {
                 setLoading(false);
             }
+        }
+        fetchUser();
+    }, [])
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const {
+                    data: { user },
+                    error,
+                } = await supabase.auth.getUser();
+
+                if (error) throw new Error(error.message);
+                // console.log(user.id)
+                const { data: clinicData, error: clinicError } = await supabase
+                    .from("vet_clinics")
+                    .select("*")
+                    .eq("id", user.id)
+                    .single();
+
+                if (clinicError) throw new Error(clinicError.message);
+                setClinic(clinicData);
+
+                //fetch vet from this clinic
+                const { data: vetData, error: vetError } = await supabase
+                    .from("clinic_vet_relation")
+                    .select(
+                        `
+                          vet_id,
+                          vet_profiles(
+                          email, user_accounts(*)
+                          )
+                      `
+                    )
+                    .eq("vet_clinic_id", clinicData.id);
+
+                if (vetError) throw new Error(vetError.message);
+                setVetList(vetData);
+                console.log("vets", vetData)
+                // console.log("vet_profiles", vetData[0].vet_profiles)
+                // console.log("user_accounts", vetData[0].vet_profiles.user_accounts)
+
+            } catch (err) {
+                console.error("Fetch error:", err.message);
+            } finally {
+                setIsLoading(false); // Done loading
+            }
         };
 
-        fetchAppointments();
+        fetchData();
+        // console.log("vets2", vetList)
     }, []);
 
+    const handleVetSelection = (vetId) => {
+        setSelectedVet(vetId);
+        console.log("Selected Vet ID:", vetId);
+        // You can add additional logic here if needed
+    }
     const calendarTheme = {
         backgroundColor: "#ffffff",
         calendarBackground: "#ffffff",
@@ -119,7 +197,7 @@ const CalendarScreen = () => {
         try {
             const { error } = await supabase
                 .from('appointment_requests')
-                .update({ status: 'accepted' })
+                .update({ status: 'accepted', vet_id: selectedVet })
                 .eq('id', id);
 
             if (error) throw error;
@@ -181,8 +259,8 @@ const CalendarScreen = () => {
                     setModalVisible(true);
                 }}
             >
-                <Text style={styles.appointmentText}>Clinic ID: {item.clinic_id}</Text>
-                <Text style={styles.appointmentText}>Pet ID: {item.pet_id}</Text>
+                <Text style={styles.appointmentText}>Pet Owner: {item.pets.pet_owners.user_accounts.first_name} {item.pets.pet_owners.user_accounts.last_name}</Text>
+                <Text style={styles.appointmentText}>Pet Name: {item.pets.name}</Text>
                 <Text style={styles.appointmentText}>Date: {item.preferred_date}</Text>
                 <Text style={styles.appointmentText}>Time: {item.preferred_time}</Text>
                 <Text style={styles.appointmentText} numberOfLines={1}>
@@ -195,11 +273,11 @@ const CalendarScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
-            
+
             <View style={styles.top}>
                 {/* <Text style={styles.header}>Calendar</Text> */}
                 <TouchableOpacity style={styles.backButton}
-                    onPress={() => { router.push("/vet/vet-dashboard") }}
+                    onPress={() => { router.push("/vet_clinic/vet-clinic-dashboard") }}
                 >
                     <AntDesign name="home" size={24} color="black" />
                 </TouchableOpacity>
@@ -224,7 +302,7 @@ const CalendarScreen = () => {
                         ]}
                         setOpen={setOpen}
                         setValue={setSelectedStatus}
-                        setItems={() => {}} // If you're not dynamically changing items
+                        setItems={() => { }} // If you're not dynamically changing items
                         style={styles.picker}
                         dropDownDirection="AUTO"
                         placeholder="Select status"
@@ -234,10 +312,10 @@ const CalendarScreen = () => {
                     {selectedStatus === 'pending'
                         ? 'Appointment Requests'
                         : selectedStatus === 'accepted'
-                        ? 'Accepted Appointments'
-                        : selectedStatus === 'declined'
-                        ? 'Declined Appointments'
-                        : 'No Appointments'}
+                            ? 'Accepted Appointments'
+                            : selectedStatus === 'declined'
+                                ? 'Declined Appointments'
+                                : 'No Appointments'}
                 </Text>
                 {loading ? (
                     <Text style={styles.loadingText}>Loading...</Text>
@@ -264,12 +342,28 @@ const CalendarScreen = () => {
                             >
                                 <Text style={styles.closeButtonText}>X</Text>
                             </TouchableOpacity>
-                            <Text style={styles.modalTitle}>Appointment Details</Text>
-                            <Text style={styles.modalText}>Clinic ID: {selectedAppointment.clinic_id}</Text>
-                            <Text style={styles.modalText}>Pet ID: {selectedAppointment.pet_id}</Text>
-                            <Text style={styles.modalText}>Date: {selectedAppointment.date}</Text>
-                            <Text style={styles.modalText}>Time: {selectedAppointment.time}</Text>
-                            <Text style={styles.modalText}>Description: {selectedAppointment.desc}</Text>
+                            <Text style={styles.modalTitle}>Assign a vet</Text>
+                            <View style={styles.pickerContainer}>
+                                <Picker
+                                    selectedValue={selectedVet}
+                                    onValueChange={(itemValue) => handleVetSelection(itemValue)}
+                                    style={styles.pickerWrapper} // Reuse same style
+                                >
+                                    <Picker.Item label="Select a vet to add" value="placeholder" style={styles.pickerPlaceholder} />
+                                    {loading ? (
+                                        <Picker.Item label="Loading vets..." value="" />
+                                    ) : (
+                                        vetlist.map((vet) => (
+                                            <Picker.Item
+                                                key={vet.vet_id}
+                                                label={`${vet.vet_profiles.user_accounts.first_name} (${vet.vet_profiles.user_accounts.email_add ?? 'No email'})`}
+                                                value={vet.vet_id}
+                                                style={styles.pickerItem}
+                                            />
+                                        ))
+                                    )}
+                                </Picker>
+                            </View>
 
                             <View style={styles.modalButtons}>
                                 <TouchableOpacity
@@ -392,27 +486,28 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         alignSelf: 'flex-end',
-        backgroundColor: '#FF6B6B',
+        // backgroundColor: '#FF6B6B',
         padding: 10,
         borderRadius: 20,
         marginBottom: 10,
     },
     closeButtonText: {
-        color: '#FFFFFF',
+        color: '',
         fontWeight: 'bold',
         fontSize: 16,
+        color: '#3C3C4C'
     },
     modalTitle: {
         fontSize: 20,
-        fontWeight: "bold",
-        fontFamily: "Poppins Light",
+        // fontWeight: "bold",
+        fontFamily: "Poppins",
         marginBottom: 20,
-        color: "#1E1E1E",
+        color: "#3C3C4C",
     },
     modalText: {
         fontSize: 16,
         fontFamily: "Poppins Light",
-        color: "#1E1E1E",
+        color: "#3C3C4C",
         marginBottom: 10,
     },
     modalButtons: {
@@ -436,7 +531,7 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: "#FFFFFF",
-        fontWeight: "bold",
+        // fontWeight: "bold",
         fontSize: 16,
         fontFamily: "Poppins Light",
     },
@@ -458,7 +553,7 @@ const styles = StyleSheet.create({
         // backgroundColor: 'yellow'
     },
     picker: {
-        width: 120, 
+        width: 120,
         alignSelf: 'flex-end',
         borderColor: '#ccc',
         borderWidth: 1,
@@ -468,6 +563,33 @@ const styles = StyleSheet.create({
         marginTop: 12,
         fontSize: 16,
         color: '#555',
+    },
+    pickerContainer: {
+        flexDirection: "row",
+        borderColor: 'black',
+        backgroundColor: '#EAEAEA',
+        // borderWidth: 1,
+        borderRadius: 20,
+        width: "95%"
+    },
+    pickerWrapper: {
+        flex: 1,
+        // backgroundColor: '#EAEAEA',
+        // borderColor: '#808080',
+        borderWidth: 1,
+        borderRadius: 5,
+        justifyContent: 'center',
+        width: "80%"
+    },
+
+    pickerPlaceholder: {
+        fontSize: 16,
+        color: "#938989", // Gray color for "Select Sex"
+    },
+
+    pickerItem: {
+        fontSize: 16,
+        color: "black",
     },
 });
 

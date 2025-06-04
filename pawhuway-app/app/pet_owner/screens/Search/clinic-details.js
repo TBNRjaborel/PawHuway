@@ -153,6 +153,10 @@ const clinicDetails = () => {
                         clinic_id: clinicId,
                         pet_id: selectedPet.id, // Use the selected pet's ID
                         event_id: event.id, // Use the newly created event's ID
+                        preferred_date: selectedDate,
+                        preferred_time: selectedTime,
+                        status: 'pending', // Default status
+                        desc: `Appointment for ${selectedPet.name} at ${clinic.clinic_name} on ${selectedDate} at ${selectedTime}`,
                     },
 
                 ]).select();
