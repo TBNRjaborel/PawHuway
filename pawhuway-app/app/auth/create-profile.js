@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { supabase } from "../../src/lib/supabase";
 import { Stack } from "expo-router";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect } from "react";
@@ -50,9 +50,12 @@ const createProfile = () => {
   const [lastName, setLastName] = useState("");
   const [address, setAddress] = useState("");
   const [birthdate, setBirthDate] = useState("");
-  const [email, setEmail] = useState("");
+  // const [email, setEmail] = useState("");
   const [userId, setUserId] = useState(null);
   const router = useRouter();
+  const params = useLocalSearchParams();
+
+  const email = params.email || "";
 
   // useEffect(() => {
   //   async function fetchEmail() {
@@ -156,15 +159,6 @@ const createProfile = () => {
                 value={birthdate}
                 placeholder="yyyy/mm/dd"
                 onChangeText={setBirthDate}
-              />
-            </View>
-            <View style={styles.input}>
-              <Text style={styles.title}>Email Address</Text>
-              <TextInput
-                style={styles.inputControl}
-                value={email}
-                onChangeText={setEmail}
-                // editable={false}
               />
             </View>
           </View>
