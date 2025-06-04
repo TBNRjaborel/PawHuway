@@ -243,11 +243,11 @@ const PetDashboard = () => {
               }}
             >
               <View style={styles.petCard}>
-                <Image
+                {/* <Image
                   source={item.img_path ? { uri: item.img_path } : require('../../assets/pictures/vet_1.png')}
                   style={{ width: 120, height: 120, borderRadius: 60, marginVertical: 20 }}
                   resizeMode="cover"
-                />
+                /> */}
                 <Text style={styles.petName}>{item.name}</Text>
                 <Text style={styles.petType}>{item.type}</Text>
                 <Text style={styles.petAge}>Age: {item.age}</Text>
@@ -262,7 +262,10 @@ const PetDashboard = () => {
                       resizeMode="cover"
                     />
                   ) : (
-                    <Ionicons name="paw" size={80} color="#ccc" style={{ marginBottom: 10 }} />
+                    <Image
+                      source={require("../../assets/pictures/vet_1.png")}
+                      style={{ width: 200, height: 200, borderRadius: 10 }}
+                    />
                   )}
                 </View>
               </View>
