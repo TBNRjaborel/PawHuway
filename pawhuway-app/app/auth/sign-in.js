@@ -23,11 +23,13 @@ const SignIn = () => {
 
   useEffect(() => {
     const autoLogin = async () => {
-      setEmail("fieljrc@gmail.com");
-      setPassword("123456");
+      setEmail("andeellenes@gmail.com");
+      setPassword("password");
       if (email && password) {
         signInWithEmail();
       }
+
+      router.push('/vet/screens/Scan-qr');
     }
 
     autoLogin();
