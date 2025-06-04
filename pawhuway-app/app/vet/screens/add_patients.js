@@ -6,11 +6,14 @@ import * as DocumentPicker from 'expo-document-picker';
 import RNPickerSelect from 'react-native-picker-select';
 import { supabase } from '../../../src/lib/supabase';
 import { Picker } from '@react-native-picker/picker';
+import { pick } from "lodash";
 
 const addPatient = () => {
     const router = useRouter();
     const [pets, setPets] = useState([]); // Store pets data
+    const [filteredPets, setFilteredPets] = useState([]); // Filtered pets by owner email
     const [selectedPet, setSelectedPet] = useState(null); // Store the selected pet 
+    const [ownerEmail, setOwnerEmail] = useState(''); // New: owner's email input
     const [patientName, setPatientName] = useState('');
     const [age, setAge] = useState('');
     const [dob, setDob] = useState('');
@@ -48,17 +51,69 @@ const addPatient = () => {
         fetchPets();
     }, []);
 
+    // Filter pets when ownerEmail changes
+    useEffect(() => {
+        if (ownerEmail.trim() === "") {
+            setFilteredPets([]);
+            setSelectedPet(null);
+            return;
+        }
+        const filtered = pets.filter(
+            (pet) => pet.pet_owners?.email?.toLowerCase() === ownerEmail.trim().toLowerCase()
+        );
+        setFilteredPets(filtered);
+        setSelectedPet(null);
+    }, [ownerEmail, pets]);
+
+    const pickFile = async () => {
+        console.log("Opening file picker...");
+        const result = await DocumentPicker.getDocumentAsync({
+          type: "application/pdf",
+          copyToCacheDirectory: true,
+        });
+    
+        console.log("File picker result:", result);
+    
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+          const file = result.assets[0];
+          const fileUri = file.uri;
+          console.log("Picked file URI:", fileUri);
+    
+          if (file.mimeType !== "application/pdf") {
+            console.log("Invalid file type:", file.mimeType);
+            Alert.alert("Invalid Format", "Please select a PDF file.");
+            return;
+          }
+    
+          const base64 = await FileSystem.readAsStringAsync(fileUri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          console.log("Read file as base64, length:", base64.length);
+    
+          const arrayBuffer = decode(base64);
+          console.log("Decoded base64 to arrayBuffer, byteLength:", arrayBuffer.byteLength);
+    
+          // Store the actual file URI for later reading/upload
+          handleFileChange(file);
+    
+          setPetData({ ...petData, medfile: file.uri });
+          // Optionally store arrayBuffer and filePath in state for upload
+        } else {
+          console.log("File picking cancelled or failed.");
+        }
+      };
+
     const handlePetSelection = (petId) => {
-        const pet = pets.find((p) => p.id === petId); // Find the selected pet
+        const pet = filteredPets.find((p) => p.id === petId); // Find the selected pet
         if (pet) {
             setSelectedPet(petId); // Set the selected pet ID
             setPatientName(pet.name); // Fill out the form fields
-            setAge(pet.age.toString());
-            setDob(pet.birthDate);
-            setGender(pet.sex);
-            setType(pet.type);
-            setHeight(pet.height);
-            setWeight(pet.weight);
+            setAge(pet.age?.toString() || '');
+            setDob(pet.birthDate || '');
+            setGender(pet.sex || '');
+            setType(pet.type || '');
+            setHeight(pet.height || '');
+            setWeight(pet.weight || '');
         }
         console.log("pet: ", pet);
     };
@@ -195,28 +250,40 @@ const addPatient = () => {
             <StatusBar hidden={true} />
             <View style={styles.container}>
                 <View style={styles.profileSection}>
-
-                    <View style={styles.selectPet}>
-                        {/* <Text style={styles.label}>Patient's Name</Text> */}
-                        <View style={styles.pickerContainer}>
+                    {/* Owner Email Field */}
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Owner's Email</Text>
+                        <TextInput
+                            style={styles.inputInline}
+                            value={ownerEmail}
+                            onChangeText={setOwnerEmail}
+                            placeholder="Enter owner's email"
+                            autoCapitalize="none"
+                            keyboardType="email-address"
+                        />
+                    </View>
+                    {/* Pet Dropdown */}
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>Select Pet</Text>
+                        <View style={[styles.pickerContainer, {marginBottom: 0}]}>
                             <Picker
-                                selectedValue={selectedPet}
+                                selectedValue={selectedPet || "default"}                                                 
                                 onValueChange={(itemValue) => handlePetSelection(itemValue)}
-                                style={styles.pickerWrapper} // Reuse same style
+                                style={styles.pickerWrapper}
                             >
-                                <Picker.Item label="Select a pet..." value="" style={styles.pickerPlaceholder} />
-                                {pets.map((pet) => (
+                                <Picker.Item label="Select a pet..." value="default" style={styles.pickerPlaceholder} />
+                                {filteredPets.map((pet) => (
                                     <Picker.Item
                                         key={pet.id}
-                                        label={`${pet.name} (${pet.pet_owners?.email ?? 'No email'})`}
+                                        label={pet.name}
                                         value={pet.id}
                                         style={styles.pickerItem}
                                     />
                                 ))}
                             </Picker>
                         </View>
-
                     </View>
+                    {/* Pet Details Form */}
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Age</Text>
                         <TextInput style={styles.inputInline}
@@ -258,14 +325,6 @@ const addPatient = () => {
                             editable={false}
                         />
                     </View>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Medical History:</Text>
-                        <TouchableOpacity style={styles.attachButton} onPress={selectFile}>
-                            <Text style={styles.attachButtonText}>
-                                {medicalHistory ? 'File Selected' : 'Attach File'}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
                     <View>
                         <TouchableOpacity style={styles.addPatientButton} onPress={addNewPatient}>
                             <Text style={styles.addPatientButtonText}>
@@ -284,109 +343,94 @@ const addPatient = () => {
 const styles = StyleSheet.create({
     background: {
         flex: 1,
-        backgroundColor: '#B3EBF2',
+        backgroundColor: '#FFFFFF',
     },
     container: {
         backgroundColor: '#FFFFFF',
-        height: '100%',
-        borderTopLeftRadius: 70,
-        borderTopRightRadius: 70,
-        marginTop: '50%',
+        flex: 1,
+        marginTop: 30,
+        paddingTop: 32,
+        paddingBottom: 32,
+        paddingHorizontal: 0,
+    },
+    profileSection: {
+        marginTop: 10,
+        marginBottom: 10,
     },
     inputGroup: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginHorizontal: 20,
-        marginBottom: 20,
-        // justifyContent: "space-evenly"
-    },
-    inputInline: {
-        flex: 1, // Allow the input to take the remaining space
-        backgroundColor: '#FFFFFF',
-        borderColor: '#808080',
-        borderWidth: 1,
-        borderRadius: 5,
-        marginRight: 20,
-        // height: 40,
-
+        marginHorizontal: 24,
+        marginBottom: 18,
     },
     label: {
         fontFamily: 'Poppins Light',
-        marginRight: 10, // Add some space between the label and input
-        alignSelf: 'center', // Center the label vertically
         fontSize: 16,
+        color: '#222',
+        minWidth: 110,
+        marginRight: 10,
     },
-    profileSection: {
-        marginTop: 50,
+    inputInline: {
+        flex: 1,
+        backgroundColor: '#F7F7F7',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        fontSize: 16,
+        color: '#222',
+    },
+    pickerContainer: {
+        flex: 1,
+        backgroundColor: '#F7F7F7',
+        borderWidth: 1,
+        borderRadius: 8,
+        justifyContent: 'center',
+        marginLeft: 0,
+    },
+    pickerWrapper: {
+        fontSize: 16,
+        fontFamily: 'Poppins Light',
+        color: '#222',
+        backgroundColor: 'transparent',
+    },
+    pickerPlaceholder: {
+        fontSize: 16,
+        color: '#222',
+        fontFamily: 'Poppins Light',
+    },
+    pickerItem: {
+        fontSize: 16,
+        color: "#222",
     },
     attachButton: {
         backgroundColor: '#B3EBF2',
         paddingVertical: 10,
-        paddingHorizontal: 76,
-        borderRadius: 5,
+        paddingHorizontal: 24,
+        borderRadius: 8,
+        flex: 1,
     },
     attachButtonText: {
-        fontFamily: 'Poppins Light',
+        fontFamily: 'Kanit Medium',
         textAlign: 'center',
         fontSize: 16,
+        color: '#222',
     },
     addPatientButton: {
-        backgroundColor: '#B3EBF2',
-        paddingVertical: 10,
-        paddingHorizontal: 76,
-        borderRadius: 5,
-        marginTop: 20,
-        marginHorizontal: 20,
+        backgroundColor: '#3C3C4C',
+        paddingVertical: 14,
+        borderRadius: 8,
+        marginTop: 30,
+        marginHorizontal: 24,
+        alignItems: 'center',
     },
     addPatientButtonText: {
-        fontFamily: 'Poppins Light',
+        fontFamily: 'Kanit Medium',
         textAlign: 'center',
-        fontSize: 16,
+        fontSize: 18,
+        color: '#fff',
+        letterSpacing: 1,
     },
-    dropdownInline: {
-        flex: 1, // Allow the input to take the remaining space
-        // backgroundColor: 'blue',
-
-        borderWidth: 1,
-        borderRadius: 5,
-        borderColor: 'black',
-        marginRight: 20,
-    },
-    pickerContainer: {
-        flexDirection: "row",
-        borderColor: 'black',
-        backgroundColor: '#EAEAEA',
-        // borderWidth: 1,
-        borderRadius: 32,
-        width: "87%"
-    },
-    pickerWrapper: {
-        flex: 1,
-        // backgroundColor: '#EAEAEA',
-        // borderColor: '#808080',
-        borderWidth: 1,
-        borderRadius: 5,
-        justifyContent: 'center',
-        width: "80%"
-    },
-
-    pickerPlaceholder: {
-        fontSize: 16,
-        color: "#938989", // Gray color for "Select Sex"
-    },
-
-    pickerItem: {
-        fontSize: 16,
-        color: "black",
-    },
-
-    selectPet: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-        // borderRadius: 20,
-    }
-
-})
+});
 
 export default addPatient

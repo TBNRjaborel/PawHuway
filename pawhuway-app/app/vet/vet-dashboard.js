@@ -25,7 +25,8 @@ const PetDashboard = () => {
   const [user, setUser] = useState(null);
   const [image, setImage] = useState();
   const [owner, setOwner] = useState(null);
-  const [pets, setPets] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [vetId, setVetId] = useState(null);
 
   // Category data
   const categories = [
@@ -38,7 +39,7 @@ const PetDashboard = () => {
     router.push("/vet/screens/Profile");
   };
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchUserProfileAndPatients = async () => {
       const { data: user, error } = await supabase.auth.getUser();
 
       if (error) {
@@ -46,8 +47,27 @@ const PetDashboard = () => {
         return;
       }
       const userEmail = user?.user?.email;
-      // console.log("User ID:", userId);
-      const { data, error: profileError } = await supabase
+
+      // 1. Get vet ID from vet_profiles using email
+      const { data: vetProfile, error: vetProfileError } = await supabase
+        .from("vet_profiles")
+        .select("id")
+        .eq("email", userEmail)
+        .maybeSingle();
+
+      let vetId = null;
+      if (vetProfileError) {
+        console.error("Error fetching vet profile:", vetProfileError);
+      } else if (vetProfile) {
+        setVetId(vetProfile.id);
+        vetId = vetProfile.id;
+        console.log("Vet profile found:", vetProfile);
+      } else {
+        console.warn("No vet profile found for email:", userEmail);
+      }
+
+      // ...existing user_accounts fetch...
+      const { data: userData, error: profileError } = await supabase
         .from("user_accounts")
         .select("*")
         .eq("email_add", userEmail)
@@ -55,12 +75,50 @@ const PetDashboard = () => {
 
       if (profileError) console.error("Error fetching user:", profileError);
       else {
-        console.log("nigana");
-        setFirstName(data.first_name);
-        setImage(data.profile_picture || null);
+        setFirstName(userData.first_name);
+        setImage(userData.profile_picture || null);
+      }
+
+      // 2. Get all pet_ids for this vet from vet_pet_relation
+      if (vetId) {
+        const { data: relations, error: relationError } = await supabase
+          .from("vet_pet_relation")
+          .select("pet_id")
+          .eq("vet_id", vetId);
+
+        if (relationError) {
+          console.error("Error fetching vet_pet_relation:", relationError);
+          setPatients([]);
+          return;
+        }
+        if (!relations || relations.length === 0) {
+          setPatients([]);
+          return;
+        }
+
+        const petIds = relations.map((r) => r.pet_id);
+        console.log("Pet IDs for this vet:", petIds);
+
+        // 3. Fetch pet details for these pet_ids
+        const { data: petDetails, error: petsError } = await supabase
+          .from("pets")
+          .select(
+            "id, name, age, sex, type, height, weight, owner_id, img_path, file_path"
+          )
+          .in("id", petIds);
+
+        if (petsError) {
+          console.error("Error fetching pets:", petsError);
+          setPatients([]);
+          return;
+        }
+
+        console.log("Fetched pets:", petDetails);
+        setPatients(petDetails);
       }
     };
-    fetchUserProfile();
+
+    fetchUserProfileAndPatients();
   }, []);
 
   return (
@@ -188,18 +246,17 @@ const PetDashboard = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Pet Cards */}
         <FlatList
-          data={pets}
+          data={patients}
           keyExtractor={(item) => item.id}
-          horizontal={true} // or true if you want horizontal scrolling
+          horizontal={true}
           ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
                 router.push(
-                  `/pet_owner/screens/Pets/pet-details?petId=${item.id}`
+                  `/vet/screens/Patients/patient-details?petId=${item.id}&vetId=${vetId}` // Assuming vet_id is available in item
                 );
               }}
             >
@@ -207,6 +264,20 @@ const PetDashboard = () => {
                 <Text style={styles.petName}>{item.name}</Text>
                 <Text style={styles.petType}>{item.type}</Text>
                 <Text style={styles.petAge}>Age: {item.age}</Text>
+                <View style={styles.petImageContainer}>
+                  {item.img_path ? (
+                    <Image
+                      fill
+                      height={200}
+                      width={200}
+                      source={{ uri: item.img_path }}
+                      style={{ borderRadius: 10 }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Ionicons name="paw" size={80} color="#ccc" style={{ marginBottom: 10 }} />
+                  )}
+                </View>
               </View>
             </TouchableOpacity>
           )}
@@ -321,7 +392,6 @@ const styles = StyleSheet.create({
   appointmentTitle: {
     fontFamily: "Poppins Light",
     fontSize: 16,
-    fontWeight: "bold",
     color: "Black",
     marginBottom: 6,
   },
@@ -370,13 +440,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     width: 300,
-    height: 300,
+    height: 350,
     alignItems: "center",
   },
   petImageContainer: {
-    width: 120,
-    height: 120,
-    marginBottom: 10,
+    marginTop: 10,
+    width: "100%",
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
