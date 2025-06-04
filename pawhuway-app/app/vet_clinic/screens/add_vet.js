@@ -22,9 +22,11 @@ const addVet = () => {
     useEffect(() => {
         const fetchVets = async () => {
             setLoading(true);
+
             try {
                 const { data: { user }, error: userError } = await supabase.auth.getUser();
                 if (userError) throw userError;
+
                 const userId = user?.id;
                 setClinicId(userId);
 
@@ -36,33 +38,37 @@ const addVet = () => {
                 if (vetListError) throw vetListError;
 
                 let vetsData = [];
-                let error = null;
 
+                // const { data, error } = await supabase
+                //     .from("vet_profiles")
+                //     .select("id, user_accounts(first_name, last_name, email_add, address, birth_date)")
+
+                // console.log("vet profiles data: ", data);
                 if (vetListData.length > 0) {
-                    const vetIdsToExclude = vetListData.map((item) => item.vet_id);
-                    const result = await supabase
-                        .from("vet_profiles")
-                        .select("id, user_accounts (first_name, last_name, email_add, address, birth_date)")
-                        .not("id", "in", `(${vetIdsToExclude.join(",")})`);
+                    const vetIdsToExclude = vetListData.map((item) => item.vet_id).filter(Boolean);
+                    console.log("vetIdsToExclude: ", vetIdsToExclude);
+                    if (vetIdsToExclude.length > 0) {
+                        const { data, error } = await supabase
+                            .from("vet_profiles")
+                            .select("id, user_accounts (first_name, last_name, email_add, address, birth_date)")
+                            .not("id", "in", `(${vetIdsToExclude.join(",")})`);
 
-                    vetsData = result.data;
-                    error = result.error;
+                        if (error) throw error;
+                        vetsData = data;
+                    }
                 } else {
-                    const result = await supabase
+                    const { data, error } = await supabase
                         .from("vet_profiles")
                         .select("id, user_accounts (first_name, last_name, email_add, address, birth_date)");
 
-                    vetsData = result.data;
-                    error = result.error;
+                    if (error) throw error;
+                    vetsData = data;
                 }
 
-                if (error) {
-                    console.error('Error fetching vets:', error);
-                } else {
-                    setVets(vetsData);
-                }
+                setVets(vetsData);
             } catch (err) {
-                console.error('Unexpected error fetching vets:', err);
+                console.error("Error fetching vets:", err);
+                setVets([]); // fallback to empty array on error
             } finally {
                 setLoading(false);
             }
