@@ -31,42 +31,42 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
 
 
-  useEffect(() => {
-    const autoLogin = async () => {
-      const autoEmail = "andeellenes@gmail.com";
-      const autoPassword = "password";
-      setEmail(autoEmail);
-      setPassword(autoPassword);
-      setIsLoading(true);
-      try {
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email: autoEmail,
-          password: autoPassword,
-        });
-        if (authError) throw authError;
+  // useEffect(() => {
+  //   const autoLogin = async () => {
+  //     const autoEmail = "andeellenes@gmail.com";
+  //     const autoPassword = "password";
+  //     setEmail(autoEmail);
+  //     setPassword(autoPassword);
+  //     setIsLoading(true);
+  //     try {
+  //       const { error: authError } = await supabase.auth.signInWithPassword({
+  //         email: autoEmail,
+  //         password: autoPassword,
+  //       });
+  //       if (authError) throw authError;
 
-        const { data: clinic, error: clinicError } = await supabase
-          .from("vet_clinics")
-          .select("id")
-          .eq("clinic_email", autoEmail)
-          .maybeSingle();
+  //       const { data: clinic, error: clinicError } = await supabase
+  //         .from("vet_clinics")
+  //         .select("id")
+  //         .eq("clinic_email", autoEmail)
+  //         .maybeSingle();
 
-        if (clinicError) throw clinicError;
+  //       if (clinicError) throw clinicError;
 
-        router.push(
-          clinic
-            ? "/vet_clinic/vet-clinic-dashboard"
-            : "/components/landing-page-v2"
-        );
-      } catch (error) {
-        Alert.alert("Error", error.message || "Auto-login failed");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //       router.push(
+  //         clinic
+  //           ? "/vet_clinic/vet-clinic-dashboard"
+  //           : "/components/landing-page-v2"
+  //       );
+  //     } catch (error) {
+  //       Alert.alert("Error", error.message || "Auto-login failed");
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    autoLogin();
-  }, []);
+  //   autoLogin();
+  // }, []);
 
 
   async function signInWithEmail() {
