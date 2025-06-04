@@ -29,7 +29,10 @@ const SignUp = () => {
         }
         await AsyncStorage.setItem('userEmail', email);
         Alert.alert('Click the verification link we sent to your email to verify your email.')
-        router.push('/auth/create-profile')
+        router.push({
+          pathname: '/auth/create-profile',
+          params: { email } 
+        });
     }
     const goBack = () => {
       router.push('/starting-page');

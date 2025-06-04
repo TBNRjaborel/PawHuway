@@ -1,31 +1,89 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, FlatList, Modal, TouchableOpacity, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, ScrollView, FlatList, Modal, TouchableOpacity, Alert } from 'react-native';
 import { supabase } from '../../../src/lib/supabase';
-import { Stack } from 'expo-router';
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { Stack, useRouter } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const CalendarScreen = () => {
     const [appointments, setAppointments] = useState([]);
+    const [open, setOpen] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState('pending');
     const [loading, setLoading] = useState(true);
+    const [markedDates, setMarkedDates] = useState({});
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchAppointments = async () => {
             try {
                 const { data, error } = await supabase
-                    .from('appointment_requests')
-                    .select('*');
+                .from('appointment_requests')
+                .select('*');
 
                 if (error) {
-                    console.error('Error fetching appointments:', error);
-                    return;
+                console.error('Error fetching appointments:', error);
+                return;
                 }
 
                 setAppointments(data);
-                console.log('Fetched appointments:', data);
+
+                // Collect all appointment dates
+                const appointmentDates = data.map(app => app.date);
+
+                // Get a range of dates or specific month to show free slots too
+                const marks = {};
+
+                data.forEach(({ date, status }) => {
+                    let bgColor;
+                    let textColor = 'white';
+
+                    if (status === 'pending') bgColor = 'orange';
+                    else if (status === 'accepted') bgColor = 'green';
+                    else if (status === 'declined') bgColor = 'red';
+                    else bgColor = 'gray'; // fallback color if needed
+
+                    marks[date] = {
+                        customStyles: {
+                        container: {
+                            backgroundColor: bgColor,
+                            borderRadius: 5,
+                        },
+                        text: {
+                            color: textColor,
+                            fontWeight: 'bold',
+                        },
+                        },
+                    };
+                });
+
+                // Optionally mark remaining dates as gray
+                const today = new Date();
+                for (let i = 0; i < 30; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+
+                if (!marks[dateStr]) {
+                    marks[dateStr] = {
+                    customStyles: {
+                        container: {
+                        backgroundColor: '#e0e0e0',
+                        borderRadius: 5,
+                        },
+                        text: {
+                        color: 'black',
+                        },
+                    },
+                    };
+                }
+                }
+
+                setMarkedDates(marks);
             } catch (err) {
-                console.error('Unexpected error fetching appointments:', err);
+                console.error('Unexpected error:', err);
             } finally {
                 setLoading(false);
             }
@@ -33,6 +91,27 @@ const CalendarScreen = () => {
 
         fetchAppointments();
     }, []);
+
+    const calendarTheme = {
+        backgroundColor: "#ffffff",
+        calendarBackground: "#ffffff",
+        textSectionTitleColor: "#2d4150",
+        selectedDayBackgroundColor: "#1FB2A6", // more pastel version of teal
+        selectedDayTextColor: "#ffffff",
+        todayTextColor: "#FF6B6B", // red to highlight today
+        dayTextColor: "#1E1E1E",
+        textDisabledColor: "#d9e1e8",
+        dotColor: "#1FB2A6",
+        selectedDotColor: "#ffffff",
+        arrowColor: "#1FB2A6",
+        monthTextColor: "#1E1E1E",
+        textDayFontFamily: "Poppins Light",
+        textMonthFontFamily: "Poppins Light",
+        textDayHeaderFontFamily: "Poppins Light",
+        textDayFontSize: 16,
+        textMonthFontSize: 20,
+        textDayHeaderFontSize: 14,
+    };
 
     const handleAccept = async (id) => {
         try {
@@ -78,6 +157,10 @@ const CalendarScreen = () => {
         }
     };
 
+    const handleDateSelect = (day) => {
+        console.log('Selected date:', day.dateString);
+    };
+
     const renderAppointment = ({ item }) => {
         const getStatusStyle = () => {
             if (item.status === 'accepted') {
@@ -110,26 +193,60 @@ const CalendarScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ headerShown: false }} />
-            <View style={styles.topHalf}>
-                <Text style={styles.header}>Calendar</Text>
+            
+            <View style={styles.top}>
+                {/* <Text style={styles.header}>Calendar</Text> */}
+                <TouchableOpacity style={styles.backButton}
+                    onPress={() => { router.push("/vet/vet-dashboard") }}
+                >
+                    <AntDesign name="home" size={24} color="black" />
+                </TouchableOpacity>
                 <Calendar
                     style={styles.calendar}
-                    theme={styles.calendarTheme}
+                    theme={calendarTheme}
+                    markingType={'custom'}
+                    markedDates={markedDates}
+                    hideExtraDays={true}
+                    firstDay={0} // Monday as the first day of the week
+                    enableSwipeMonths={true}
+                    onDayPress={handleDateSelect}
                 />
-            </View>
-            <View style={styles.bottomHalf}>
-                <Text style={styles.header}>Appointment Requests</Text>
+                <View style={styles.statusPicker}>
+                    <DropDownPicker
+                        open={open}
+                        value={selectedStatus}
+                        items={[
+                            { label: "Pending", value: "pending" },
+                            { label: "Accepted", value: "accepted" },
+                            { label: "Declined", value: "declined" },
+                        ]}
+                        setOpen={setOpen}
+                        setValue={setSelectedStatus}
+                        setItems={() => {}} // If you're not dynamically changing items
+                        style={styles.picker}
+                        dropDownDirection="AUTO"
+                        placeholder="Select status"
+                    />
+                </View>
+                <Text style={styles.header}>
+                    {selectedStatus === 'pending'
+                        ? 'Appointment Requests'
+                        : selectedStatus === 'accepted'
+                        ? 'Accepted Appointments'
+                        : selectedStatus === 'declined'
+                        ? 'Declined Appointments'
+                        : 'No Appointments'}
+                </Text>
                 {loading ? (
                     <Text style={styles.loadingText}>Loading...</Text>
                 ) : (
                     <FlatList
-                        data={appointments}
+                        data={appointments.filter(app => app.status === selectedStatus)}
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={renderAppointment}
                     />
                 )}
             </View>
-
             {selectedAppointment && (
                 <Modal
                     visible={modalVisible}
@@ -175,64 +292,62 @@ const CalendarScreen = () => {
 };
 
 const styles = StyleSheet.create({
+    backButton: {
+        position: "absolute",
+        top: 10,
+        // left: 10,
+        zIndex: 10,
+        backgroundColor: "#FFFFFF",
+        padding: 10,
+        borderRadius: 50,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+    },
     container: {
         flex: 1,
         backgroundColor: "#B3EBF2",
         alignItems: "center",
         padding: 20,
     },
-    topHalf: {
-        flex: 1,
-        backgroundColor: "#C9FDF2",
-        borderRadius: 30,
-        padding: 10,
+    top: {
+        // flex: 1,
+        // backgroundColor: "#C9FDF2",
+        // borderRadius: 30,
+        // padding: 10,
         marginBottom: 10,
-        width: "100%",
+        // width: "100%",
     },
     bottomHalf: {
         flex: 1,
         backgroundColor: "#C9FDF2",
         borderRadius: 30,
-        padding: 20,
+        // padding: 20,
         marginTop: 10,
+        marginBottom: 10,
         width: "100%",
     },
     header: {
         fontSize: 24,
         fontWeight: "bold",
-        fontFamily: "Kanit Medium",
+        fontFamily: "Poppins Light",
         marginBottom: 20,
         color: "#1E1E1E",
-        textAlign: "center",
+        // textAlign: "center",
     },
     calendar: {
-        flex: 1,
-        borderRadius: 10,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 1,
-    },
-    calendarTheme: {
+        marginTop: 80,
+        borderRadius: 20,
+        overflow: 'hidden',
         backgroundColor: "#ffffff",
-        calendarBackground: "#ffffff",
-        textSectionTitleColor: "#2d4150",
-        selectedDayBackgroundColor: "#00adf5",
-        selectedDayTextColor: "#ffffff",
-        todayTextColor: "#00adf5",
-        dayTextColor: "#2d4150",
-        textDisabledColor: "#d9e1e8",
-        dotColor: "#00adf5",
-        selectedDotColor: "#ffffff",
-        arrowColor: "#00adf5",
-        monthTextColor: "#1E1E1E",
-        textDayFontFamily: "Poppins Light",
-        textMonthFontFamily: "Poppins Medium",
-        textDayHeaderFontFamily: "Poppins Light",
-        textDayFontSize: 16,
-        textMonthFontSize: 18,
-        textDayHeaderFontSize: 14,
+        elevation: 3,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        paddingBottom: 10,
     },
     loadingText: {
         fontSize: 18,
@@ -245,7 +360,8 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF",
         padding: 15,
         borderRadius: 10,
-        marginBottom: 10,
+        // marginBottom: 10,
+        marginVertical: 12,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -286,7 +402,7 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontWeight: "bold",
-        fontFamily: "Kanit Medium",
+        fontFamily: "Poppins Light",
         marginBottom: 20,
         color: "#1E1E1E",
     },
@@ -332,6 +448,23 @@ const styles = StyleSheet.create({
     pendingAppointment: {
         borderColor: 'orange',
         borderWidth: 2,
+    },
+    statusPicker: {
+        marginVertical: 20,
+        zIndex: 1000,
+        // backgroundColor: 'yellow'
+    },
+    picker: {
+        width: 120, 
+        alignSelf: 'flex-end',
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 8,
+    },
+    statusText: {
+        marginTop: 12,
+        fontSize: 16,
+        color: '#555',
     },
 });
 
